@@ -17,7 +17,9 @@ export const swapChunk = async (
     progress: string | number,
     timeLeft: number,
     dispatch: any
-  ) => void
+  ) => void,
+  getProgressFromLSCallback: () => string | null,
+  setProgressToLSCallback: (progress: string) => void
 ) => {
   console.log("gd-library ---> swapChunk");
   const url = `${endpoint}/chunked/swap/${file.slug}`;
@@ -31,9 +33,9 @@ export const swapChunk = async (
     },
     onUploadProgress: (event) => {
       if (event.loaded === encryptedChunk.byteLength) {
-        const prevProgress = localStorage.getItem("progress") || 0;
+        const prevProgress = getProgressFromLSCallback() || 0;
         const progress = +prevProgress + event.loaded;
-        localStorage.setItem("progress", progress.toString());
+        setProgressToLSCallback(progress.toString());
         const elapsedTime = Date.now() - startTime;
         const remainingBytes = arrayBuffer.byteLength - progress;
         const bytesPerMillisecond = progress / elapsedTime;

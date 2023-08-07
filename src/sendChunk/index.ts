@@ -22,7 +22,9 @@ export const sendChunk = async (
     progress: string | number,
     timeLeft: number,
     dispatch: any
-  ) => void
+  ) => void,
+  getProgressFromLSCallback: () => string | null,
+  setProgressToLSCallback: (progress: string) => void
 ) => {
   console.log("gd-library ---> sendChunk");
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
@@ -49,9 +51,9 @@ export const sendChunk = async (
     },
     onUploadProgress: (event) => {
       if (event.loaded === chunk.byteLength) {
-        const prevProgress = localStorage.getItem("progress") || 0;
+        const prevProgress = getProgressFromLSCallback() || 0;
         const progress = +prevProgress + event.loaded;
-        localStorage.setItem("progress", progress.toString());
+        setProgressToLSCallback(progress.toString());
         const elapsedTime = Date.now() - startTime;
         const remainingBytes = file.size - progress;
         const bytesPerMillisecond = progress / elapsedTime;
