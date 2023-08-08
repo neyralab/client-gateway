@@ -8,3 +8,4 @@ export { countChunks } from "./countChunks";
 export { chunkFile } from "./chunkFile";
 export { getUserRSAKeys } from "./getUserRSAKeys";
 export { publicKeyToPem } from "./publicKeyToPem";
+export { WebCrypto } from "./webCrypto";
