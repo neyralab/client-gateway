@@ -1,5 +1,4 @@
 export const chunkFile = (arrayBuffer: ArrayBuffer) => {
-  console.log("gd-library ---> chunkFile");
   const chunkSize = 1024 * 1024; // 1MB
   const chunks = [];
   let start = 0;

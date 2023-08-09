@@ -26,7 +26,6 @@ export const sendChunk = async (
   getProgressFromLSCallback: () => string | null,
   setProgressToLSCallback: (progress: string) => void
 ) => {
-  console.log("gd-library ---> sendChunk");
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const fileName = convertTextToBase64(file.name);
   let currentTry = 1;
@@ -87,7 +86,7 @@ export const sendChunk = async (
       }
       return response;
     } catch (error: any) {
-      console.log("gd-library ---> sendChunk error", error);
+      console.error("ERROR", error);
       if (
         currentTry >= MAX_TRIES ||
         !error?.message?.includes("Network Error")

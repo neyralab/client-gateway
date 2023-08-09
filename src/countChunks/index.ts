@@ -10,7 +10,6 @@ export const countChunks = async (
   let currentTry = 1;
 
   const getChunkCount: () => Promise<any> = async () => {
-    console.log("gd-library ---> countChunks");
     await new Promise<void>((resolve) => {
       setTimeout(
         () => {

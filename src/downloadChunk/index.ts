@@ -10,7 +10,6 @@ export const downloadChunk = async (
   endpoint: string
 ) => {
   let currentTry = 1;
-  console.log("gd-library ---> downloadChunk");
   const download: () => Promise<any> = async () => {
     await new Promise<void>((resolve) => {
       setTimeout(

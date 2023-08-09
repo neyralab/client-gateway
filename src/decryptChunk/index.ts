@@ -1,7 +1,11 @@
+import { Crypto } from "@peculiar/webcrypto";
+
 import { convertBase64ToArrayBuffer } from "../utils/convertBase64ToArrayBuffer";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
 
 import { MAX_DECRYPTION_TRIES } from "../config";
+
+const crypto = typeof window !== "undefined" ? window.crypto : new Crypto();
 
 export const decryptChunk = async (
   chunk: ArrayBuffer,
@@ -9,7 +13,7 @@ export const decryptChunk = async (
   activationKey: string
 ) => {
   const decodeKey = convertBase64ToArrayBuffer(activationKey);
-  const key = await window.crypto.subtle.importKey(
+  const key = await crypto.subtle.importKey(
     "raw",
     decodeKey,
     {
@@ -25,7 +29,6 @@ export const decryptChunk = async (
   let currentTry = 1;
 
   const decrypt: () => Promise<any> = async () => {
-    console.log("gd-library ---> decryptChunk");
     await new Promise<void>((resolve) => {
       setTimeout(
         () => {
@@ -36,7 +39,7 @@ export const decryptChunk = async (
     });
 
     try {
-      const response = await window.crypto.subtle.decrypt(
+      const response = await crypto.subtle.decrypt(
         {
           name: "AES-GCM",
           iv: normalizedIv,
@@ -49,7 +52,7 @@ export const decryptChunk = async (
       }
       return response;
     } catch (error: any) {
-      console.log("gd-library ---> decryptChunk error", error);
+      console.error("ERROR", error);
       if (currentTry >= MAX_DECRYPTION_TRIES) {
         currentTry = 1;
         return { failed: true };

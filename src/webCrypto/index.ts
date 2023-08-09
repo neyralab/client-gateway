@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import * as forge from "node-forge";
 import * as Base64 from "base64-js";
+import { Crypto } from "@peculiar/webcrypto";
 
 import {
   chunkFile,
@@ -18,7 +19,9 @@ import { convertTextToBase64 } from "../utils/convertTextToBase64";
 import { convertBlobToBase64 } from "../utils/convertBlobToBase64";
 import { fetchBlobFromUrl } from "../utils/fetchBlobFromUrl";
 
-window.crypto.subtle
+const crypto = typeof window !== "undefined" ? window.crypto : new Crypto();
+
+crypto.subtle
   .generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
   .then((k) => {
     window.key = k;
@@ -30,7 +33,7 @@ md.update(fileKey);
 
 export class WebCrypto {
   readonly clientsideKeySha3Hash = md.digest().toHex();
-  public iv: Uint8Array = window.crypto.getRandomValues(new Uint8Array(12));
+  public iv: Uint8Array = crypto.getRandomValues(new Uint8Array(12));
 
   async encodeFile(
     file: File | any,
@@ -336,10 +339,10 @@ export class WebCrypto {
                 );
             })
             .catch((e) => {
-              console.warn("ERROR", e);
+              console.error("ERROR", e);
             });
         } catch (e) {
-          console.warn("ERROR", e);
+          console.error("ERROR", e);
         }
       }
     }

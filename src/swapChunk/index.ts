@@ -21,7 +21,6 @@ export const swapChunk = async (
   getProgressFromLSCallback: () => string | null,
   setProgressToLSCallback: (progress: string) => void
 ) => {
-  console.log("gd-library ---> swapChunk");
   const url = `${endpoint}/chunked/swap/${file.slug}`;
   const inst = axios.create({
     headers: {

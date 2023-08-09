@@ -7,7 +7,6 @@ export const getUserRSAKeys = async function (
     msg: null | string
   ) => any
 ) {
-  console.log("gd-library ---> getUserRSAKeys");
   if (!provider) return "Provider is required";
   const msg =
     "Welcome to GhostDrive! \n\nPlease sign to start using this for encryption with Ghostdrive. \n" +
