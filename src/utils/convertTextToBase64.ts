@@ -1,4 +1,5 @@
 import * as Base64 from "base64-js";
+import { TextEncoder } from "util";
 
 export const convertTextToBase64 = (text: string) => {
   const encoder = new TextEncoder();
