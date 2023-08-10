@@ -20,6 +20,7 @@
   "dependencies": {
     "@peculiar/webcrypto": "^1.4.3",
     "axios": "^1.4.0",
+    "axios-mock-adapter": "^1.21.5",
     "base64-js": "^1.5.1",
     "jest-environment-jsdom": "^29.6.2",
     "jest-fetch-mock": "^3.0.3",
