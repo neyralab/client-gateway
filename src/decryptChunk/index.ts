@@ -5,7 +5,7 @@ import { getFibonacciNumber } from "../utils/getFibonacciNumber";
 
 import { MAX_DECRYPTION_TRIES } from "../config";
 
-const crypto = typeof window !== "undefined" ? window.crypto : new Crypto();
+const crypto = !window || !window.crypto?.subtle ? new Crypto() : window.crypto;
 
 export const decryptChunk = async (
   chunk: ArrayBuffer,

@@ -1,6 +1,6 @@
 import { Crypto } from "@peculiar/webcrypto";
 
-const crypto = typeof window !== "undefined" ? window.crypto : new Crypto();
+const crypto = !window || !window.crypto?.subtle ? new Crypto() : window.crypto;
 
 export const encryptChunk = async (chunk: ArrayBuffer, iv: Uint8Array) => {
   return await crypto.subtle.encrypt(

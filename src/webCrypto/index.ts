@@ -19,7 +19,7 @@ import { convertTextToBase64 } from "../utils/convertTextToBase64";
 import { convertBlobToBase64 } from "../utils/convertBlobToBase64";
 import { fetchBlobFromUrl } from "../utils/fetchBlobFromUrl";
 
-const crypto = typeof window !== "undefined" ? window.crypto : new Crypto();
+const crypto = !window || !window.crypto?.subtle ? new Crypto() : window.crypto;
 
 crypto.subtle
   .generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
