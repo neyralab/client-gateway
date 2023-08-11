@@ -54,4 +54,29 @@ describe("Test sendChunk", () => {
 
     expect(result).toEqual(mockResponse);
   });
+  it("should throw an error", async () => {
+    mockAdapter
+      .onPost(`${mockEndpoint}/chunked/uploadChunk`)
+      .reply(500, "Internal Server Error");
+
+    try {
+      await sendChunk(
+        mockArrayBuffer,
+        0,
+        10,
+        mockFile,
+        mockStartTime,
+        mockOneTimeToken,
+        mockEndpoint,
+        mockIv,
+        mockClientsideKeySha3Hash,
+        mockDispatch,
+        mockUpdateProgressCallback,
+        mockGetProgressFromLSCallback,
+        mockSetProgressToLSCallback
+      );
+    } catch (error) {
+      expect(error.message).toEqual("HTTP error! status:500");
+    }
+  });
 });

@@ -14,6 +14,13 @@ document.createElement = jest.fn().mockReturnValue({
 });
 
 describe("saveBlob", () => {
+  beforeEach(() => {
+    mockCreateObjectURL.mockClear();
+    mockRevokeObjectURL.mockClear();
+    // @ts-ignore
+    document.createElement.mockClear();
+  });
+
   it("should create a URL and trigger the download link", () => {
     const mockBlob = new Blob(["Test data"], { type: "text/plain" });
     const mockName = "test-file.txt";
@@ -34,5 +41,25 @@ describe("saveBlob", () => {
     expect(clickSpy).toHaveBeenCalledTimes(1);
 
     expect(mockRevokeObjectURL).toHaveBeenCalledWith(mockURL);
+  });
+
+  it("should throw an error if creating object URL fails", () => {
+    const mockBlob = new Blob(["Test data"], { type: "text/plain" });
+    const mockName = "test-file.txt";
+
+    mockCreateObjectURL.mockImplementation(() => {
+      throw new Error("Failed to create object URL");
+    });
+
+    try {
+      saveBlob({ name: mockName, blob: mockBlob });
+    } catch (error) {
+      expect(error.message).toBe("Failed to create object URL");
+    }
+
+    expect(mockCreateObjectURL).toHaveBeenCalledWith(mockBlob);
+
+    expect(document.createElement).not.toHaveBeenCalled();
+    expect(global.URL.revokeObjectURL).not.toHaveBeenCalled();
   });
 });

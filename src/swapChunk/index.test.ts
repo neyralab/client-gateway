@@ -55,4 +55,31 @@ describe("Test swapChunk", () => {
 
     expect(result).toEqual(mockResponse);
   });
+  it("should throw an error", async () => {
+    const mockAdapter = new MockAdapter(axios);
+    mockAdapter
+      .onPost(`${mockEndpoint}/chunked/swap/${mockFile.slug}`)
+      .reply(500, "Internal Server Error");
+
+    try {
+      await swapChunk(
+        mockFile,
+        mockEndpoint,
+        mockIv,
+        mockClientsideKeySha3Hash,
+        0,
+        10,
+        mockOneTimeToken,
+        mockEncryptedChunk,
+        mockArrayBuffer,
+        mockStartTime,
+        mockDispatch,
+        mockUpdateProgressCallback,
+        mockGetProgressFromLSCallback,
+        mockSetProgressToLSCallback
+      );
+    } catch (error) {
+      expect(error.message).toEqual("Request failed with status code 500");
+    }
+  });
 });

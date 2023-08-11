@@ -1,3 +1,7 @@
 export const publicKeyToPem = (publicKey: any) => {
-  return window.forge.pki.publicKeyToPem(publicKey);
+  try {
+    return window.forge.pki.publicKeyToPem(publicKey);
+  } catch (error) {
+    throw new Error(error);
+  }
 };

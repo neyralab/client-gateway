@@ -41,4 +41,17 @@ describe("downloadFile", () => {
     expect(downloadChunk).toHaveBeenCalledTimes(3);
     expect(result).toEqual(expectedResult);
   });
+  it("should throw an error if chunkCountResponse is not okay", async () => {
+    //@ts-ignore
+    countChunks.mockResolvedValue({
+      ok: false,
+      status: 404,
+    });
+
+    try {
+      await downloadFile(mockFile, mockOneTimeToken, mockSignal, mockEndpoint);
+    } catch (error) {
+      expect(error.message).toEqual("HTTP error! status:404");
+    }
+  });
 });

@@ -11,12 +11,7 @@ const mockEndpoint = "https://example.com";
 
 const mockData = new Uint8Array([0x41, 0x42, 0x43, 0x44]).buffer;
 // @ts-ignore
-global.fetch = jest.fn(() =>
-  Promise.resolve({
-    ok: true,
-    arrayBuffer: () => Promise.resolve(mockData),
-  })
-);
+global.fetch = jest.fn();
 
 describe("Test downloadChunk", () => {
   beforeEach(() => {
@@ -24,6 +19,13 @@ describe("Test downloadChunk", () => {
     fetch.mockClear();
   });
   it("should return chunk of the file", async () => {
+    // @ts-ignore
+    global.fetch = jest.fn(() =>
+      Promise.resolve({
+        ok: true,
+        arrayBuffer: () => Promise.resolve(mockData),
+      })
+    );
     const data = await downloadChunk(
       mockIndex,
       mockSha3_hash,
@@ -34,5 +36,24 @@ describe("Test downloadChunk", () => {
     );
 
     expect(data).toEqual(mockData);
+  });
+  it("should return error", async () => {
+    // @ts-ignore
+    global.fetch = jest.fn(() => {
+      throw new Error("Other Error");
+    });
+
+    try {
+      const test = await downloadChunk(
+        mockIndex,
+        mockSha3_hash,
+        mockSlug,
+        mockOneTimeToken,
+        mockSignal,
+        mockEndpoint
+      );
+    } catch (error) {
+      expect(error.message).toEqual("HTTP error! status: undefined");
+    }
   });
 });

@@ -1,30 +1,41 @@
 import { getUserRSAKeys } from "./index";
 
-describe("getUserRSAKeys function", () => {
-  it("should not generate RSA key pair without provider", async () => {
-    const mockSignature = "mock-signature";
-    const mockSignMessageCallback = jest
-      .fn()
-      .mockResolvedValue({ signature: mockSignature });
-    // @ts-ignore
+describe("getUserRSAKeys", () => {
+  it("should generate RSA keys successfully", async () => {
+    const mockSigner = {
+      signMessage: jest.fn().mockResolvedValue("mockSignature"),
+    };
+    const mockPublicKeyToPem = jest.fn().mockReturnValue("mock-pem");
+    //@ts-ignore
+    global.window = Object.create(window);
+    //@ts-ignore
     window.forge = {
-      random: {
-        createInstance: jest.fn().mockReturnValue({
-          seedFileSync: jest.fn(),
-        }),
-      },
       pki: {
+        publicKeyToPem: mockPublicKeyToPem,
         rsa: {
-          generateKeyPair: jest.fn().mockReturnValue("mock-key-pair"),
+          generateKeyPair: jest.fn(() => ({
+            privateKey: "mockPrivateKey",
+            publicKey: "mockPublicKey",
+          })),
         },
       },
+      random: {
+        createInstance: jest.fn(() => ({
+          seedFileSync: jest.fn((needed) => "mockSeed".repeat(needed)),
+        })),
+      },
     };
+    const rsaKeys = await getUserRSAKeys(mockSigner);
 
-    const mockProvider = null;
-    const result = await getUserRSAKeys(mockProvider, mockSignMessageCallback);
+    expect(mockSigner.signMessage).toHaveBeenCalled();
+    expect(rsaKeys.privateKey).toBeDefined();
+    expect(rsaKeys.publicKey).toBeDefined();
+  });
 
-    expect(result).toBe("Provider is required");
-
-    expect(mockSignMessageCallback).not.toHaveBeenCalled();
+  it("should handle signer error", async () => {
+    const mockSigner = {
+      signMessage: jest.fn().mockRejectedValue(new Error("Signer error")),
+    };
+    await expect(getUserRSAKeys(mockSigner)).rejects.toThrow("Signer error");
   });
 });
