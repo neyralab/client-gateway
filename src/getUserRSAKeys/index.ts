@@ -1,6 +1,4 @@
-export const getUserRSAKeys = async function (signer: {
-  signMessage: (arg: string) => string;
-}) {
+export const getUserRSAKeys = async function (signer: any) {
   const msg =
     "Welcome to GhostDrive! \n\nPlease sign to start using this for encryption with Ghostdrive. \n" +
     "This will not trigger a blockchain transaction or cost any gas fees. \n\n" +

@@ -1,3 +1,1 @@
-export declare const getUserRSAKeys: (signer: {
-    signMessage: (arg: string) => string;
-}) => Promise<any>;
+export declare const getUserRSAKeys: (signer: any) => Promise<any>;
