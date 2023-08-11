@@ -2,10 +2,11 @@ import { Crypto } from "@peculiar/webcrypto";
 
 import { convertBase64ToArrayBuffer } from "../utils/convertBase64ToArrayBuffer";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
+import { getCrypto } from "../utils/getCrypto";
 
 import { MAX_DECRYPTION_TRIES } from "../config";
 
-const crypto = !window || !window.crypto?.subtle ? new Crypto() : window.crypto;
+const crypto = getCrypto();
 
 export const decryptChunk = async (
   chunk: ArrayBuffer,

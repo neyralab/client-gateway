@@ -1,7 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import * as forge from "node-forge";
 import * as Base64 from "base64-js";
-import { Crypto } from "@peculiar/webcrypto";
 
 import {
   chunkFile,
@@ -18,8 +17,9 @@ import { convertArrayBufferToBase64 } from "../utils/convertArrayBufferToBase64"
 import { convertTextToBase64 } from "../utils/convertTextToBase64";
 import { convertBlobToBase64 } from "../utils/convertBlobToBase64";
 import { fetchBlobFromUrl } from "../utils/fetchBlobFromUrl";
+import { getCrypto } from "../utils/getCrypto";
 
-const crypto = !window || !window.crypto?.subtle ? new Crypto() : window.crypto;
+const crypto = getCrypto();
 
 crypto.subtle
   .generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])

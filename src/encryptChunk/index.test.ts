@@ -1,7 +1,7 @@
-import { Crypto } from "@peculiar/webcrypto";
 import { encryptChunk } from "../encryptChunk";
+import { getCrypto } from "../utils/getCrypto";
 
-const crypto = !window || !window.crypto?.subtle ? new Crypto() : window.crypto;
+const crypto = getCrypto();
 
 describe("encryptChunk", () => {
   beforeEach(() => {

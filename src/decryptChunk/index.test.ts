@@ -1,12 +1,12 @@
-import { Crypto } from "@peculiar/webcrypto";
 import * as Base64 from "base64-js";
 
 import { convertArrayBufferToBase64 } from "../utils/convertArrayBufferToBase64";
+import { getCrypto } from "../utils/getCrypto";
 
 import { decryptChunk } from "./index";
 import { encryptChunk } from "../encryptChunk";
 
-const crypto = !window || !window.crypto?.subtle ? new Crypto() : window.crypto;
+const crypto = getCrypto();
 
 describe("decryptChunk", () => {
   afterEach(() => {
