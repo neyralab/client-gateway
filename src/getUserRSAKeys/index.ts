@@ -1,13 +1,6 @@
-export const getUserRSAKeys = async function (
-  provider = null,
-  signMessageCallback: (
-    setErrors: any,
-    currentProvider: any,
-    withNonce: boolean,
-    msg: null | string
-  ) => any
-) {
-  if (!provider) return "Provider is required";
+export const getUserRSAKeys = async function (signer: {
+  signMessage: (arg: string) => string;
+}) {
   const msg =
     "Welcome to GhostDrive! \n\nPlease sign to start using this for encryption with Ghostdrive. \n" +
     "This will not trigger a blockchain transaction or cost any gas fees. \n\n" +
@@ -15,8 +8,7 @@ export const getUserRSAKeys = async function (
     "A public key will be registered with this address and \n" +
     "used only for data encryption.";
 
-  const rnd = (await signMessageCallback(false, provider, false, msg))
-    .signature;
+  const rnd = await signer.signMessage(msg);
   const prng = window.forge.random.createInstance();
 
   prng.seedFileSync = function (needed: number) {
