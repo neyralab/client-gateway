@@ -87,9 +87,11 @@ export class WebCrypto {
       data: { keys },
     } = await getKeysByWorkspace();
 
+    const key = hasWindow() ? window.key : global.key;
+
     for (const chunk of chunks) {
       const currentIndex = chunks.findIndex((el) => el === chunk);
-      const encryptedChunk = await encryptChunk(chunk, this.iv);
+      const encryptedChunk = await encryptChunk(chunk, this.iv, key);
       result = await sendChunk(
         encryptedChunk,
         currentIndex,
@@ -266,12 +268,13 @@ export class WebCrypto {
 
     const startTime = Date.now();
     const base64iv = Base64.fromByteArray(this.iv);
+    const key = hasWindow() ? window.key : global.key;
 
     let data: any;
     try {
       for (const chunk of chunks) {
         const currentIndex = chunks.findIndex((el) => el === chunk);
-        const encryptedChunk = await encryptChunk(chunk, this.iv);
+        const encryptedChunk = await encryptChunk(chunk, this.iv, key);
 
         data = await swapChunk(
           file,
