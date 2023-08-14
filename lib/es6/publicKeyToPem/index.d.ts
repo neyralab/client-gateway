@@ -1,1 +1,1 @@
-export declare const publicKeyToPem: (publicKey: any) => any;
+export declare const publicKeyToPem: (publicKey: any) => string;
