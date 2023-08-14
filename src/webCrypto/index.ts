@@ -18,13 +18,18 @@ import { convertTextToBase64 } from "../utils/convertTextToBase64";
 import { convertBlobToBase64 } from "../utils/convertBlobToBase64";
 import { fetchBlobFromUrl } from "../utils/fetchBlobFromUrl";
 import { getCrypto } from "../utils/getCrypto";
+import { hasWindow } from "../utils/hasWindow";
 
 const crypto = getCrypto();
 
 crypto.subtle
   .generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
   .then((k) => {
-    window.key = k;
+    if (hasWindow()) {
+      window.key = k;
+    } else {
+      global.key = k;
+    }
   });
 
 const fileKey = forge.random.getBytesSync(32); // 32 bytes for AES-256
@@ -106,7 +111,10 @@ export class WebCrypto {
       }
     }
 
-    const buffer = await crypto.subtle.exportKey("raw", window.key);
+    const buffer = await crypto.subtle.exportKey(
+      "raw",
+      hasWindow() ? window.key : global.key
+    );
     const keyBase64 = convertArrayBufferToBase64(buffer);
     const encryptedKeys = keys.map((el: any) => {
       return { publicKey: el, encryptedFileKey: keyBase64 };
@@ -288,7 +296,10 @@ export class WebCrypto {
     }
     const { data: responseFromIpfs } = data;
     if (responseFromIpfs) {
-      const buffer = await crypto.subtle.exportKey("raw", window.key);
+      const buffer = await crypto.subtle.exportKey(
+        "raw",
+        hasWindow() ? window.key : global.key
+      );
       const text = convertArrayBufferToBase64(buffer);
 
       const encryptedKeys = keys.map((el: any) => {

@@ -1,8 +1,9 @@
 import * as Base64 from "base64-js";
+import { hasWindow } from "./hasWindow";
 
 let TextEncoder;
 
-if (typeof window !== "undefined" && typeof window.TextEncoder === "function") {
+if (hasWindow() && typeof window.TextEncoder === "function") {
   TextEncoder = window.TextEncoder;
 } else {
   const util = require("util");
