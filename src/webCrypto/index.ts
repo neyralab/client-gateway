@@ -192,7 +192,8 @@ export class WebCrypto {
         slug,
         oneTimeToken,
         signal,
-        endpoint
+        endpoint,
+        true
       );
       const decryptedChunk = await decryptChunk(
         encryptedChunk,

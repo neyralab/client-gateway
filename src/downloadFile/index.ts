@@ -1,4 +1,5 @@
 import { downloadChunk, countChunks } from "../index";
+import { hasWindow } from "../utils/hasWindow";
 import { joinChunks } from "../utils/joinChunks";
 
 export const downloadFile = async (
@@ -27,19 +28,23 @@ export const downloadFile = async (
   const chunks = [];
 
   for (let index = 0; index < count; index++) {
-    const encryptedChunk = await downloadChunk(
+    const simpleChunk = await downloadChunk(
       index,
       null,
       slug,
       oneTimeToken,
       signal,
-      endpoint
+      endpoint,
+      false
     );
 
-    chunks.push(encryptedChunk);
+    chunks.push(simpleChunk);
   }
 
-  const file = joinChunks(chunks);
-
-  return file;
+  if (hasWindow() && window.Blob) {
+    const file = joinChunks(chunks);
+    return file;
+  } else {
+    return chunks;
+  }
 };
