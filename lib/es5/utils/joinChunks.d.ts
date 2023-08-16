@@ -1,1 +1,1 @@
-export declare const joinChunks: (chunks: ArrayBuffer[]) => Blob;
+export declare const joinChunks: (chunks: ArrayBuffer[]) => any;
