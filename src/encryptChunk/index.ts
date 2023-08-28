@@ -1,5 +1,4 @@
 import { getCrypto } from "../utils/getCrypto";
-import { hasWindow } from "../utils/hasWindow";
 
 const crypto = getCrypto();
 

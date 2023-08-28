@@ -1,25 +1,19 @@
 import { chunkFile } from "../chunkFile";
 import { sendChunk } from "../sendChunk";
 
+import { DispatchType, UpdateProgressCallback } from "../types";
+
 export const uploadFile = async (
-  file: any,
-  startTime: any,
+  file: File | any,
   oneTimeToken: string,
   endpoint: string,
-  dispatch: any,
-  updateProgressCallback: (
-    id: string,
-    progress: string | number,
-    timeLeft: number,
-    dispatch: any
-  ) => void,
-  getProgressFromLSCallback: () => string | null,
-  setProgressToLSCallback: (progress: string) => void,
-  clearProgressCallback: () => void
+  dispatch: DispatchType,
+  updateProgressCallback: UpdateProgressCallback
 ) => {
   const arrayBuffer = await file.arrayBuffer();
   const chunks = chunkFile(arrayBuffer);
-
+  const startTime = Date.now();
+  let totalProgress = { number: 0 };
   let result;
 
   for (const chunk of chunks) {
@@ -35,16 +29,15 @@ export const uploadFile = async (
       null,
       null,
       dispatch,
-      updateProgressCallback,
-      getProgressFromLSCallback,
-      setProgressToLSCallback
+      totalProgress,
+      updateProgressCallback
     );
     if (result?.failed) {
-      clearProgressCallback();
+      totalProgress.number = 0;
       return;
     }
   }
-  clearProgressCallback();
+  totalProgress.number = 0;
 
   return result;
 };

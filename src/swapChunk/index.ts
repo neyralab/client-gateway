@@ -1,7 +1,9 @@
 import axios from "axios";
 
+import { DispatchType, UpdateProgressCallback } from "../types";
+
 export const swapChunk = async (
-  file: any,
+  file: File | any,
   endpoint: string,
   base64iv: string,
   clientsideKeySha3Hash: string,
@@ -11,15 +13,9 @@ export const swapChunk = async (
   encryptedChunk: ArrayBuffer,
   arrayBuffer: ArrayBuffer,
   startTime: any,
-  dispatch: any,
-  updateProgressCallback: (
-    id: string,
-    progress: string | number,
-    timeLeft: number,
-    dispatch: any
-  ) => void,
-  getProgressFromLSCallback: () => string | null,
-  setProgressToLSCallback: (progress: string) => void
+  dispatch: DispatchType,
+  totalProgress: { number: number },
+  updateProgressCallback: UpdateProgressCallback
 ) => {
   const url = `${endpoint}/chunked/swap/${file.slug}`;
   const inst = axios.create({
@@ -32,9 +28,9 @@ export const swapChunk = async (
     },
     onUploadProgress: (event) => {
       if (event.loaded === encryptedChunk.byteLength) {
-        const prevProgress = getProgressFromLSCallback() || 0;
+        const prevProgress = totalProgress.number || 0;
         const progress = +prevProgress + event.loaded;
-        setProgressToLSCallback(progress.toString());
+        totalProgress.number = progress;
         const elapsedTime = Date.now() - startTime;
         const remainingBytes = arrayBuffer.byteLength - progress;
         const bytesPerMillisecond = progress / elapsedTime;

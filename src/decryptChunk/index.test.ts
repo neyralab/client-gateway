@@ -11,8 +11,6 @@ const crypto = getCrypto();
 describe("decryptChunk", () => {
   afterEach(() => {
     jest.clearAllMocks();
-    // @ts-ignore
-    window.key = undefined;
   });
 
   it("should decrypt already encrypted chunk successfully", async () => {
@@ -25,12 +23,9 @@ describe("decryptChunk", () => {
       ["encrypt"]
     );
 
-    // @ts-ignore
-    window.key = mockKey;
+    const encryptedChunk = await encryptChunk(mockChunk, mockIv, mockKey);
 
-    const encryptedChunk = await encryptChunk(mockChunk, mockIv);
-    // @ts-ignore
-    const buffer = await crypto.subtle.exportKey("raw", window.key);
+    const buffer = await crypto.subtle.exportKey("raw", mockKey);
     const keyBase64 = convertArrayBufferToBase64(buffer);
     const base64iv = Base64.fromByteArray(mockIv);
 
@@ -52,10 +47,8 @@ describe("decryptChunk", () => {
         true,
         ["encrypt"]
       );
-      // @ts-ignore
-      window.key = mockKey;
-      // @ts-ignore
-      const buffer = await crypto.subtle.exportKey("raw", window.key);
+
+      const buffer = await crypto.subtle.exportKey("raw", mockKey);
       const keyBase64 = convertArrayBufferToBase64(buffer);
       const base64iv = Base64.fromByteArray(mockIv);
 

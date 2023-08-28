@@ -1,5 +1,3 @@
-import { Crypto } from "@peculiar/webcrypto";
-
 import { convertBase64ToArrayBuffer } from "../utils/convertBase64ToArrayBuffer";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
 import { getCrypto } from "../utils/getCrypto";

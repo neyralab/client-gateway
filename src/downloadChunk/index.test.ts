@@ -32,7 +32,8 @@ describe("Test downloadChunk", () => {
       mockSlug,
       mockOneTimeToken,
       mockSignal,
-      mockEndpoint
+      mockEndpoint,
+      true
     );
 
     expect(data).toEqual(mockData);
@@ -50,7 +51,8 @@ describe("Test downloadChunk", () => {
         mockSlug,
         mockOneTimeToken,
         mockSignal,
-        mockEndpoint
+        mockEndpoint,
+        false
       );
     } catch (error) {
       expect(error.message).toEqual("HTTP error! status: undefined");
