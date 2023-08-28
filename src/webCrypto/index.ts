@@ -184,6 +184,14 @@ export class WebCrypto {
     const { count } = res;
 
     const chunks = [];
+    let chunksStream = null;
+
+    if (!hasWindow()) {
+      const { Readable } = require("stream");
+      chunksStream = new Readable({
+        read() {},
+      });
+    }
 
     for (let index = 0; index < count; index++) {
       const encryptedChunk = await downloadChunk(
@@ -192,20 +200,27 @@ export class WebCrypto {
         slug,
         oneTimeToken,
         signal,
-        endpoint,
-        true
+        endpoint
       );
       const decryptedChunk = await decryptChunk(
         encryptedChunk,
         iv,
         activationKey
       );
-      chunks.push(decryptedChunk);
+      if (chunksStream) {
+        chunksStream.push(new Uint8Array(decryptedChunk));
+      } else {
+        chunks.push(decryptedChunk);
+      }
     }
 
-    const file = joinChunks(chunks);
-
-    return file;
+    if (chunksStream) {
+      chunksStream.push(null);
+      return chunksStream;
+    } else {
+      const file = joinChunks(chunks);
+      return file;
+    }
   }
 
   async encodeExistingFile(

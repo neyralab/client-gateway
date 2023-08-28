@@ -1,7 +1,5 @@
 import { FILE_ACTION_TYPES, MAX_TRIES } from "../config";
-import { arrayBufferToStream } from "../utils/arrayBufferToStream";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
-import { hasWindow } from "../utils/hasWindow";
 
 export const downloadChunk = async (
   index: number,
@@ -9,8 +7,7 @@ export const downloadChunk = async (
   slug: string,
   oneTimeToken: string,
   signal: AbortSignal,
-  endpoint: string,
-  encrypted: boolean
+  endpoint: string
 ) => {
   let currentTry = 1;
   const download: () => Promise<any> = async () => {
@@ -64,9 +61,6 @@ export const downloadChunk = async (
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  if (!hasWindow() && !encrypted) {
-    return arrayBufferToStream(response.data);
-  } else {
-    return response.data;
-  }
+  const arrayBuffer = await response.arrayBuffer();
+  return arrayBuffer;
 };

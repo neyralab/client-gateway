@@ -26,6 +26,14 @@ export const downloadFile = async (
   const { count } = res;
 
   const chunks = [];
+  let chunksStream = null;
+
+  if (!hasWindow()) {
+    const { Readable } = require("stream");
+    chunksStream = new Readable({
+      read() {},
+    });
+  }
 
   for (let index = 0; index < count; index++) {
     const simpleChunk = await downloadChunk(
@@ -34,17 +42,20 @@ export const downloadFile = async (
       slug,
       oneTimeToken,
       signal,
-      endpoint,
-      false
+      endpoint
     );
-
-    chunks.push(simpleChunk);
+    if (chunksStream) {
+      chunksStream.push(new Uint8Array(simpleChunk));
+    } else {
+      chunks.push(simpleChunk);
+    }
   }
 
-  if (hasWindow() && window.Blob) {
+  if (chunksStream) {
+    chunksStream.push(null);
+    return chunksStream;
+  } else {
     const file = joinChunks(chunks);
     return file;
-  } else {
-    return chunks;
   }
 };
