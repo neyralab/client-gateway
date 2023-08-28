@@ -1,14 +1,8 @@
-import { AxiosResponse } from "axios";
+import { CatchErrorCallback, DispatchType, EncryptExistingFileCallback, FileContentGetter, GetKeysByWorkspace, GetOneTimeToken, ImagePreviewEffect, SaveEncryptedFileKeys, UpdateFilePropertyCallback, UpdateProgressCallback } from "../types";
 export declare class WebCrypto {
     readonly clientsideKeySha3Hash: string;
     iv: Uint8Array;
-    encodeFile(file: File | any, oneTimeToken: any, dispatch: any, startTime: Date, endpoint: string, getKeysByWorkspace: () => any, updateProgressCallback: (id: string, progress: string | number, timeLeft: number, dispatch: any) => void, getProgressFromLSCallback: () => string | null, setProgressToLSCallback: (progress: string) => void, saveEncryptedFileKeys: (body: any) => AxiosResponse, getOneTimeToken: ({ filename, filesize, }: {
-        filename: string;
-        filesize: string | number;
-    }) => AxiosResponse): Promise<any>;
-    downloadFile(currentFile: any, oneTimeToken: any, activationKey: string, signal: AbortSignal, endpoint: string): Promise<any>;
-    encodeExistingFile(file: File | any, dispatch: any, getFileContent: any, firstEncodeExistingCallback: any, secondEncodeExistingCallback: any, thirdEncodeExistingCallback: any, getImagePreviewEffect: any, getKeysByWorkspace: () => AxiosResponse, updateProgressCallback: (id: string, progress: string | number, timeLeft: number, dispatch: any) => void, getProgressFromLSCallback: () => string | null, setProgressToLSCallback: (progress: string) => void, saveEncryptedFileKeys: (body: any) => AxiosResponse, getOneTimeToken: ({ filename, filesize, }: {
-        filename: string;
-        filesize: string | number;
-    }) => AxiosResponse): Promise<void>;
+    encodeFile(file: File | any, oneTimeToken: string, dispatch: DispatchType, endpoint: string, getKeysByWorkspace: GetKeysByWorkspace, updateProgressCallback: UpdateProgressCallback, saveEncryptedFileKeys: SaveEncryptedFileKeys, getOneTimeToken: GetOneTimeToken): Promise<any>;
+    downloadFile(currentFile: File | any, oneTimeToken: string, activationKey: string, signal: AbortSignal, endpoint: string): Promise<any>;
+    encodeExistingFile(file: File | any, dispatch: DispatchType, getFileContent: FileContentGetter, encryptExistingFileCallback: EncryptExistingFileCallback, catchErrorCallback: CatchErrorCallback, updateFilePropertyCallback: UpdateFilePropertyCallback, getImagePreviewEffect: ImagePreviewEffect, getKeysByWorkspace: GetKeysByWorkspace, updateProgressCallback: UpdateProgressCallback, saveEncryptedFileKeys: SaveEncryptedFileKeys, getOneTimeToken: GetOneTimeToken): Promise<void>;
 }

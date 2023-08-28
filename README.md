@@ -43,28 +43,20 @@ import { uploadFile } from 'gdgateway-client/lib/es5';
 
 await uploadFile(
   file,
-  startTime,
   oneTimeToken,
   endpoint,
   dispatch,
-  updateProgressCallback,
-  getProgressFromLSCallback,
-  setProgressToLSCallback,
-  clearProgressCallback
+  updateProgressCallback
 ) 
 
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
 
 Accepts:
 1. file - current file that is supposed to be uploaded
-2. startTime - Date.now(), required to calculate how much time the file upload takes
-3. oneTimeToken - token from /generate/token request
-4. endpoint - endpoint from /generate/token request
-5. dispatch - redux dispatch required for UI updates
-6. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
-7. getProgressFromLSCallback - util that gets current progress percent from localStorage
-8. setProgressToLSCallback - util that sets current progress percent to localStorage
-9. clearProgressCallback - util that clears progress from localStorage in case file is uploaded successfully or failed to upload
+2. oneTimeToken - token from /generate/token request
+3. endpoint - endpoint from /generate/token request
+4. dispatch - redux dispatch required for UI updates
+5. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
 
 ### Upload encrypted file
 
@@ -76,12 +68,9 @@ await crypter.encodeFile(
     file,
     oneTimeToken,
     dispatch,
-    startTime,
     endpoint,
     getKeysByWorkspace,
     updateProgressCallback,
-    getProgressFromLSCallback,
-    setProgressToLSCallback,
     saveEncryptedFileKeys,
     getOneTimeToken
 ) 
@@ -92,14 +81,11 @@ Accepts:
 1. file - current file that is supposed to be encrypted and uploaded
 2. oneTimeToken - token from /generate/token request
 3. dispatch - redux dispatch required for UI updates
-4. startTime - Date.now(), required to calculate how much time the file upload takes
-5. endpoint - endpoint from /generate/token request
-6. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
-7. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
-8. getProgressFromLSCallback - util that gets current progress percent from localStorage
-9. setProgressToLSCallback - util that sets current progress percent to localStorage
-10. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
-11. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed
+4. endpoint - endpoint from /generate/token request
+5. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
+6. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
+7. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
+8. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed
 
 ### Encrypt already uploaded file
 
@@ -111,14 +97,12 @@ await crypter.encodeExistingFile(
     file,
     dispatch,
     getFileContent,
-    firstEncodeExistingCallback,
-    secondEncodeExistingCallback,
-    thirdEncodeExistingCallback,
+    encryptExistingFileCallback,
+    catchErrorCallback,
+    updateFilePropertyCallback,
     getImagePreviewEffect,
     getKeysByWorkspace,
     updateProgressCallback,
-    getProgressFromLSCallback,
-    setProgressToLSCallback,
     saveEncryptedFileKeys,
     getOneTimeToken
 ) 
@@ -129,20 +113,18 @@ Accepts:
 1. file - current file that is supposed to be encrypted and updated
 2. dispatch - redux dispatch required for UI updates
 3. getFileContent - callback function that returns current file's content that is than chunked, encrypted and swapped
-4. firstEncodeExistingCallback - first dispatch callback that update the following information when swapping is started - 
+4. encryptExistingFileCallback - first dispatch callback that update the following information when swapping is started - 
     handleEncryptFileError(undefined)
     uploadActions.uploadFile({ ...file, size: arrayBuffer.byteLength })
     encryptExistingFile(true)
-5. secondEncodeExistingCallback - second dispatch callback that update the following information if any error occurs- 
+5. catchErrorCallback - second dispatch callback that update the following information if any error occurs- 
     remove progress from localStorage
     handleEncryptFileError(slug)
     encryptExistingFile(undefined)
-6. thirdEncodeExistingCallback - updates file's 'isClientsideEncrypted' property to true
+6. updateFilePropertyCallback - updates file's 'isClientsideEncrypted' property to true
 7. getImagePreviewEffect - callback function that return current file thumbnail (image/video) to be generated on frontend and saved on /chunked/thumb/{slug}
-6. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
-7. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
-8. getProgressFromLSCallback - util that gets current progress percent from localStorage
-9. setProgressToLSCallback - util that sets current progress percent to localStorage
+8. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
+9. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
 10. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
 11. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
 
@@ -277,9 +259,8 @@ await sendChunk(
     iv, 
     clientsideKeySha3Hash,
     dispatch,
-    updateProgressCallback,
-    getProgressFromLSCallback,
-    setProgressToLSCallback,
+    totalProgress,
+    updateProgressCallback
 ) 
 
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
@@ -302,9 +283,8 @@ Accepts:
     md.update(fileKey);
     const clientsideKeySha3Hash = md.digest().toHex();
 10. dispatch - redux dispatch required for UI updates
-11. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
-12. getProgressFromLSCallback - util that gets current progress percent from localStorage
-13. setProgressToLSCallback - util that sets current progress percent to localStorage
+11. totalProgress - used to update and calculate progress
+12. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
 
 # Swap chunk (make simple chunk to be encrypted and send it to server)
 
@@ -322,9 +302,8 @@ await swapChunk(
   arrayBuffer,
   startTime,
   dispatch,
+  totalProgress,
   updateProgressCallback,
-  getProgressFromLSCallback,
-  setProgressToLSCallback
 ) 
 
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
@@ -348,10 +327,9 @@ Accepts:
 8. encryptedChunk - encrypted arraybuffer chunk to be swapped
 9. arrayBuffer - the whole arraybuffer of the file that is supposed to be swapped
 10. startTime - Date.now(), required to calculate how much time the file upload takes
-12. dispatch - redux dispatch required for UI updates
-12. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
-13. getProgressFromLSCallback - util that gets current progress percent from localStorage
-14. setProgressToLSCallback - util that sets current progress percent to localStorage
+11. dispatch - redux dispatch required for UI updates
+12. totalProgress - used to update and calculate progress
+13. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
 
 ### Get user's RSA keys
 

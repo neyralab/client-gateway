@@ -20,6 +20,19 @@ import { fetchBlobFromUrl } from "../utils/fetchBlobFromUrl";
 import { getCrypto } from "../utils/getCrypto";
 import { hasWindow } from "../utils/hasWindow";
 
+import {
+  CatchErrorCallback,
+  DispatchType,
+  EncryptExistingFileCallback,
+  FileContentGetter,
+  GetKeysByWorkspace,
+  GetOneTimeToken,
+  ImagePreviewEffect,
+  SaveEncryptedFileKeys,
+  UpdateFilePropertyCallback,
+  UpdateProgressCallback,
+} from "../types";
+
 const crypto = getCrypto();
 
 crypto.subtle
@@ -42,28 +55,15 @@ export class WebCrypto {
 
   async encodeFile(
     file: File | any,
-    oneTimeToken: any,
-    dispatch: any,
-    startTime: Date,
+    oneTimeToken: string,
+    dispatch: DispatchType,
     endpoint: string,
-    getKeysByWorkspace: () => any,
-    updateProgressCallback: (
-      id: string,
-      progress: string | number,
-      timeLeft: number,
-      dispatch: any
-    ) => void,
-    getProgressFromLSCallback: () => string | null,
-    setProgressToLSCallback: (progress: string) => void,
-    saveEncryptedFileKeys: (body: any) => AxiosResponse,
-    getOneTimeToken: ({
-      filename,
-      filesize,
-    }: {
-      filename: string;
-      filesize: string | number;
-    }) => AxiosResponse
+    getKeysByWorkspace: GetKeysByWorkspace,
+    updateProgressCallback: UpdateProgressCallback,
+    saveEncryptedFileKeys: SaveEncryptedFileKeys,
+    getOneTimeToken: GetOneTimeToken
   ) {
+    const startTime = Date.now();
     const arrayBuffer = await file.arrayBuffer();
     const chunks = chunkFile(arrayBuffer);
 
@@ -87,6 +87,7 @@ export class WebCrypto {
       data: { keys },
     } = await getKeysByWorkspace();
 
+    const totalProgress = { number: 0 };
     const key = hasWindow() ? window.key : global.key;
 
     for (const chunk of chunks) {
@@ -103,9 +104,8 @@ export class WebCrypto {
         this.iv,
         this.clientsideKeySha3Hash,
         dispatch,
-        updateProgressCallback,
-        getProgressFromLSCallback,
-        setProgressToLSCallback
+        totalProgress,
+        updateProgressCallback
       );
       if (result?.failed) {
         localStorage.removeItem("progress");
@@ -126,7 +126,7 @@ export class WebCrypto {
       encryptedKeys: encryptedKeys,
     });
 
-    localStorage.removeItem("progress");
+    totalProgress.number = 0;
 
     const {
       data: {
@@ -157,8 +157,8 @@ export class WebCrypto {
   }
 
   async downloadFile(
-    currentFile: any,
-    oneTimeToken: any,
+    currentFile: File | any,
+    oneTimeToken: string,
     activationKey: string,
     signal: AbortSignal,
     endpoint: string
@@ -225,29 +225,16 @@ export class WebCrypto {
 
   async encodeExistingFile(
     file: File | any,
-    dispatch: any,
-    getFileContent: any,
-    firstEncodeExistingCallback: any,
-    secondEncodeExistingCallback: any,
-    thirdEncodeExistingCallback: any,
-    getImagePreviewEffect: any,
-    getKeysByWorkspace: () => AxiosResponse,
-    updateProgressCallback: (
-      id: string,
-      progress: string | number,
-      timeLeft: number,
-      dispatch: any
-    ) => void,
-    getProgressFromLSCallback: () => string | null,
-    setProgressToLSCallback: (progress: string) => void,
-    saveEncryptedFileKeys: (body: any) => AxiosResponse,
-    getOneTimeToken: ({
-      filename,
-      filesize,
-    }: {
-      filename: string;
-      filesize: string | number;
-    }) => AxiosResponse
+    dispatch: DispatchType,
+    getFileContent: FileContentGetter,
+    encryptExistingFileCallback: EncryptExistingFileCallback,
+    catchErrorCallback: CatchErrorCallback,
+    updateFilePropertyCallback: UpdateFilePropertyCallback,
+    getImagePreviewEffect: ImagePreviewEffect,
+    getKeysByWorkspace: GetKeysByWorkspace,
+    updateProgressCallback: UpdateProgressCallback,
+    saveEncryptedFileKeys: SaveEncryptedFileKeys,
+    getOneTimeToken: GetOneTimeToken
   ) {
     const fileBlob: Blob = await getFileContent(file.slug, null, true);
 
@@ -259,7 +246,7 @@ export class WebCrypto {
     const hasThumbnail =
       file.mime.startsWith("image") || file.mime.startsWith("video");
 
-    firstEncodeExistingCallback(file, arrayBuffer, dispatch);
+    encryptExistingFileCallback(file, arrayBuffer, dispatch);
 
     if (hasThumbnail) {
       thumbnail = await getImagePreviewEffect(
@@ -285,7 +272,7 @@ export class WebCrypto {
     const startTime = Date.now();
     const base64iv = Base64.fromByteArray(this.iv);
     const key = hasWindow() ? window.key : global.key;
-
+    const totalProgress = { number: 0 };
     let data: any;
     try {
       for (const chunk of chunks) {
@@ -304,13 +291,12 @@ export class WebCrypto {
           arrayBuffer,
           startTime,
           dispatch,
-          updateProgressCallback,
-          getProgressFromLSCallback,
-          setProgressToLSCallback
+          totalProgress,
+          updateProgressCallback
         );
       }
     } catch (e) {
-      secondEncodeExistingCallback(file.slug, dispatch);
+      catchErrorCallback(file.slug, dispatch);
       return;
     }
     const { data: responseFromIpfs } = data;
@@ -332,11 +318,7 @@ export class WebCrypto {
       const isCancelModalOpen = document.body.querySelector(
         ".download__modal__button__cancel"
       );
-      thirdEncodeExistingCallback(
-        isCancelModalOpen,
-        responseFromIpfs,
-        dispatch
-      );
+      updateFilePropertyCallback(isCancelModalOpen, responseFromIpfs, dispatch);
 
       if (hasThumbnail) {
         try {

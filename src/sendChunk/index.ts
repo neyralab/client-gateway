@@ -6,25 +6,21 @@ import { convertTextToBase64 } from "../utils/convertTextToBase64";
 
 import { MAX_TRIES } from "../config";
 
+import { DispatchType, UpdateProgressCallback } from "../types";
+
 export const sendChunk = async (
   chunk: ArrayBuffer,
   currentIndex: number,
   chunkLength: number,
-  file: any,
+  file: File | any,
   startTime: any,
   oneTimeToken: string,
   endpoint: string,
   iv: Uint8Array | null,
   clientsideKeySha3Hash: string | null,
-  dispatch: any,
-  updateProgressCallback: (
-    id: string,
-    progress: string | number,
-    timeLeft: number,
-    dispatch: any
-  ) => void,
-  getProgressFromLSCallback: () => string | null,
-  setProgressToLSCallback: (progress: string) => void
+  dispatch: DispatchType,
+  totalProgress: { number: number },
+  updateProgressCallback: UpdateProgressCallback
 ) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const fileName = convertTextToBase64(file.name);
@@ -50,9 +46,9 @@ export const sendChunk = async (
     },
     onUploadProgress: (event) => {
       if (event.loaded === chunk.byteLength) {
-        const prevProgress = getProgressFromLSCallback() || 0;
+        const prevProgress = totalProgress.number || 0;
         const progress = +prevProgress + event.loaded;
-        setProgressToLSCallback(progress.toString());
+        totalProgress.number = progress;
         const elapsedTime = Date.now() - startTime;
         const remainingBytes = file.size - progress;
         const bytesPerMillisecond = progress / elapsedTime;
@@ -61,7 +57,6 @@ export const sendChunk = async (
         updateProgressCallback(file.upload_id, progress, timeLeft, dispatch);
       }
     },
-    // cancelToken: file.source?.token, // TODO figure out why it arguing
   });
 
   const uploadChunk: (chunk: ArrayBuffer) => Promise<any> = async (

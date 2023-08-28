@@ -1,1 +1,2 @@
-export declare const uploadFile: (file: any, startTime: any, oneTimeToken: string, endpoint: string, dispatch: any, updateProgressCallback: (id: string, progress: string | number, timeLeft: number, dispatch: any) => void, getProgressFromLSCallback: () => string | null, setProgressToLSCallback: (progress: string) => void, clearProgressCallback: () => void) => Promise<any>;
+import { DispatchType, UpdateProgressCallback } from "../types";
+export declare const uploadFile: (file: File | any, oneTimeToken: string, endpoint: string, dispatch: DispatchType, updateProgressCallback: UpdateProgressCallback) => Promise<any>;
