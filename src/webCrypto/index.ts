@@ -27,16 +27,6 @@ import {
 
 const crypto = getCrypto();
 
-crypto.subtle
-  .generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
-  .then((k) => {
-    if (hasWindow()) {
-      window.key = k;
-    } else {
-      global.key = k;
-    }
-  });
-
 const fileKey = forge.random.getBytesSync(32); // 32 bytes for AES-256
 const md = forge.md.sha512.create();
 md.update(fileKey);
@@ -80,7 +70,11 @@ export class WebCrypto {
     } = await getKeysByWorkspace();
 
     const totalProgress = { number: 0 };
-    const key = hasWindow() ? window.key : global.key;
+    const key = await crypto.subtle.generateKey(
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt"]
+    );
 
     for (const chunk of chunks) {
       const currentIndex = chunks.findIndex((el) => el === chunk);
@@ -105,10 +99,7 @@ export class WebCrypto {
       }
     }
 
-    const buffer = await crypto.subtle.exportKey(
-      "raw",
-      hasWindow() ? window.key : global.key
-    );
+    const buffer = await crypto.subtle.exportKey("raw", key);
     const keyBase64 = convertArrayBufferToBase64(buffer);
     const encryptedKeys = keys.map((el: any) => {
       return { publicKey: el, encryptedFileKey: keyBase64 };
@@ -196,7 +187,11 @@ export class WebCrypto {
 
     const startTime = Date.now();
     const base64iv = Base64.fromByteArray(this.iv);
-    const key = hasWindow() ? window.key : global.key;
+    const key = await crypto.subtle.generateKey(
+      { name: "AES-GCM", length: 256 },
+      true,
+      ["encrypt", "decrypt"]
+    );
     const totalProgress = { number: 0 };
     let data: any;
     try {
@@ -226,10 +221,7 @@ export class WebCrypto {
     }
     const { data: responseFromIpfs } = data;
     if (responseFromIpfs) {
-      const buffer = await crypto.subtle.exportKey(
-        "raw",
-        hasWindow() ? window.key : global.key
-      );
+      const buffer = await crypto.subtle.exportKey("raw", key);
       const text = convertArrayBufferToBase64(buffer);
 
       const encryptedKeys = keys.map((el: any) => {
