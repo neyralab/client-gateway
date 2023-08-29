@@ -1,17 +1,9 @@
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import * as forge from "node-forge";
 import * as Base64 from "base64-js";
 
-import {
-  chunkFile,
-  countChunks,
-  decryptChunk,
-  downloadChunk,
-  encryptChunk,
-  sendChunk,
-  swapChunk,
-} from "../index";
-import { joinChunks } from "../utils/joinChunks";
+import { chunkFile, encryptChunk, sendChunk, swapChunk } from "../index";
+
 import { getThumbnailImage, getThumbnailVideo } from "../utils/getThumbnail";
 import { convertArrayBufferToBase64 } from "../utils/convertArrayBufferToBase64";
 import { convertTextToBase64 } from "../utils/convertTextToBase64";
@@ -154,81 +146,6 @@ export class WebCrypto {
     }
 
     return result;
-  }
-
-  async downloadFile(
-    currentFile: File | any,
-    oneTimeToken: string,
-    activationKey: string,
-    signal: AbortSignal,
-    endpoint: string,
-    dispatch: DispatchType,
-    successfullyDecryptedCallback: (dispatch: DispatchType) => void
-  ) {
-    const {
-      entry_clientside_key: { sha3_hash, iv, clientsideKeySha3Hash },
-      slug,
-    } = currentFile;
-
-    const chunkCountResponse = await countChunks(
-      endpoint,
-      oneTimeToken,
-      slug,
-      signal
-    );
-
-    if (!chunkCountResponse.ok) {
-      throw new Error(`HTTP error! status:${chunkCountResponse.status}`);
-    }
-
-    const res = await chunkCountResponse.json();
-
-    const { count } = res;
-
-    const chunks = [];
-    let chunksStream = null;
-
-    if (!hasWindow()) {
-      const { Readable } = require("stream");
-      chunksStream = new Readable({
-        read() {},
-      });
-    }
-
-    for (let index = 0; index < count; index++) {
-      const encryptedChunk = await downloadChunk(
-        index,
-        clientsideKeySha3Hash || sha3_hash,
-        slug,
-        oneTimeToken,
-        signal,
-        endpoint
-      );
-      const decryptedChunk = await decryptChunk(
-        encryptedChunk,
-        iv,
-        activationKey
-      );
-      if (decryptedChunk?.failed) {
-        return { failed: true };
-      }
-      if (index === 0 && decryptedChunk) {
-        successfullyDecryptedCallback(dispatch);
-      }
-      if (chunksStream) {
-        chunksStream.push(new Uint8Array(decryptedChunk));
-      } else {
-        chunks.push(decryptedChunk);
-      }
-    }
-
-    if (chunksStream) {
-      chunksStream.push(null);
-      return chunksStream;
-    } else {
-      const file = joinChunks(chunks);
-      return file;
-    }
   }
 
   async encodeExistingFile(

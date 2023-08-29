@@ -1,37 +1,18 @@
 ## USAGE EXAMPLE
 
-### Download encrypted file
-
-import { WebCrypto } from 'gdgateway-client/lib/es5';
-
-const crypter = new WebCrypto();
-
-const blob = await crypter.downloadFile(
-    file,
-    oneTimeToken,
-    activationKey,
-    signal,
-    endpoint,
-    dispatch,
-    successfullyDecryptedCallback
-);
-
-1. Returns a file blob to be downloaded
-
-Accepts:  
-1. currentFile - file to be downloaded,
-2. oneTimeToken - token from /generate/token request
-3. activationKey - a key got from getEncryptedFileKey function and used for file decryption
-4. signal - AbortController for downloading cancellation
-5. endpoint - endpoint from /generate/token request
-6. dispatch - redux dispatch required for UI updates
-7. successfullyDecryptedCallback - callback that close popup if first chunk successfully decrypted
-
-### Download unencrypted file
+### Download file
 
 import { downloadFile } from 'gdgateway-client/lib/es5';
 
-const blob = await downloadFile(file, oneTimeToken, signal, endpoint);
+const blob = await downloadFile(
+    file, 
+    oneTimeToken, 
+    signal, 
+    endpoint, 
+    encrypted, 
+    activationKey, 
+    dispatch, 
+    successfullyDecryptedCallback)
 
 1. Returns a file blob to be downloaded
 
@@ -40,6 +21,10 @@ Accepts:
 2. oneTimeToken - token from /generate/token request
 3. signal - AbortController for downloading cancellation
 4. endpoint - endpoint from /generate/token request
+5. encrypted - boolean flag
+6. activationKey - a key got from getEncryptedFileKey function and used for file decryption or null is file is unencrypted
+7. dispatch - redux dispatch required for UI updates  or null is file is unencrypted
+8. successfullyDecryptedCallback - callback that close popup if first chunk successfully decrypted  or null is file is unencrypted
 
 ### Upload unencrypted file
 
