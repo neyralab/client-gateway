@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { DispatchType, UpdateProgressCallback } from "../types";
+import { Callback } from "../types";
 
 export const swapChunk = async (
   file: File | any,
@@ -13,9 +13,8 @@ export const swapChunk = async (
   encryptedChunk: ArrayBuffer,
   arrayBuffer: ArrayBuffer,
   startTime: any,
-  dispatch: DispatchType,
   totalProgress: { number: number },
-  updateProgressCallback: UpdateProgressCallback
+  callback: Callback
 ) => {
   const url = `${endpoint}/chunked/swap/${file.slug}`;
   const inst = axios.create({
@@ -36,7 +35,10 @@ export const swapChunk = async (
         const bytesPerMillisecond = progress / elapsedTime;
         const remainingTime = remainingBytes / bytesPerMillisecond;
         const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
-        updateProgressCallback(file.upload_id, progress, timeLeft, dispatch);
+        callback({
+          type: "onProgress",
+          params: { id: file.upload_id, progress, timeLeft },
+        });
       }
     },
     cancelToken: file.source?.token,

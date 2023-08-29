@@ -2,29 +2,6 @@ import { AxiosResponse } from "axios";
 
 export type DispatchType = any;
 
-export type FileContentGetter = (
-  fileId: string,
-  cancelToken: any,
-  useBlob: boolean
-) => Blob;
-
-export type EncryptExistingFileCallback = (
-  file: File | any,
-  arrayBuffer: ArrayBuffer,
-  dispatch: DispatchType
-) => void;
-
-export type CatchErrorCallback = (
-  fileId: string,
-  dispatch: DispatchType
-) => void;
-
-export type UpdateFilePropertyCallback = (
-  isCancelModalOpen: any,
-  responseFromIpfs: any,
-  dispatch: DispatchType
-) => void;
-
 export type ImagePreviewEffect = (
   fileId: string,
   width: number,
@@ -36,12 +13,17 @@ export type ImagePreviewEffect = (
 
 export type GetKeysByWorkspace = () => AxiosResponse;
 
-export type UpdateProgressCallback = (
-  id: string,
-  progress: string | number,
-  timeLeft: number,
-  dispatch: DispatchType
-) => void;
+export type UpdateProgressCallback = ({
+  id,
+  progress,
+  timeLeft,
+  dispatch,
+}: {
+  id: string;
+  progress: string | number;
+  timeLeft: number;
+  dispatch: DispatchType;
+}) => void;
 
 export type SaveEncryptedFileKeys = (body: any) => AxiosResponse;
 
@@ -49,3 +31,19 @@ export type GetOneTimeToken = (params: {
   filename: string;
   filesize: string | number;
 }) => AxiosResponse;
+
+export type GetDownloadOTT = (params: [{ slug: string }]) => AxiosResponse;
+
+export type CallbackTypeNames =
+  | "onStart"
+  | "onSuccess"
+  | "onError"
+  | "onProgress";
+
+export type Callback = ({
+  type,
+  params,
+}: {
+  type: CallbackTypeNames;
+  params: any;
+}) => void;

@@ -54,7 +54,12 @@ export const sendChunk = async (
         const bytesPerMillisecond = progress / elapsedTime;
         const remainingTime = remainingBytes / bytesPerMillisecond;
         const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
-        updateProgressCallback(file.upload_id, progress, timeLeft, dispatch);
+        updateProgressCallback({
+          id: file.upload_id,
+          progress,
+          timeLeft,
+          dispatch,
+        });
       }
     },
   });

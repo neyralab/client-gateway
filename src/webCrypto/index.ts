@@ -2,7 +2,13 @@ import axios from "axios";
 import * as forge from "node-forge";
 import * as Base64 from "base64-js";
 
-import { chunkFile, encryptChunk, sendChunk, swapChunk } from "../index";
+import {
+  chunkFile,
+  downloadFile,
+  encryptChunk,
+  sendChunk,
+  swapChunk,
+} from "../index";
 
 import { getThumbnailImage, getThumbnailVideo } from "../utils/getThumbnail";
 import { convertArrayBufferToBase64 } from "../utils/convertArrayBufferToBase64";
@@ -10,18 +16,15 @@ import { convertTextToBase64 } from "../utils/convertTextToBase64";
 import { convertBlobToBase64 } from "../utils/convertBlobToBase64";
 import { fetchBlobFromUrl } from "../utils/fetchBlobFromUrl";
 import { getCrypto } from "../utils/getCrypto";
-import { hasWindow } from "../utils/hasWindow";
 
 import {
-  CatchErrorCallback,
+  Callback,
   DispatchType,
-  EncryptExistingFileCallback,
-  FileContentGetter,
+  GetDownloadOTT,
   GetKeysByWorkspace,
   GetOneTimeToken,
   ImagePreviewEffect,
   SaveEncryptedFileKeys,
-  UpdateFilePropertyCallback,
   UpdateProgressCallback,
 } from "../types";
 
@@ -94,7 +97,7 @@ export class WebCrypto {
         updateProgressCallback
       );
       if (result?.failed) {
-        localStorage.removeItem("progress");
+        totalProgress.number = 0;
         return;
       }
     }
@@ -141,19 +144,32 @@ export class WebCrypto {
 
   async encodeExistingFile(
     file: File | any,
-    dispatch: DispatchType,
-    getFileContent: FileContentGetter,
-    encryptExistingFileCallback: EncryptExistingFileCallback,
-    catchErrorCallback: CatchErrorCallback,
-    updateFilePropertyCallback: UpdateFilePropertyCallback,
     getImagePreviewEffect: ImagePreviewEffect,
     getKeysByWorkspace: GetKeysByWorkspace,
-    updateProgressCallback: UpdateProgressCallback,
     saveEncryptedFileKeys: SaveEncryptedFileKeys,
-    getOneTimeToken: GetOneTimeToken
+    getOneTimeToken: GetOneTimeToken,
+    getDownloadOTT: GetDownloadOTT,
+    callback: Callback
   ) {
-    const fileBlob: Blob = await getFileContent(file.slug, null, true);
+    const controller = new AbortController();
+    const { signal } = controller;
+    const {
+      data: {
+        user_tokens: { token: ottDownloadToken },
+        endpoint: ottEndpoint,
+      },
+    } = await getDownloadOTT([{ slug: file.slug }]);
 
+    const fileBlob: Blob = await downloadFile(
+      file,
+      ottDownloadToken,
+      signal,
+      ottEndpoint,
+      false,
+      null,
+      null,
+      null
+    );
     const arrayBuffer = await fileBlob.arrayBuffer();
     const chunks = chunkFile(arrayBuffer);
 
@@ -162,7 +178,10 @@ export class WebCrypto {
     const hasThumbnail =
       file.mime.startsWith("image") || file.mime.startsWith("video");
 
-    encryptExistingFileCallback(file, arrayBuffer, dispatch);
+    callback({
+      type: "onStart",
+      params: { file, size: arrayBuffer.byteLength },
+    });
 
     if (hasThumbnail) {
       thumbnail = await getImagePreviewEffect(
@@ -210,13 +229,12 @@ export class WebCrypto {
           encryptedChunk,
           arrayBuffer,
           startTime,
-          dispatch,
           totalProgress,
-          updateProgressCallback
+          callback
         );
       }
     } catch (e) {
-      catchErrorCallback(file.slug, dispatch);
+      callback({ type: "onError", params: { slug: file.slug } });
       return;
     }
     const { data: responseFromIpfs } = data;
@@ -235,7 +253,10 @@ export class WebCrypto {
       const isCancelModalOpen = document.body.querySelector(
         ".download__modal__button__cancel"
       );
-      updateFilePropertyCallback(isCancelModalOpen, responseFromIpfs, dispatch);
+      callback({
+        type: "onSuccess",
+        params: { isCancelModalOpen, response: responseFromIpfs },
+      });
 
       if (hasThumbnail) {
         try {

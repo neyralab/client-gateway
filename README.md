@@ -84,38 +84,24 @@ const crypter = new WebCrypto();
 
 await crypter.encodeExistingFile(
     file,
-    dispatch,
-    getFileContent,
-    encryptExistingFileCallback,
-    catchErrorCallback,
-    updateFilePropertyCallback,
     getImagePreviewEffect,
     getKeysByWorkspace,
-    updateProgressCallback,
     saveEncryptedFileKeys,
-    getOneTimeToken
+    getOneTimeToken,
+    getDownloadOTT,
+    callback
 ) 
 
 1. Encrypts existing file and updates isClientsideEncrypted property of current file
 
 Accepts:
 1. file - current file that is supposed to be encrypted and updated
-2. dispatch - redux dispatch required for UI updates
-3. getFileContent - callback function that returns current file's content that is than chunked, encrypted and swapped
-4. encryptExistingFileCallback - first dispatch callback that update the following information when swapping is started - 
-    handleEncryptFileError(undefined)
-    uploadActions.uploadFile({ ...file, size: arrayBuffer.byteLength })
-    encryptExistingFile(true)
-5. catchErrorCallback - second dispatch callback that update the following information if any error occurs- 
-    remove progress from localStorage
-    handleEncryptFileError(slug)
-    encryptExistingFile(undefined)
-6. updateFilePropertyCallback - updates file's 'isClientsideEncrypted' property to true
-7. getImagePreviewEffect - callback function that return current file thumbnail (image/video) to be generated on frontend and saved on /chunked/thumb/{slug}
-8. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
-9. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
-10. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
-11. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
+2. getImagePreviewEffect - callback function that return current file thumbnail (image/video) to be generated on frontend and saved on /chunked/thumb/{slug}
+3. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
+4. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
+5. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
+6. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
+7. callback - redux callback dispatches that accepts type and params parameters;
 
 ### Decrypt chunk
 
@@ -290,9 +276,8 @@ await swapChunk(
   encryptedChunk,
   arrayBuffer,
   startTime,
-  dispatch,
   totalProgress,
-  updateProgressCallback,
+  callback,
 ) 
 
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
@@ -316,9 +301,8 @@ Accepts:
 8. encryptedChunk - encrypted arraybuffer chunk to be swapped
 9. arrayBuffer - the whole arraybuffer of the file that is supposed to be swapped
 10. startTime - Date.now(), required to calculate how much time the file upload takes
-11. dispatch - redux dispatch required for UI updates
 12. totalProgress - used to update and calculate progress
-13. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
+13. callback - redux actions for updating file uploading progress (percent and time in seconds); accepts type and params parameters;
 
 ### Get user's RSA keys
 
