@@ -161,7 +161,9 @@ export class WebCrypto {
     oneTimeToken: string,
     activationKey: string,
     signal: AbortSignal,
-    endpoint: string
+    endpoint: string,
+    dispatch: DispatchType,
+    successfullyDecryptedCallback: (dispatch: DispatchType) => void
   ) {
     const {
       entry_clientside_key: { sha3_hash, iv, clientsideKeySha3Hash },
@@ -207,6 +209,12 @@ export class WebCrypto {
         iv,
         activationKey
       );
+      if (decryptedChunk?.failed) {
+        return { failed: true };
+      }
+      if (index === 0 && decryptedChunk) {
+        successfullyDecryptedCallback(dispatch);
+      }
       if (chunksStream) {
         chunksStream.push(new Uint8Array(decryptedChunk));
       } else {
