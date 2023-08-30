@@ -1,7 +1,39 @@
-## USAGE EXAMPLE
+### USAGE EXAMPLE
+
+## Example of 'callback' & 'handlers' parameters 
+
+The 'callback' and 'handlers' parameters should always go together. Also, you cannot accept 'type' parameter of 'callback' function if it doesn't exist in 'handlers'.
+
+
+```javascript
+export const encodeFileData = {
+  callbacks: {
+    onStart: encryptExistingFileCallback,
+    onSuccess: updateFilePropertyCallback,
+    onError: catchErrorCallback,
+    onProgress: updateProgressCallback,
+  },
+  handlers: ['onStart', 'onSuccess', 'onError', 'onProgress'],
+};
+
+const { handlers, callbacks } = encodeFileData; // use 'handlers' as parameter
+
+const callback = ({ type, params }) => { // use 'callback' as parameter
+  if (handlers.includes(type)) {
+    callbacks[type]({ ...params, dispatch });
+  } else {
+    console.error(`Handler "${type}" isn't provided`);
+  }
+};
+```
+
+1. onStart - used to indicate that action (uploading/encoding/downloading) is started;
+2. onSuccess - used at the end of execution if no errors appeared and function completed successfully;
+3. onError - used to indicate that some error is happened;
+4. onProgress - used to show progress updating after each successful iteration;
 
 ### Download file
-
+```javascript
 import { downloadFile } from 'gdgateway-client/lib/es5';
 
 const blob = await downloadFile({
@@ -14,7 +46,7 @@ const blob = await downloadFile({
     callback,
     handlers
 })
-
+```
 1. Inside browser returns a file blob to be downloaded, else returns stream
 
 Accepts:  
@@ -28,7 +60,7 @@ Accepts:
 8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 
 ### Upload unencrypted file
-
+```javascript
 import { uploadFile } from 'gdgateway-client/lib/es5';
 
 await uploadFile({
@@ -38,7 +70,7 @@ await uploadFile({
   callback,
   handlers
 }) 
-
+```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
 
 Accepts:
@@ -49,7 +81,7 @@ Accepts:
 8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 
 ### Upload encrypted file
-
+```javascript
 import { WebCrypto } from 'gdgateway-client/lib/es5';
 
 const crypter = new WebCrypto();
@@ -64,7 +96,7 @@ await crypter.encodeFile({
     callback,
     handlers,
 }) 
-
+```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
 
 Accepts:
@@ -78,12 +110,12 @@ Accepts:
 8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 
 ### Encrypt already uploaded file
-
+```javascript
 import { WebCrypto } from 'gdgateway-client/lib/es5';
 
 const crypter = new WebCrypto();
 
-await crypter.encodeExistingFile(
+await crypter.encodeExistingFile({
     file,
     getImagePreviewEffect,
     getKeysByWorkspace,
@@ -92,8 +124,8 @@ await crypter.encodeExistingFile(
     getDownloadOTT,
     callback,
     handlers
-) 
-
+}) 
+```
 1. Encrypts existing file and updates isClientsideEncrypted property of current file
 
 Accepts:
@@ -107,13 +139,13 @@ Accepts:
 8. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Decrypt chunk
-
+```javascript
 import * as Base64 from "base64-js";
 import { decryptChunk } from 'gdgateway-client/lib/es5';
 import { getCrypto } from 'gdgateway-client/lib/es5/utils/getCrypto';
 
 await decryptChunk({chunk, iv, key})
-
+```
 1. Return decrypted chunk if correct key is provided
 
 Accepts:
@@ -130,13 +162,13 @@ Accepts:
     const keyBase64 = convertArrayBufferToBase64(buffer); - this is what should be used as key; the key we use to encrypt file should be the same key we use when we decrypt this file;
 
 ### Encrypt chunk
-
+```javascript
 import * as Base64 from "base64-js";
 import { encryptChunk } from 'gdgateway-client/lib/es5';
 import { getCrypto } from 'gdgateway-client/lib/es5/utils/getCrypto';
 
 await encryptChunk({chunk, iv, key})
-
+```
 1. Return encrypted chunk if correct parameters are provided
 
 Accepts:
@@ -151,22 +183,22 @@ Accepts:
     const keyBase64 = convertArrayBufferToBase64(buffer); - this is what should be used as activationKey for future decrypting;   
 
 ### Chunk file
-
+```javascript
 import { chunkFile } from 'gdgateway-client/lib/es5';
 
 File should be an object with all needed information 
 
 const arrayBuffer = await file.arrayBuffer();
 const chunks = chunkFile({arrayBuffer});
-
+```
 The chunkFile function returns an array of file chunks (each chunk is arraybuffer like and has 1mb size; only the last chunk can be smaller).
 
 ### Count chunks
-
+```javascript
 import { countChunks } from 'gdgateway-client/lib/es5';
-
+```
 The 'file' should be an object with all needed information; you should get this information from backend;
-
+```javascript
 const { slug } = file;
 
 await countChunks({
@@ -175,7 +207,7 @@ await countChunks({
     slug,
     signal
 });
-
+```
 1. The countChunk function returns the {count: 3, end: 4819} - 'count' is quantity of chunks and 'end' is size of the last chunk.
 
 Accepts:
@@ -185,7 +217,7 @@ Accepts:
 4. signal - AbortController for request cancellation
 
 ### Download chunk
-
+```javascript
 import { downloadChunk } from 'gdgateway-client/lib/es5';
 
 await downloadChunk = async ({
@@ -196,7 +228,7 @@ await downloadChunk = async ({
   signal,
   endpoint
 })
-
+```
 1. The downloadChunk function returns arraybuffer chunk.
 
 Accepts:
@@ -208,11 +240,11 @@ Accepts:
 6. endpoint - endpoint from /generate/token request
 
 ### Save blob and download url
-
+```javascript
 import { saveBlob } from 'gdgateway-client/lib/es5';
 
 saveBlob({ blob, name: file?.name });
-
+```
 1. Simulate user click, revoke url and download it. Used together with downloadFile function;
 
 Accepts:
@@ -220,7 +252,7 @@ Accepts:
 2. name - the name of the file to be downloaded
 
 ### Send chunk
-
+```javascript
 import { sendChunk } from 'gdgateway-client/lib/es5';
 
 await sendChunk({
@@ -237,7 +269,7 @@ await sendChunk({
     callback,
     handlers
 }) 
-
+```
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
 
 Accepts:
@@ -262,7 +294,7 @@ Accepts:
 12. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Swap chunk (make simple chunk to be encrypted and send it to server)
-
+```javascript
 import { swapChunk } from 'gdgateway-client/lib/es5';
 
 await swapChunk({
@@ -280,7 +312,7 @@ await swapChunk({
   callback,
   handlers
 }) 
-
+```
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
 
 Accepts:
@@ -307,49 +339,26 @@ Accepts:
 14. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Get user's RSA keys
-
+```javascript
 import { getUserRSAKeys } from 'gdgateway-client/lib/es5';
 
 await getUserRSAKeys({signer});
-
+```
 1. Returns generated key pair using node-forge
-
+```javascript
 Example of 'signer':
 
 import { ethers } from 'ethers';
 
 const provider = new ethers.providers.Web3Provider(window.ethereum);
 const signer = provider.getSigner();
-
+```
 ### Convert public key to pem
 
 1. Returns public key in pem format using node-forge
-
+```javascript
 const keys = await getUserRSAKeys(signer);
 const public_key = publicKeyToPem({publicKey: keys.publicKey});
-
+```
 Accepts:
 1. publicKey - generated public key using getUserRSAKeys function
-
-
-## Example of 'callback' & 'handlers' parameters 
-
-export const encodeFileData = {
-  callbacks: {
-    onStart: encryptExistingFileCallback,
-    onSuccess: updateFilePropertyCallback,
-    onError: catchErrorCallback,
-    onProgress: updateProgressCallback,
-  },
-  handlers: ['onStart', 'onSuccess', 'onError', 'onProgress'],
-};
-
-const { handlers, callbacks } = encodeFileData; // use 'handlers' as parameter
-
-const callback = ({ type, params }) => { // use 'callback' as parameter
-  if (handlers.includes(type)) {
-    callbacks[type]({ ...params, dispatch });
-  } else {
-    console.error(`Handler "${type}" isn't provided`);
-  }
-};
