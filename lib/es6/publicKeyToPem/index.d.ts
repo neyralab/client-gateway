@@ -1,1 +1,3 @@
-export declare const publicKeyToPem: (publicKey: any) => string;
+export declare const publicKeyToPem: ({ publicKey }: {
+    publicKey: any;
+}) => string;

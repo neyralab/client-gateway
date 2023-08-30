@@ -4,39 +4,40 @@
 
 import { downloadFile } from 'gdgateway-client/lib/es5';
 
-const blob = await downloadFile(
+const blob = await downloadFile({
     file, 
     oneTimeToken, 
     signal, 
     endpoint, 
-    encrypted, 
-    activationKey, 
-    dispatch, 
-    successfullyDecryptedCallback)
+    isEncrypted, 
+    key, 
+    callback,
+    handlers
+})
 
-1. Returns a file blob to be downloaded
+1. Inside browser returns a file blob to be downloaded, else returns stream
 
 Accepts:  
 1. currentFile - file to be downloaded,
 2. oneTimeToken - token from /generate/token request
 3. signal - AbortController for downloading cancellation
 4. endpoint - endpoint from /generate/token request
-5. encrypted - boolean flag
-6. activationKey - a key got from getEncryptedFileKey function and used for file decryption or null is file is unencrypted
-7. dispatch - redux dispatch required for UI updates  or null is file is unencrypted
-8. successfullyDecryptedCallback - callback that close popup if first chunk successfully decrypted  or null is file is unencrypted
+5. isEncrypted - boolean flag
+6. key - a key got from getEncryptedFileKey function and used for file decryption or null is file is unencrypted
+7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 
 ### Upload unencrypted file
 
 import { uploadFile } from 'gdgateway-client/lib/es5';
 
-await uploadFile(
+await uploadFile({
   file,
   oneTimeToken,
   endpoint,
-  dispatch,
-  updateProgressCallback
-) 
+  callback,
+  handlers
+}) 
 
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
 
@@ -44,8 +45,8 @@ Accepts:
 1. file - current file that is supposed to be uploaded
 2. oneTimeToken - token from /generate/token request
 3. endpoint - endpoint from /generate/token request
-4. dispatch - redux dispatch required for UI updates
-5. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
+7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 
 ### Upload encrypted file
 
@@ -53,28 +54,28 @@ import { WebCrypto } from 'gdgateway-client/lib/es5';
 
 const crypter = new WebCrypto();
 
-await crypter.encodeFile(
+await crypter.encodeFile({
     file,
     oneTimeToken,
-    dispatch,
     endpoint,
     getKeysByWorkspace,
-    updateProgressCallback,
     saveEncryptedFileKeys,
-    getOneTimeToken
-) 
+    getOneTimeToken,
+    callback,
+    handlers,
+}) 
 
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
 
 Accepts:
 1. file - current file that is supposed to be encrypted and uploaded
 2. oneTimeToken - token from /generate/token request
-3. dispatch - redux dispatch required for UI updates
-4. endpoint - endpoint from /generate/token request
-5. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
-6. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
-7. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
-8. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed
+3. endpoint - endpoint from /generate/token request
+4. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
+5. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
+6. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed
+7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 
 ### Encrypt already uploaded file
 
@@ -89,7 +90,8 @@ await crypter.encodeExistingFile(
     saveEncryptedFileKeys,
     getOneTimeToken,
     getDownloadOTT,
-    callback
+    callback,
+    handlers
 ) 
 
 1. Encrypts existing file and updates isClientsideEncrypted property of current file
@@ -101,7 +103,8 @@ Accepts:
 4. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
 5. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
 6. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
-7. callback - redux callback dispatches that accepts type and params parameters;
+7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+8. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Decrypt chunk
 
@@ -109,9 +112,9 @@ import * as Base64 from "base64-js";
 import { decryptChunk } from 'gdgateway-client/lib/es5';
 import { getCrypto } from 'gdgateway-client/lib/es5/utils/getCrypto';
 
-await decryptChunk(chunk, iv, activationKey)
+await decryptChunk({chunk, iv, key})
 
-1. Return decrypted chunk if correct activationKey is provided
+1. Return decrypted chunk if correct key is provided
 
 Accepts:
 1. chunk - encrypted arraybuffer chunk of the file
@@ -120,11 +123,11 @@ Accepts:
     const iv: Uint8Array = crypto.getRandomValues(new Uint8Array(12));
     const ivBase64 = Base64.fromByteArray(iv) - this is hat should be used as iv; we convert is to base64 and pass it as headers when send encrypted chunk to backend; 
     when we need to decrypt chunk we get same iv from the information about the file (the iv when we encrypt a chunk should be same as we decrypt this chunk).
-3. activationKey - 
+3. key - 
     When you encrypt a chunk, you should generate and export the key (also we save it(keyBase64) to backend)
     const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"])
     const buffer = await crypto.subtle.exportKey("raw", key);
-    const keyBase64 = convertArrayBufferToBase64(buffer); - this is what should be used as activationKey; the key we use to encrypt file should be the same key we use when we decrypt this file;
+    const keyBase64 = convertArrayBufferToBase64(buffer); - this is what should be used as key; the key we use to encrypt file should be the same key we use when we decrypt this file;
 
 ### Encrypt chunk
 
@@ -132,7 +135,7 @@ import * as Base64 from "base64-js";
 import { encryptChunk } from 'gdgateway-client/lib/es5';
 import { getCrypto } from 'gdgateway-client/lib/es5/utils/getCrypto';
 
-await encryptChunk(chunk, iv, key)
+await encryptChunk({chunk, iv, key})
 
 1. Return encrypted chunk if correct parameters are provided
 
@@ -154,7 +157,7 @@ import { chunkFile } from 'gdgateway-client/lib/es5';
 File should be an object with all needed information 
 
 const arrayBuffer = await file.arrayBuffer();
-const chunks = chunkFile(arrayBuffer);
+const chunks = chunkFile({arrayBuffer});
 
 The chunkFile function returns an array of file chunks (each chunk is arraybuffer like and has 1mb size; only the last chunk can be smaller).
 
@@ -166,12 +169,12 @@ The 'file' should be an object with all needed information; you should get this 
 
 const { slug } = file;
 
-await countChunks(
+await countChunks({
     endpoint,
     oneTimeToken,
     slug,
     signal
-);
+});
 
 1. The countChunk function returns the {count: 3, end: 4819} - 'count' is quantity of chunks and 'end' is size of the last chunk.
 
@@ -185,17 +188,16 @@ Accepts:
 
 import { downloadChunk } from 'gdgateway-client/lib/es5';
 
-await downloadChunk = async (
+await downloadChunk = async ({
   index,
   sha3_hash,
   slug,
   oneTimeToken,
   signal,
-  endpoint,
-  encrypted
-)
+  endpoint
+})
 
-1. The downloadChunk function returns arraybuffer chunk (browser) or stream (node).
+1. The downloadChunk function returns arraybuffer chunk.
 
 Accepts:
 1. index - index of chunk to be downloaded; quantity of all chunks we get from countChunks function
@@ -204,46 +206,44 @@ Accepts:
 4. oneTimeToken - token from /generate/token request
 5. signal - AbortController for request cancellation
 6. endpoint - endpoint from /generate/token request
-7. encrypted - should be true if encrypted and false if unencrypted;
-
 
 ### Save blob and download url
 
 import { saveBlob } from 'gdgateway-client/lib/es5';
 
-saveBlob({ blob, name: file?.name, mime: file?.mime });
+saveBlob({ blob, name: file?.name });
 
 1. Simulate user click, revoke url and download it. Used together with downloadFile function;
 
 Accepts:
 1. blob - blob data we get from downloadFile function (/chunked/downloadChunk api)
-2. file - full information about the file we are trying to download
+2. name - the name of the file to be downloaded
 
-# Send chunk
+### Send chunk
 
 import { sendChunk } from 'gdgateway-client/lib/es5';
 
-await sendChunk(
+await sendChunk({
     chunk,
-    currentIndex,
-    chunkLength,
+    index,
+    chunksLength,
     file,
     startTime,
     oneTimeToken,
     endpoint,
     iv, 
     clientsideKeySha3Hash,
-    dispatch,
     totalProgress,
-    updateProgressCallback
-) 
+    callback,
+    handlers
+}) 
 
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
 
 Accepts:
 1. chunk - arraybuffer chunk to be send
-2. currentIndex - current index chunk (get array of chunks from chunkFile function)
-3. chunkLength - the length of arraybuffer chunk (chunk.byteLength)
+2. index - current index chunk (get array of chunks from chunkFile function)
+3. chunksLength - the length of arraybuffer chunk (chunk.byteLength)
 4. file - current file that is supposed to be uploaded
 5. startTime - Date.now(), required to calculate how much time the file upload takes
 6. oneTimeToken - token from /generate/token request
@@ -257,20 +257,20 @@ Accepts:
     const md = forge.md.sha512.create();
     md.update(fileKey);
     const clientsideKeySha3Hash = md.digest().toHex();
-10. dispatch - redux dispatch required for UI updates
-11. totalProgress - used to update and calculate progress
-12. updateProgressCallback - redux actions for updating file uploading progress (percent and time in seconds)
+10. totalProgress - used to update and calculate progress;
+11. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+12. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
-# Swap chunk (make simple chunk to be encrypted and send it to server)
+### Swap chunk (make simple chunk to be encrypted and send it to server)
 
 import { swapChunk } from 'gdgateway-client/lib/es5';
 
-await swapChunk(
+await swapChunk({
   file,
   endpoint,
   base64iv,
   clientsideKeySha3Hash,
-  currentIndex,
+  index,
   chunksLength,
   oneTimeToken,
   encryptedChunk,
@@ -278,7 +278,8 @@ await swapChunk(
   startTime,
   totalProgress,
   callback,
-) 
+  handlers
+}) 
 
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
 
@@ -295,20 +296,21 @@ Accepts:
     const md = forge.md.sha512.create();
     md.update(fileKey);
     const clientsideKeySha3Hash = md.digest().toHex();
-5. currentIndex - current index chunk (get array of chunks from chunkFile function)
+5. index - current index chunk (get array of chunks from chunkFile function)
 6. chunkLength - the length of arraybuffer chunk (chunk.byteLength)
 7. oneTimeToken - token from /generate/token request
 8. encryptedChunk - encrypted arraybuffer chunk to be swapped
-9. arrayBuffer - the whole arraybuffer of the file that is supposed to be swapped
+9. fileSize - the whole file's size
 10. startTime - Date.now(), required to calculate how much time the file upload takes
 12. totalProgress - used to update and calculate progress
-13. callback - redux actions for updating file uploading progress (percent and time in seconds); accepts type and params parameters;
+13. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+14. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Get user's RSA keys
 
 import { getUserRSAKeys } from 'gdgateway-client/lib/es5';
 
-await getUserRSAKeys(signer);
+await getUserRSAKeys({signer});
 
 1. Returns generated key pair using node-forge
 
@@ -324,7 +326,30 @@ const signer = provider.getSigner();
 1. Returns public key in pem format using node-forge
 
 const keys = await getUserRSAKeys(signer);
-const public_key = publicKeyToPem(keys.publicKey);
+const public_key = publicKeyToPem({publicKey: keys.publicKey});
 
 Accepts:
 1. publicKey - generated public key using getUserRSAKeys function
+
+
+## Example of 'callback' & 'handlers' parameters 
+
+export const encodeFileData = {
+  callbacks: {
+    onStart: encryptExistingFileCallback,
+    onSuccess: updateFilePropertyCallback,
+    onError: catchErrorCallback,
+    onProgress: updateProgressCallback,
+  },
+  handlers: ['onStart', 'onSuccess', 'onError', 'onProgress'],
+};
+
+const { handlers, callbacks } = encodeFileData; // use 'handlers' as parameter
+
+const callback = ({ type, params }) => { // use 'callback' as parameter
+  if (handlers.includes(type)) {
+    callbacks[type]({ ...params, dispatch });
+  } else {
+    console.error(`Handler "${type}" isn't provided`);
+  }
+};

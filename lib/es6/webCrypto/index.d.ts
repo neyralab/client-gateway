@@ -1,7 +1,7 @@
-import { Callback, DispatchType, GetDownloadOTT, GetKeysByWorkspace, GetOneTimeToken, ImagePreviewEffect, SaveEncryptedFileKeys, UpdateProgressCallback } from "../types";
+import { IEncodeExistingFile, IEncodeFile } from "../types";
 export declare class WebCrypto {
     readonly clientsideKeySha3Hash: string;
     iv: Uint8Array;
-    encodeFile(file: File | any, oneTimeToken: string, dispatch: DispatchType, endpoint: string, getKeysByWorkspace: GetKeysByWorkspace, updateProgressCallback: UpdateProgressCallback, saveEncryptedFileKeys: SaveEncryptedFileKeys, getOneTimeToken: GetOneTimeToken): Promise<any>;
-    encodeExistingFile(file: File | any, getImagePreviewEffect: ImagePreviewEffect, getKeysByWorkspace: GetKeysByWorkspace, saveEncryptedFileKeys: SaveEncryptedFileKeys, getOneTimeToken: GetOneTimeToken, getDownloadOTT: GetDownloadOTT, callback: Callback): Promise<void>;
+    encodeFile({ file, oneTimeToken, endpoint, getKeysByWorkspace, saveEncryptedFileKeys, getOneTimeToken, callback, handlers, }: IEncodeFile): Promise<any>;
+    encodeExistingFile({ file, getImagePreviewEffect, getKeysByWorkspace, saveEncryptedFileKeys, getOneTimeToken, getDownloadOTT, callback, handlers, }: IEncodeExistingFile): Promise<void>;
 }

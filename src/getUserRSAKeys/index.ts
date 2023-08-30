@@ -1,6 +1,6 @@
 import * as forge from "node-forge";
 
-export const getUserRSAKeys = async function (signer: any) {
+export const getUserRSAKeys = async function ({ signer }: { signer: any }) {
   const msg =
     "Welcome to GhostDrive! \n\nPlease sign to start using this for encryption with Ghostdrive. \n" +
     "This will not trigger a blockchain transaction or cost any gas fees. \n\n" +

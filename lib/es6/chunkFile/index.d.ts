@@ -1,1 +1,3 @@
-export declare const chunkFile: (arrayBuffer: ArrayBuffer) => any[];
+export declare const chunkFile: ({ arrayBuffer }: {
+    arrayBuffer: ArrayBuffer;
+}) => any[];

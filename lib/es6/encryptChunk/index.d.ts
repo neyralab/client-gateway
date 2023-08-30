@@ -1,1 +1,2 @@
-export declare const encryptChunk: (chunk: ArrayBuffer, iv: Uint8Array, key: CryptoKey) => Promise<ArrayBuffer>;
+import { IEncryptChunk } from "../types";
+export declare const encryptChunk: ({ chunk, iv, key }: IEncryptChunk) => Promise<ArrayBuffer>;

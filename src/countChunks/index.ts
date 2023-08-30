@@ -1,12 +1,13 @@
 import { MAX_TRIES } from "../config";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
+import { ICountChunks } from "../types";
 
-export const countChunks = async (
-  endpoint: string,
-  oneTimeToken: string,
-  slug: string,
-  signal: AbortSignal
-) => {
+export const countChunks = async ({
+  endpoint,
+  oneTimeToken,
+  slug,
+  signal,
+}: ICountChunks) => {
   let currentTry = 1;
 
   const getChunkCount: () => Promise<any> = async () => {

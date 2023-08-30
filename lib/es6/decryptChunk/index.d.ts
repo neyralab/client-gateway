@@ -1,1 +1,2 @@
-export declare const decryptChunk: (chunk: ArrayBuffer, iv: string, activationKey: string) => Promise<any>;
+import { IDecryptChunk } from "../types";
+export declare const decryptChunk: ({ chunk, iv, key }: IDecryptChunk) => Promise<any>;

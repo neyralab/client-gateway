@@ -17,16 +17,7 @@ import { convertBlobToBase64 } from "../utils/convertBlobToBase64";
 import { fetchBlobFromUrl } from "../utils/fetchBlobFromUrl";
 import { getCrypto } from "../utils/getCrypto";
 
-import {
-  Callback,
-  DispatchType,
-  GetDownloadOTT,
-  GetKeysByWorkspace,
-  GetOneTimeToken,
-  ImagePreviewEffect,
-  SaveEncryptedFileKeys,
-  UpdateProgressCallback,
-} from "../types";
+import { IEncodeExistingFile, IEncodeFile } from "../types";
 
 const crypto = getCrypto();
 
@@ -38,19 +29,19 @@ export class WebCrypto {
   readonly clientsideKeySha3Hash = md.digest().toHex();
   public iv: Uint8Array = crypto.getRandomValues(new Uint8Array(12));
 
-  async encodeFile(
-    file: File | any,
-    oneTimeToken: string,
-    dispatch: DispatchType,
-    endpoint: string,
-    getKeysByWorkspace: GetKeysByWorkspace,
-    updateProgressCallback: UpdateProgressCallback,
-    saveEncryptedFileKeys: SaveEncryptedFileKeys,
-    getOneTimeToken: GetOneTimeToken
-  ) {
+  async encodeFile({
+    file,
+    oneTimeToken,
+    endpoint,
+    getKeysByWorkspace,
+    saveEncryptedFileKeys,
+    getOneTimeToken,
+    callback,
+    handlers,
+  }: IEncodeFile) {
     const startTime = Date.now();
     const arrayBuffer = await file.arrayBuffer();
-    const chunks = chunkFile(arrayBuffer);
+    const chunks = chunkFile({ arrayBuffer });
 
     let base64Image;
     switch (true) {
@@ -81,21 +72,21 @@ export class WebCrypto {
 
     for (const chunk of chunks) {
       const currentIndex = chunks.findIndex((el) => el === chunk);
-      const encryptedChunk = await encryptChunk(chunk, this.iv, key);
-      result = await sendChunk(
-        encryptedChunk,
-        currentIndex,
-        chunks.length - 1,
+      const encryptedChunk = await encryptChunk({ chunk, iv: this.iv, key });
+      result = await sendChunk({
+        chunk: encryptedChunk,
+        index: currentIndex,
+        chunksLength: chunks.length - 1,
         file,
         startTime,
         oneTimeToken,
         endpoint,
-        this.iv,
-        this.clientsideKeySha3Hash,
-        dispatch,
+        iv: this.iv,
+        clientsideKeySha3Hash: this.clientsideKeySha3Hash,
         totalProgress,
-        updateProgressCallback
-      );
+        callback,
+        handlers,
+      });
       if (result?.failed) {
         totalProgress.number = 0;
         return;
@@ -142,46 +133,45 @@ export class WebCrypto {
     return result;
   }
 
-  async encodeExistingFile(
-    file: File | any,
-    getImagePreviewEffect: ImagePreviewEffect,
-    getKeysByWorkspace: GetKeysByWorkspace,
-    saveEncryptedFileKeys: SaveEncryptedFileKeys,
-    getOneTimeToken: GetOneTimeToken,
-    getDownloadOTT: GetDownloadOTT,
-    callback: Callback
-  ) {
+  async encodeExistingFile({
+    file,
+    getImagePreviewEffect,
+    getKeysByWorkspace,
+    saveEncryptedFileKeys,
+    getOneTimeToken,
+    getDownloadOTT,
+    callback,
+    handlers,
+  }: IEncodeExistingFile) {
     const controller = new AbortController();
     const { signal } = controller;
     const {
       data: {
-        user_tokens: { token: ottDownloadToken },
-        endpoint: ottEndpoint,
+        user_tokens: { token: downloadToken },
+        endpoint: downloadEndpoint,
       },
     } = await getDownloadOTT([{ slug: file.slug }]);
 
-    const fileBlob: Blob = await downloadFile(
+    const fileBlob: Blob = await downloadFile({
       file,
-      ottDownloadToken,
+      oneTimeToken: downloadToken,
       signal,
-      ottEndpoint,
-      false,
-      null,
-      null,
-      null
-    );
+      endpoint: downloadEndpoint,
+      isEncrypted: false,
+    });
     const arrayBuffer = await fileBlob.arrayBuffer();
-    const chunks = chunkFile(arrayBuffer);
+    const chunks = chunkFile({ arrayBuffer });
 
     const fileSignal = axios.CancelToken.source();
     let thumbnail;
     const hasThumbnail =
       file.mime.startsWith("image") || file.mime.startsWith("video");
 
-    callback({
-      type: "onStart",
-      params: { file, size: arrayBuffer.byteLength },
-    });
+    handlers.includes("onStart") &&
+      callback({
+        type: "onStart",
+        params: { file, size: arrayBuffer.byteLength },
+      });
 
     if (hasThumbnail) {
       thumbnail = await getImagePreviewEffect(
@@ -216,25 +206,27 @@ export class WebCrypto {
     try {
       for (const chunk of chunks) {
         const currentIndex = chunks.findIndex((el) => el === chunk);
-        const encryptedChunk = await encryptChunk(chunk, this.iv, key);
+        const encryptedChunk = await encryptChunk({ chunk, iv: this.iv, key });
 
-        data = await swapChunk(
+        data = await swapChunk({
           file,
           endpoint,
           base64iv,
-          this.clientsideKeySha3Hash,
-          currentIndex,
-          chunks.length - 1,
+          clientsideKeySha3Hash: this.clientsideKeySha3Hash,
+          index: currentIndex,
+          chunksLength: chunks.length - 1,
           oneTimeToken,
           encryptedChunk,
-          arrayBuffer,
+          fileSize: arrayBuffer.byteLength,
           startTime,
           totalProgress,
-          callback
-        );
+          callback,
+          handlers,
+        });
       }
     } catch (e) {
-      callback({ type: "onError", params: { slug: file.slug } });
+      handlers.includes("onError") &&
+        callback({ type: "onError", params: { slug: file.slug } });
       return;
     }
     const { data: responseFromIpfs } = data;
@@ -253,10 +245,11 @@ export class WebCrypto {
       const isCancelModalOpen = document.body.querySelector(
         ".download__modal__button__cancel"
       );
-      callback({
-        type: "onSuccess",
-        params: { isCancelModalOpen, response: responseFromIpfs },
-      });
+      handlers.includes("onSuccess") &&
+        callback({
+          type: "onSuccess",
+          params: { isCancelModalOpen, response: responseFromIpfs },
+        });
 
       if (hasThumbnail) {
         try {

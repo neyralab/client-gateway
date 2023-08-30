@@ -3,34 +3,34 @@ import { downloadChunk, countChunks, decryptChunk } from "../index";
 import { hasWindow } from "../utils/hasWindow";
 import { joinChunks } from "../utils/joinChunks";
 
-import { DispatchType } from "../types";
+import { IDownloadFile } from "../types";
 
-export const downloadFile = async (
-  currentFile: File | any,
-  oneTimeToken: string,
-  signal: AbortSignal,
-  endpoint: string,
-  encrypted: boolean,
-  activationKey: string | null,
-  dispatch: DispatchType | null,
-  successfullyDecryptedCallback: ((dispatch: DispatchType) => void) | null
-) => {
+export const downloadFile = async ({
+  file,
+  oneTimeToken,
+  signal,
+  endpoint,
+  isEncrypted,
+  key,
+  callback,
+  handlers,
+}: IDownloadFile) => {
   const chunks = [];
   let fileStream = null;
 
-  const { entry_clientside_key, slug } = currentFile;
+  const { entry_clientside_key, slug } = file;
 
-  const sha3 = !encrypted
+  const sha3 = !isEncrypted
     ? null
     : entry_clientside_key?.clientsideKeySha3Hash ||
       entry_clientside_key?.sha3_hash;
 
-  const chunkCountResponse = await countChunks(
+  const chunkCountResponse = await countChunks({
     endpoint,
     oneTimeToken,
     slug,
-    signal
-  );
+    signal,
+  });
 
   if (!chunkCountResponse.ok) {
     throw new Error(`HTTP error! status:${chunkCountResponse.status}`);
@@ -49,28 +49,32 @@ export const downloadFile = async (
 
   for (let index = 0; index < count; index++) {
     let chunk;
-    const downloadedChunk = await downloadChunk(
+    const downloadedChunk = await downloadChunk({
       index,
-      sha3,
+      sha3_hash: sha3,
       slug,
       oneTimeToken,
       signal,
-      endpoint
-    );
+      endpoint,
+    });
 
-    if (!encrypted) {
+    if (!isEncrypted) {
       chunk = downloadedChunk;
     } else {
-      chunk = await decryptChunk(
-        downloadedChunk,
-        entry_clientside_key?.iv,
-        activationKey
-      );
+      chunk = await decryptChunk({
+        chunk: downloadedChunk,
+        iv: entry_clientside_key?.iv,
+        key,
+      });
       if (chunk?.failed) {
         return { failed: true };
       }
       if (index === 0 && chunk) {
-        successfullyDecryptedCallback(dispatch);
+        handlers.includes("onSuccess") &&
+          callback({
+            type: "onSuccess",
+            params: {},
+          });
       }
     }
     if (fileStream) {

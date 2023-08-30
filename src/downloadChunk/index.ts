@@ -1,14 +1,15 @@
 import { FILE_ACTION_TYPES, MAX_TRIES } from "../config";
+import { IDownloadChunk } from "../types";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
 
-export const downloadChunk = async (
-  index: number,
-  sha3_hash: string | null,
-  slug: string,
-  oneTimeToken: string,
-  signal: AbortSignal,
-  endpoint: string
-) => {
+export const downloadChunk = async ({
+  index,
+  sha3_hash,
+  slug,
+  oneTimeToken,
+  signal,
+  endpoint,
+}: IDownloadChunk) => {
   let currentTry = 1;
   const download: () => Promise<any> = async () => {
     await new Promise<void>((resolve) => {
@@ -61,6 +62,7 @@ export const downloadChunk = async (
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
+
   const arrayBuffer = await response.arrayBuffer();
   return arrayBuffer;
 };

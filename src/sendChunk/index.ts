@@ -6,22 +6,22 @@ import { convertTextToBase64 } from "../utils/convertTextToBase64";
 
 import { MAX_TRIES } from "../config";
 
-import { DispatchType, UpdateProgressCallback } from "../types";
+import { ISendChunk } from "../types";
 
-export const sendChunk = async (
-  chunk: ArrayBuffer,
-  currentIndex: number,
-  chunkLength: number,
-  file: File | any,
-  startTime: any,
-  oneTimeToken: string,
-  endpoint: string,
-  iv: Uint8Array | null,
-  clientsideKeySha3Hash: string | null,
-  dispatch: DispatchType,
-  totalProgress: { number: number },
-  updateProgressCallback: UpdateProgressCallback
-) => {
+export const sendChunk = async ({
+  chunk,
+  index,
+  chunksLength,
+  file,
+  startTime,
+  oneTimeToken,
+  endpoint,
+  iv,
+  clientsideKeySha3Hash,
+  totalProgress,
+  callback,
+  handlers,
+}: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const fileName = convertTextToBase64(file.name);
   let currentTry = 1;
@@ -37,8 +37,8 @@ export const sendChunk = async (
       "content-type": "application/octet-stream",
       "one-time-token": oneTimeToken,
       "x-file-name": fileName,
-      "x-last": `${currentIndex}/${chunkLength}`,
-      "x-chunk-index": `${currentIndex}`,
+      "x-last": `${index}/${chunksLength}`,
+      "x-chunk-index": `${index}`,
       "X-folder": file.folderId || "",
       "x-mime": file?.type,
       "X-Ai-Generated": false,
@@ -54,12 +54,11 @@ export const sendChunk = async (
         const bytesPerMillisecond = progress / elapsedTime;
         const remainingTime = remainingBytes / bytesPerMillisecond;
         const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
-        updateProgressCallback({
-          id: file.upload_id,
-          progress,
-          timeLeft,
-          dispatch,
-        });
+        handlers.includes("onProgress") &&
+          callback({
+            type: "onProgress",
+            params: { id: file.upload_id, progress, timeLeft },
+          });
       }
     },
   });

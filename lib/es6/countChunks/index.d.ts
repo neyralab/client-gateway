@@ -1,1 +1,2 @@
-export declare const countChunks: (endpoint: string, oneTimeToken: string, slug: string, signal: AbortSignal) => Promise<any>;
+import { ICountChunks } from "../types";
+export declare const countChunks: ({ endpoint, oneTimeToken, slug, signal, }: ICountChunks) => Promise<any>;

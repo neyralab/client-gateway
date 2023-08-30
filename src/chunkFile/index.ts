@@ -1,4 +1,4 @@
-export const chunkFile = (arrayBuffer: ArrayBuffer) => {
+export const chunkFile = ({ arrayBuffer }: { arrayBuffer: ArrayBuffer }) => {
   const chunkSize = 1024 * 1024; // 1MB
   const chunks = [];
   let start = 0;

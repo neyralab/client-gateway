@@ -4,15 +4,13 @@ import { getCrypto } from "../utils/getCrypto";
 
 import { MAX_DECRYPTION_TRIES } from "../config";
 
+import { IDecryptChunk } from "../types";
+
 const crypto = getCrypto();
 
-export const decryptChunk = async (
-  chunk: ArrayBuffer,
-  iv: string,
-  activationKey: string
-) => {
-  const decodeKey = convertBase64ToArrayBuffer(activationKey);
-  const key = await crypto.subtle.importKey(
+export const decryptChunk = async ({ chunk, iv, key }: IDecryptChunk) => {
+  const decodeKey = convertBase64ToArrayBuffer(key);
+  const activationKey = await crypto.subtle.importKey(
     "raw",
     decodeKey,
     {
@@ -43,7 +41,7 @@ export const decryptChunk = async (
           name: "AES-GCM",
           iv: normalizedIv,
         },
-        key,
+        activationKey,
         chunk
       );
       if (currentTry > 1) {
