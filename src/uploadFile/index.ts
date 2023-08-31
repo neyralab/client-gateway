@@ -1,4 +1,4 @@
-import { chunkFile } from "../chunkFile";
+import { chunkFile, chunkFileStream } from "../chunkFile";
 import { sendChunk } from "../sendChunk";
 
 import { IUploadFile } from "../types";
@@ -9,12 +9,20 @@ export const uploadFile = async ({
   endpoint,
   callback,
   handlers,
+  needStream,
 }: IUploadFile) => {
-  const arrayBuffer = await file.arrayBuffer();
-  const chunks = chunkFile({ arrayBuffer });
   const startTime = Date.now();
   let totalProgress = { number: 0 };
-  let result;
+  let chunks: any[] | any;
+  let result: any;
+
+  if (needStream) {
+    const stream = await file.stream();
+    chunks = await chunkFileStream({ stream });
+  } else {
+    const arrayBuffer = await file.arrayBuffer();
+    chunks = chunkFile({ arrayBuffer });
+  }
 
   for (const chunk of chunks) {
     const currentIndex = chunks.findIndex((el) => el === chunk);

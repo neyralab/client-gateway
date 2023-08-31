@@ -66,6 +66,7 @@ export interface IUploadFile {
     endpoint: string;
     callback: Callback;
     handlers: any[];
+    needStream?: boolean;
 }
 export interface ISwapChunk {
     file: File | any;

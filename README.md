@@ -68,7 +68,8 @@ await uploadFile({
   oneTimeToken,
   endpoint,
   callback,
-  handlers
+  handlers,
+  needStream
 }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
@@ -79,6 +80,7 @@ Accepts:
 3. endpoint - endpoint from /generate/token request
 7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+9. needStream(node only) - flag to indicate that you need to upload stream instead of array buffer;
 
 ### Upload encrypted file
 ```javascript
