@@ -2,6 +2,7 @@ import { chunkFile, chunkFileStream } from "../chunkFile";
 import { sendChunk } from "../sendChunk";
 
 import { IUploadFile } from "../types";
+import { streamToBuffer } from "../utils/streamToBuffer";
 
 export const uploadFile = async ({
   file,
@@ -10,6 +11,7 @@ export const uploadFile = async ({
   callback,
   handlers,
   needStream,
+  stream,
 }: IUploadFile) => {
   const startTime = Date.now();
   let totalProgress = { number: 0 };
@@ -17,8 +19,11 @@ export const uploadFile = async ({
   let result: any;
 
   if (needStream) {
-    const stream = await file.stream();
-    chunks = await chunkFileStream({ stream });
+    // need it in the future
+    // const stream = await file.stream();
+    // chunks = await chunkFileStream({ stream });
+    const arrayBuffer: any = await streamToBuffer({ stream });
+    chunks = chunkFile({ arrayBuffer });
   } else {
     const arrayBuffer = await file.arrayBuffer();
     chunks = chunkFile({ arrayBuffer });

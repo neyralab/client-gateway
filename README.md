@@ -69,10 +69,13 @@ await uploadFile({
   endpoint,
   callback,
   handlers,
-  needStream
+  needStream,
+  stream
 }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
+
+For now there is issue with using node environment (for files with size > 1mb): despite of the fact that we send all chunks, later we get only half of them (for preview/downloading);
 
 Accepts:
 1. file - current file that is supposed to be uploaded
@@ -81,6 +84,7 @@ Accepts:
 7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 9. needStream(node only) - flag to indicate that you need to upload stream instead of array buffer;
+10. stream(node only) - readable stream that are chunked and sent to server;
 
 ### Upload encrypted file
 ```javascript

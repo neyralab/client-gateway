@@ -86,6 +86,7 @@ export interface IUploadFile {
   callback: Callback;
   handlers: any[];
   needStream?: boolean;
+  stream?: any;
 }
 
 export interface ISwapChunk {
