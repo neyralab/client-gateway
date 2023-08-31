@@ -10,18 +10,17 @@ export const uploadFile = async ({
   endpoint,
   callback,
   handlers,
-  needStream,
-  stream,
 }: IUploadFile) => {
   const startTime = Date.now();
   let totalProgress = { number: 0 };
   let chunks: any[] | any;
   let result: any;
 
-  if (needStream) {
+  if (file?.isStream) {
     // need it in the future
     // const stream = await file.stream();
     // chunks = await chunkFileStream({ stream });
+    const stream = await file.stream();
     const arrayBuffer: any = await streamToBuffer({ stream });
     chunks = chunkFile({ arrayBuffer });
   } else {
