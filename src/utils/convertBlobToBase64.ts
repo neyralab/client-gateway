@@ -4,7 +4,13 @@ export const convertBlobToBase64 = (blob: Blob) => {
 
     reader.onloadend = () => {
       const base64Data = reader.result;
-      resolve(base64Data);
+      if (typeof base64Data === "string") {
+        const dataURL = base64Data.replace(/^data:[^;]+/, "data:image/png");
+        resolve(dataURL);
+        resolve(base64Data);
+      } else {
+        reject(new Error("Failed to convert blob to base64"));
+      }
     };
 
     reader.onerror = reject;

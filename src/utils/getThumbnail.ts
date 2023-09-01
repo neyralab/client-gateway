@@ -20,8 +20,8 @@ export const getThumbnailImage = (file: any) => {
     const image = new Image();
     image.src = imageURL;
 
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
 
     image.onload = () => {
       const aspectRatio = image.width / image.height;
@@ -43,7 +43,7 @@ export const getThumbnailImage = (file: any) => {
       const qualityReduction = getReductionFactor(file.size);
 
       const dataURL = canvas.toDataURL(
-        'image/webp',
+        "image/jpeg",
         +qualityReduction.toFixed(1)
       );
       URL.revokeObjectURL(imageURL);
@@ -58,12 +58,12 @@ export const getThumbnailImage = (file: any) => {
 
 export const getThumbnailVideo = (file: any) => {
   return new Promise((resolve, reject) => {
-    const video = document.createElement('video');
+    const video = document.createElement("video");
     video.src = URL.createObjectURL(file);
 
     video.onloadedmetadata = () => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
       const aspectRatio = video.videoWidth / video.videoHeight;
 
@@ -87,7 +87,7 @@ export const getThumbnailVideo = (file: any) => {
         const qualityReduction = getReductionFactor(file.size);
 
         const dataURL = canvas.toDataURL(
-          'image/webp',
+          "image/jpeg",
           +qualityReduction.toFixed(1)
         );
         resolve(dataURL);
