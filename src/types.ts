@@ -37,7 +37,7 @@ export type Callback = ({
 export interface IDownloadFile {
   file: File | any;
   oneTimeToken: string;
-  signal: AbortSignal;
+  signal: any;
   endpoint: string;
   isEncrypted: boolean;
   key?: string | undefined;
@@ -122,7 +122,7 @@ export interface IDownloadChunk {
   sha3_hash: string | null;
   slug: string;
   oneTimeToken: string;
-  signal: AbortSignal;
+  signal: any;
   endpoint: string;
 }
 
@@ -130,5 +130,5 @@ export interface ICountChunks {
   endpoint: string;
   oneTimeToken: string;
   slug: string;
-  signal: AbortSignal;
+  signal: any;
 }

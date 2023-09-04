@@ -1,3 +1,5 @@
+import axios from "axios";
+
 import { FILE_ACTION_TYPES, MAX_TRIES } from "../config";
 import { IDownloadChunk } from "../types";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
@@ -11,6 +13,17 @@ export const downloadChunk = async ({
   endpoint,
 }: IDownloadChunk) => {
   let currentTry = 1;
+  const instance = axios.create({
+    headers: {
+      "x-action": FILE_ACTION_TYPES.DOWNLOAD.toString(),
+      "x-chunk-index": `${index}`,
+      "x-clientsideKeySha3Hash": sha3_hash || "",
+      "one-time-token": oneTimeToken,
+    },
+    responseType: "arraybuffer",
+    cancelToken: signal.token,
+  });
+
   const download: () => Promise<any> = async () => {
     await new Promise<void>((resolve) => {
       setTimeout(
@@ -22,18 +35,8 @@ export const downloadChunk = async ({
     });
 
     try {
-      const response = await fetch(
-        endpoint + `/chunked/downloadChunk/${slug}`,
-        {
-          method: "GET",
-          headers: {
-            "x-action": FILE_ACTION_TYPES.DOWNLOAD.toString(),
-            "x-chunk-index": `${index}`,
-            "x-clientsideKeySha3Hash": sha3_hash || "",
-            "one-time-token": oneTimeToken,
-          },
-          signal: signal,
-        }
+      const response = await instance.get(
+        endpoint + `/chunked/downloadChunk/${slug}`
       );
       if (currentTry > 1) {
         currentTry = 1;
@@ -59,10 +62,9 @@ export const downloadChunk = async ({
 
   const response = await download();
 
-  if (!response.ok) {
+  if (response.status !== 200) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
 
-  const arrayBuffer = await response.arrayBuffer();
-  return arrayBuffer;
+  return response.data;
 };

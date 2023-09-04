@@ -1,3 +1,5 @@
+import axios from "axios";
+
 import { MAX_TRIES } from "../config";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
 import { ICountChunks } from "../types";
@@ -9,7 +11,12 @@ export const countChunks = async ({
   signal,
 }: ICountChunks) => {
   let currentTry = 1;
-
+  const instance = axios.create({
+    headers: {
+      "one-time-token": oneTimeToken,
+      "X-Slug": slug,
+    },
+  });
   const getChunkCount: () => Promise<any> = async () => {
     await new Promise<void>((resolve) => {
       setTimeout(
@@ -21,13 +28,8 @@ export const countChunks = async ({
     });
 
     try {
-      const response = await fetch(endpoint + "/chunked/chunkCount", {
-        method: "GET",
-        headers: {
-          "one-time-token": oneTimeToken,
-          "X-Slug": slug,
-        },
-        signal: signal,
+      const response = await instance.get(endpoint + "/chunked/chunkCount", {
+        cancelToken: signal.token,
       });
       if (currentTry > 1) {
         currentTry = 1;

@@ -32,13 +32,13 @@ export const downloadFile = async ({
     signal,
   });
 
-  if (!chunkCountResponse.ok) {
+  if (chunkCountResponse.status !== 200) {
     throw new Error(`HTTP error! status:${chunkCountResponse.status}`);
   }
 
-  const res = await chunkCountResponse.json();
-
-  const { count } = res;
+  const {
+    data: { count },
+  } = chunkCountResponse;
 
   if (!hasWindow()) {
     const { Readable } = require("stream");
