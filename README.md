@@ -230,10 +230,14 @@ import { downloadChunk } from 'gdgateway-client/lib/es5';
 await downloadChunk = async ({
   index,
   sha3_hash,
-  slug,
   oneTimeToken,
   signal,
-  endpoint
+  endpoint,
+  file,
+  startTime,
+  totalProgress,
+  callback,
+  handlers,
 })
 ```
 1. The downloadChunk function returns arraybuffer chunk.
@@ -241,10 +245,14 @@ await downloadChunk = async ({
 Accepts:
 1. index - index of chunk to be downloaded; quantity of all chunks we get from countChunks function
 2. sha3_hash - should be null if file is unencrypted; if file is encrypted we get sha3_hash from full information about the file (file.entry_clientside_key.sha3_hash)
-3. slug - slug we can get from the full information about the file (file.slug)
-4. oneTimeToken - token from /generate/token request
-5. signal - AbortController for request cancellation
-6. endpoint - endpoint from /generate/token request
+3. oneTimeToken - token from /generate/token request
+4. signal - AbortController for request cancellation
+5. endpoint - endpoint from /generate/token request
+6. file - current file that is supposed to be uploaded
+7. startTime - Date.now(), required to calculate how much time the file upload takes
+8. totalProgress - used to update and calculate progress;
+9. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+10. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Save blob and download url
 ```javascript

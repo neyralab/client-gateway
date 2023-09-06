@@ -107,10 +107,16 @@ export interface IDecryptChunk {
 export interface IDownloadChunk {
     index: number;
     sha3_hash: string | null;
-    slug: string;
     oneTimeToken: string;
     signal: any;
     endpoint: string;
+    file: File | any;
+    startTime: any;
+    totalProgress: {
+        number: number;
+    };
+    callback: Callback;
+    handlers: any[];
 }
 export interface ICountChunks {
     endpoint: string;

@@ -18,7 +18,9 @@ export const downloadFile = async ({
   callback,
   handlers,
 }: IDownloadFile) => {
+  const startTime = Date.now();
   const chunks = [];
+  let totalProgress = { number: 0 };
   let fileStream = null;
 
   const { entry_clientside_key, slug } = file;
@@ -55,10 +57,14 @@ export const downloadFile = async ({
     const downloadedChunk = await downloadChunk({
       index,
       sha3_hash: sha3,
-      slug,
       oneTimeToken,
       signal,
       endpoint,
+      file,
+      startTime,
+      totalProgress,
+      callback,
+      handlers,
     });
 
     if (!isEncrypted) {
