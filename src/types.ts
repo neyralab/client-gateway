@@ -43,7 +43,6 @@ export interface IDownloadFile {
   key?: string | undefined;
   callback?: Callback;
   handlers?: any[];
-  keypair?: { publicKey: any; privateKey: any };
 }
 export interface IEncodeExistingFile {
   file: File | any;

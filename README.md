@@ -44,8 +44,7 @@ const blob = await downloadFile({
     isEncrypted, 
     key, 
     callback,
-    handlers,
-    keypair
+    handlers
 })
 ```
 1. Inside browser returns a file blob to be downloaded, else returns stream
@@ -59,7 +58,6 @@ Accepts:
 6. key - a key got from getEncryptedFileKey function and used for file decryption or null is file is unencrypted
 7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
-9. keypair - required for encrypted files only; RSA publicKey & privateKey; use getUserRSAKeys to get keypair;
 
 ### Upload unencrypted file
 ```javascript
