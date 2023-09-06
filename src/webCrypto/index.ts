@@ -146,6 +146,7 @@ export class WebCrypto {
     getDownloadOTT,
     callback,
     handlers,
+    keypair,
   }: IEncodeExistingFile) {
     const controller = new AbortController();
     const { signal } = controller;
@@ -235,11 +236,13 @@ export class WebCrypto {
     }
     const { data: responseFromIpfs } = data;
     if (responseFromIpfs) {
-      const buffer = await crypto.subtle.exportKey("raw", key);
-      const text = convertArrayBufferToBase64(buffer);
+      const bufferKey = await crypto.subtle.exportKey("raw", key);
+      const base64Key = convertArrayBufferToBase64(bufferKey);
+      const encryptedKey = await keypair.publicKey.encrypt(base64Key);
+      const encryptedHexKey = forge.util.bytesToHex(encryptedKey);
 
       const encryptedKeys = keys.map((el: any) => {
-        return { publicKey: el, encryptedFileKey: text };
+        return { publicKey: el, encryptedFileKey: encryptedHexKey };
       });
       saveEncryptedFileKeys({
         slug: responseFromIpfs?.data?.slug,

@@ -127,7 +127,8 @@ await crypter.encodeExistingFile({
     getOneTimeToken,
     getDownloadOTT,
     callback,
-    handlers
+    handlers,
+    keypair
 }) 
 ```
 1. Encrypts existing file and updates isClientsideEncrypted property of current file
@@ -141,6 +142,8 @@ Accepts:
 6. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
 7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 8. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+9. keypair - RSA publicKey & privateKey; use getUserRSAKeys to get keypair;
+
 
 ### Decrypt chunk
 ```javascript

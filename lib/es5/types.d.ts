@@ -33,6 +33,10 @@ export interface IEncodeExistingFile {
     getDownloadOTT: GetDownloadOTT;
     callback: Callback;
     handlers: any[];
+    keypair?: {
+        publicKey: any;
+        privateKey: any;
+    };
 }
 export interface IEncodeFile {
     file: File | any;
