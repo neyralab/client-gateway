@@ -43,6 +43,7 @@ export interface IDownloadFile {
   key?: string | undefined;
   callback?: Callback;
   handlers?: any[];
+  keypair?: { publicKey: any; privateKey: any };
 }
 export interface IEncodeExistingFile {
   file: File | any;
@@ -63,6 +64,7 @@ export interface IEncodeFile {
   getOneTimeToken: GetOneTimeToken;
   callback: Callback;
   handlers: any[];
+  keypair?: { publicKey: any; privateKey: any };
 }
 export interface ISendChunk {
   chunk: ArrayBuffer;
@@ -114,7 +116,7 @@ export interface IEncryptChunk {
 export interface IDecryptChunk {
   chunk: ArrayBuffer;
   iv: string;
-  key: string;
+  key: any;
 }
 
 export interface IDownloadChunk {

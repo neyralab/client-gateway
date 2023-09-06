@@ -1,9 +1,12 @@
+import * as forge from "node-forge";
+
 import { downloadChunk, countChunks, decryptChunk } from "../index";
 
 import { hasWindow } from "../utils/hasWindow";
 import { joinChunks } from "../utils/joinChunks";
 
 import { IDownloadFile } from "../types";
+import { convertBase64ToArrayBuffer } from "../utils/convertBase64ToArrayBuffer";
 
 export const downloadFile = async ({
   file,
@@ -14,6 +17,7 @@ export const downloadFile = async ({
   key,
   callback,
   handlers,
+  keypair,
 }: IDownloadFile) => {
   const chunks = [];
   let fileStream = null;
@@ -61,10 +65,20 @@ export const downloadFile = async ({
     if (!isEncrypted) {
       chunk = downloadedChunk;
     } else {
+      const startFromDate = 1693988617;
+      let bufferKey;
+      if (file?.created_at > startFromDate) {
+        const bytesKey = forge.util.hexToBytes(key);
+        const decryptedKey = await keypair.privateKey.decrypt(bytesKey);
+        bufferKey = convertBase64ToArrayBuffer(decryptedKey);
+      } else {
+        bufferKey = convertBase64ToArrayBuffer(key);
+      }
+
       chunk = await decryptChunk({
         chunk: downloadedChunk,
         iv: entry_clientside_key?.iv,
-        key,
+        key: bufferKey,
       });
       if (chunk?.failed) {
         return { failed: true };

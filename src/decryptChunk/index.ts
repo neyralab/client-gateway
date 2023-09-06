@@ -9,10 +9,9 @@ import { IDecryptChunk } from "../types";
 const crypto = getCrypto();
 
 export const decryptChunk = async ({ chunk, iv, key }: IDecryptChunk) => {
-  const decodeKey = convertBase64ToArrayBuffer(key);
   const activationKey = await crypto.subtle.importKey(
     "raw",
-    decodeKey,
+    key,
     {
       name: "AES-GCM",
       length: 256,

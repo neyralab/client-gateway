@@ -38,6 +38,7 @@ export class WebCrypto {
     getOneTimeToken,
     callback,
     handlers,
+    keypair,
   }: IEncodeFile) {
     const startTime = Date.now();
     const arrayBuffer = await file.arrayBuffer();
@@ -93,10 +94,13 @@ export class WebCrypto {
       }
     }
 
-    const buffer = await crypto.subtle.exportKey("raw", key);
-    const keyBase64 = convertArrayBufferToBase64(buffer);
+    const bufferKey = await crypto.subtle.exportKey("raw", key);
+    const base64Key = convertArrayBufferToBase64(bufferKey);
+    const encryptedKey = await keypair.publicKey.encrypt(base64Key);
+    const encryptedHexKey = forge.util.bytesToHex(encryptedKey);
+
     const encryptedKeys = keys.map((el: any) => {
-      return { publicKey: el, encryptedFileKey: keyBase64 };
+      return { publicKey: el, encryptedFileKey: encryptedHexKey };
     });
     saveEncryptedFileKeys({
       slug: result?.data?.data?.slug,

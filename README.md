@@ -44,7 +44,8 @@ const blob = await downloadFile({
     isEncrypted, 
     key, 
     callback,
-    handlers
+    handlers,
+    keypair
 })
 ```
 1. Inside browser returns a file blob to be downloaded, else returns stream
@@ -58,6 +59,7 @@ Accepts:
 6. key - a key got from getEncryptedFileKey function and used for file decryption or null is file is unencrypted
 7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+9. keypair - required for encrypted files only; RSA publicKey & privateKey; use getUserRSAKeys to get keypair;
 
 ### Upload unencrypted file
 ```javascript
@@ -97,6 +99,7 @@ await crypter.encodeFile({
     getOneTimeToken,
     callback,
     handlers,
+    keypair
 }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
@@ -110,6 +113,7 @@ Accepts:
 6. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed
 7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+9. keypair - RSA publicKey & privateKey; use getUserRSAKeys to get keypair;
 
 ### Encrypt already uploaded file
 ```javascript
