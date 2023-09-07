@@ -79,7 +79,7 @@ export const downloadChunk = async ({
   const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
   const downloadingPercent = Number((progress / file.size) * 100).toFixed();
 
-  handlers.includes("onProgress") &&
+  handlers?.includes("onProgress") &&
     callback({
       type: "onProgress",
       params: {

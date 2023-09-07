@@ -81,7 +81,7 @@ export const downloadFile = async ({
         return { failed: true };
       }
       if (index === 0 && chunk) {
-        handlers.includes("onSuccess") &&
+        handlers?.includes("onSuccess") &&
           callback({
             type: "onSuccess",
             params: {},
