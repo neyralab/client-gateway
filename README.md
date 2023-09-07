@@ -92,11 +92,10 @@ await crypter.encodeFile({
     file,
     oneTimeToken,
     endpoint,
-    getKeysByWorkspace,
-    saveEncryptedFileKeys,
     getOneTimeToken,
     callback,
     handlers,
+    key
 }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
@@ -105,11 +104,10 @@ Accepts:
 1. file - current file that is supposed to be encrypted and uploaded
 2. oneTimeToken - token from /generate/token request
 3. endpoint - endpoint from /generate/token request
-4. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
-5. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
-6. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed
-7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+4. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed
+5. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+6. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+7. key - Crypto Key for file encryption;
 
 ### Encrypt already uploaded file
 ```javascript
@@ -120,12 +118,11 @@ const crypter = new WebCrypto();
 await crypter.encodeExistingFile({
     file,
     getImagePreviewEffect,
-    getKeysByWorkspace,
-    saveEncryptedFileKeys,
     getOneTimeToken,
     getDownloadOTT,
     callback,
-    handlers
+    handlers,
+    key
 }) 
 ```
 1. Encrypts existing file and updates isClientsideEncrypted property of current file
@@ -133,12 +130,12 @@ await crypter.encodeExistingFile({
 Accepts:
 1. file - current file that is supposed to be encrypted and updated
 2. getImagePreviewEffect - callback function that return current file thumbnail (image/video) to be generated on frontend and saved on /chunked/thumb/{slug}
-3. getKeysByWorkspace - callback function that gets user's public keys to be saved later with encrypted file key
-4. saveEncryptedFileKeys - callback function that saves user's public keys with encrypted file key
-5. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
-6. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
-7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-8. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+3. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
+4. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
+5. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+6. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+7. key - Crypto Key for file encryption;
+
 
 ### Decrypt chunk
 ```javascript
@@ -225,10 +222,14 @@ import { downloadChunk } from 'gdgateway-client/lib/es5';
 await downloadChunk = async ({
   index,
   sha3_hash,
-  slug,
   oneTimeToken,
   signal,
-  endpoint
+  endpoint,
+  file,
+  startTime,
+  totalProgress,
+  callback,
+  handlers,
 })
 ```
 1. The downloadChunk function returns arraybuffer chunk.
@@ -236,10 +237,14 @@ await downloadChunk = async ({
 Accepts:
 1. index - index of chunk to be downloaded; quantity of all chunks we get from countChunks function
 2. sha3_hash - should be null if file is unencrypted; if file is encrypted we get sha3_hash from full information about the file (file.entry_clientside_key.sha3_hash)
-3. slug - slug we can get from the full information about the file (file.slug)
-4. oneTimeToken - token from /generate/token request
-5. signal - AbortController for request cancellation
-6. endpoint - endpoint from /generate/token request
+3. oneTimeToken - token from /generate/token request
+4. signal - AbortController for request cancellation
+5. endpoint - endpoint from /generate/token request
+6. file - current file that is supposed to be uploaded
+7. startTime - Date.now(), required to calculate how much time the file upload takes
+8. totalProgress - used to update and calculate progress;
+9. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+10. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Save blob and download url
 ```javascript
