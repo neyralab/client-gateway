@@ -65,28 +65,27 @@ import { uploadFile } from 'gdgateway-client/lib/es5';
 
 // How to create custom file object using node
 class CustomFile {
-  constructor(buffer, stream, filename, mimeType, fileFolderId) {
+  constructor(size, stream, filename, mimeType, fileFolderId) {
     this.stream = () => stream;
     this.isStream = true;
     this.name = filename;
     this.type = mimeType;
     this.folderId = fileFolderId;
-    this.size = buffer.byteLength;
-    this.upload_id = `${filename}_${buffer.byteLength}_${fileFolderId}`;
+    this.size = size;
+    this.upload_id = `${filename}_${size}_${fileFolderId}`;
   }
 }
 
   const filePath = "./src/file-from-node.png" // path to your file
   const filename = "file-from-node.png"; // name-of-your-file.[extension]
   const mimeType = "image/png"; // mime of your file
-   
   const fileFolderId = "";
+  const { size } = await fs.promises.stat(filePath);
 
-  const buffer = await fs.promises.readFile(filePath);
   const stream = fs.createReadStream(filePath);
 
   const customFile = new CustomFile(
-    buffer,
+    size,
     stream,
     filename,
     mimeType,
@@ -126,28 +125,27 @@ const getOneTimeToken = ({ filesize = "", filename = "" }) => {
 
 // How to create custom file object using node
 class CustomFile {
-  constructor(buffer, stream, filename, mimeType, fileFolderId) {
+  constructor(size, stream, filename, mimeType, fileFolderId) {
     this.stream = () => stream;
     this.isStream = true;
     this.name = filename;
     this.type = mimeType;
     this.folderId = fileFolderId;
-    this.size = buffer.byteLength;
-    this.upload_id = `${filename}_${buffer.byteLength}_${fileFolderId}`;
+    this.size = size;
+    this.upload_id = `${filename}_${size}_${fileFolderId}`;
   }
 }
 
   const filePath = "./src/file-from-node.png" // path to your file
   const filename = "file-from-node.png"; // name-of-your-file.[extension]
   const mimeType = "image/png"; // mime of your file
-   
   const fileFolderId = "";
+  const { size } = await fs.promises.stat(filePath);
 
-  const buffer = await fs.promises.readFile(filePath);
   const stream = fs.createReadStream(filePath);
 
   const customFile = new CustomFile(
-    buffer,
+    size,
     stream,
     filename,
     mimeType,
