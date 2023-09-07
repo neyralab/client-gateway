@@ -9,10 +9,6 @@ export type ImagePreviewEffect = (
   type: string | undefined
 ) => any;
 
-export type GetKeysByWorkspace = () => AxiosResponse;
-
-export type SaveEncryptedFileKeys = (body: any) => AxiosResponse;
-
 export type GetOneTimeToken = (params: {
   filename: string;
   filesize: string | number;
@@ -47,24 +43,20 @@ export interface IDownloadFile {
 export interface IEncodeExistingFile {
   file: File | any;
   getImagePreviewEffect: ImagePreviewEffect;
-  getKeysByWorkspace: GetKeysByWorkspace;
-  saveEncryptedFileKeys: SaveEncryptedFileKeys;
   getOneTimeToken: GetOneTimeToken;
   getDownloadOTT: GetDownloadOTT;
   callback: Callback;
   handlers: any[];
-  keypair?: { publicKey: any; privateKey: any };
+  key: CryptoKey;
 }
 export interface IEncodeFile {
   file: File | any;
   oneTimeToken: string;
   endpoint: string;
-  getKeysByWorkspace: GetKeysByWorkspace;
-  saveEncryptedFileKeys: SaveEncryptedFileKeys;
   getOneTimeToken: GetOneTimeToken;
   callback: Callback;
   handlers: any[];
-  keypair?: { publicKey: any; privateKey: any };
+  key: CryptoKey;
 }
 export interface ISendChunk {
   chunk: ArrayBuffer;

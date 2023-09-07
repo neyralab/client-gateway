@@ -11,7 +11,6 @@ import {
 } from "../index";
 
 import { getThumbnailImage, getThumbnailVideo } from "../utils/getThumbnail";
-import { convertArrayBufferToBase64 } from "../utils/convertArrayBufferToBase64";
 import { convertTextToBase64 } from "../utils/convertTextToBase64";
 import { convertBlobToBase64 } from "../utils/convertBlobToBase64";
 import { fetchBlobFromUrl } from "../utils/fetchBlobFromUrl";
@@ -33,12 +32,10 @@ export class WebCrypto {
     file,
     oneTimeToken,
     endpoint,
-    getKeysByWorkspace,
-    saveEncryptedFileKeys,
     getOneTimeToken,
     callback,
     handlers,
-    keypair,
+    key,
   }: IEncodeFile) {
     const startTime = Date.now();
     const arrayBuffer = await file.arrayBuffer();
@@ -60,16 +57,7 @@ export class WebCrypto {
 
     let result;
 
-    const {
-      data: { keys },
-    } = await getKeysByWorkspace();
-
     const totalProgress = { number: 0 };
-    const key = await crypto.subtle.generateKey(
-      { name: "AES-GCM", length: 256 },
-      true,
-      ["encrypt", "decrypt"]
-    );
 
     for (const chunk of chunks) {
       const currentIndex = chunks.findIndex((el) => el === chunk);
@@ -93,19 +81,6 @@ export class WebCrypto {
         return;
       }
     }
-
-    const bufferKey = await crypto.subtle.exportKey("raw", key);
-    const base64Key = convertArrayBufferToBase64(bufferKey);
-    const encryptedKey = await keypair.publicKey.encrypt(base64Key);
-    const encryptedHexKey = forge.util.bytesToHex(encryptedKey);
-
-    const encryptedKeys = keys.map((el: any) => {
-      return { publicKey: el, encryptedFileKey: encryptedHexKey };
-    });
-    saveEncryptedFileKeys({
-      slug: result?.data?.data?.slug,
-      encryptedKeys: encryptedKeys,
-    });
 
     totalProgress.number = 0;
 
@@ -140,13 +115,11 @@ export class WebCrypto {
   async encodeExistingFile({
     file,
     getImagePreviewEffect,
-    getKeysByWorkspace,
-    saveEncryptedFileKeys,
     getOneTimeToken,
     getDownloadOTT,
     callback,
     handlers,
-    keypair,
+    key,
   }: IEncodeExistingFile) {
     const controller = new AbortController();
     const { signal } = controller;
@@ -195,17 +168,9 @@ export class WebCrypto {
       },
     } = await getOneTimeToken({ filename: file.name, filesize: file.size });
 
-    const {
-      data: { keys },
-    } = await getKeysByWorkspace();
-
     const startTime = Date.now();
     const base64iv = Base64.fromByteArray(this.iv);
-    const key = await crypto.subtle.generateKey(
-      { name: "AES-GCM", length: 256 },
-      true,
-      ["encrypt", "decrypt"]
-    );
+
     const totalProgress = { number: 0 };
     let data: any;
     try {
@@ -236,19 +201,6 @@ export class WebCrypto {
     }
     const { data: responseFromIpfs } = data;
     if (responseFromIpfs) {
-      const bufferKey = await crypto.subtle.exportKey("raw", key);
-      const base64Key = convertArrayBufferToBase64(bufferKey);
-      const encryptedKey = await keypair.publicKey.encrypt(base64Key);
-      const encryptedHexKey = forge.util.bytesToHex(encryptedKey);
-
-      const encryptedKeys = keys.map((el: any) => {
-        return { publicKey: el, encryptedFileKey: encryptedHexKey };
-      });
-      saveEncryptedFileKeys({
-        slug: responseFromIpfs?.data?.slug,
-        encryptedKeys: encryptedKeys,
-      });
-      localStorage.removeItem("progress");
       const isCancelModalOpen = document.body.querySelector(
         ".download__modal__button__cancel"
       );
@@ -295,6 +247,7 @@ export class WebCrypto {
           console.error("ERROR", e);
         }
       }
+      return responseFromIpfs;
     }
   }
 }
