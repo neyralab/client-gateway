@@ -63,8 +63,38 @@ Accepts:
 ```javascript
 import { uploadFile } from 'gdgateway-client/lib/es5';
 
+// How to create custom file object using node
+class CustomFile {
+  constructor(buffer, stream, filename, mimeType, fileFolderId) {
+    this.stream = () => stream;
+    this.isStream = true;
+    this.name = filename;
+    this.type = mimeType;
+    this.folderId = fileFolderId;
+    this.size = buffer.byteLength;
+    this.upload_id = `${filename}_${buffer.byteLength}_${fileFolderId}`;
+  }
+}
+
+  const filePath = "./src/file-from-node.png" // path to your file
+  const filename = "file-from-node.png"; // name-of-your-file.[extension]
+  const mimeType = "image/png"; // mime of your file
+   
+  const fileFolderId = "";
+
+  const buffer = await fs.promises.readFile(filePath);
+  const stream = fs.createReadStream(filePath);
+
+  const customFile = new CustomFile(
+    buffer,
+    stream,
+    filename,
+    mimeType,
+    fileFolderId
+  );
+
 await uploadFile({
-  file,
+  file: customFile,
   oneTimeToken,
   endpoint,
   callback,
@@ -88,8 +118,44 @@ import { WebCrypto } from 'gdgateway-client/lib/es5';
 
 const crypter = new WebCrypto();
 
+// getOneTimeToken example: request for endpoint and token
+const getOneTimeToken = ({ filesize = "", filename = "" }) => {
+  const url = '/api/user/generate/token';
+  return authRequest.post(url, { filesize, filename });
+};
+
+// How to create custom file object using node
+class CustomFile {
+  constructor(buffer, stream, filename, mimeType, fileFolderId) {
+    this.stream = () => stream;
+    this.isStream = true;
+    this.name = filename;
+    this.type = mimeType;
+    this.folderId = fileFolderId;
+    this.size = buffer.byteLength;
+    this.upload_id = `${filename}_${buffer.byteLength}_${fileFolderId}`;
+  }
+}
+
+  const filePath = "./src/file-from-node.png" // path to your file
+  const filename = "file-from-node.png"; // name-of-your-file.[extension]
+  const mimeType = "image/png"; // mime of your file
+   
+  const fileFolderId = "";
+
+  const buffer = await fs.promises.readFile(filePath);
+  const stream = fs.createReadStream(filePath);
+
+  const customFile = new CustomFile(
+    buffer,
+    stream,
+    filename,
+    mimeType,
+    fileFolderId
+  );
+
 await crypter.encodeFile({
-    file,
+    file: customFile,
     oneTimeToken,
     endpoint,
     getOneTimeToken,
