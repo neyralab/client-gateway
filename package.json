@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "compile": "rimraf lib && tsc && tsc --build tsconfig.es5.json",
+    "compile": "rm -rf lib && tsc && tsc --build tsconfig.es5.json",
     "test": "jest"
   },
   "repository": {
