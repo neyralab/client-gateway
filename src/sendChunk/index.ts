@@ -44,23 +44,6 @@ export const sendChunk = async ({
       "X-Ai-Generated": false,
       ...headers,
     },
-    onUploadProgress: (event) => {
-      if (event.loaded === chunk.byteLength) {
-        const prevProgress = totalProgress.number || 0;
-        const progress = +prevProgress + event.loaded;
-        totalProgress.number = progress;
-        const elapsedTime = Date.now() - startTime;
-        const remainingBytes = file.size - progress;
-        const bytesPerMillisecond = progress / elapsedTime;
-        const remainingTime = remainingBytes / bytesPerMillisecond;
-        const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
-        handlers.includes("onProgress") &&
-          callback({
-            type: "onProgress",
-            params: { id: file.upload_id, progress, timeLeft },
-          });
-      }
-    },
   });
 
   const uploadChunk: (chunk: ArrayBuffer) => Promise<any> = async (
@@ -83,6 +66,20 @@ export const sendChunk = async ({
       if (currentTry > 1) {
         currentTry = 1;
       }
+      const prevProgress = totalProgress.number || 0;
+      const progress = +prevProgress + chunk.byteLength;
+      totalProgress.number = progress;
+      const elapsedTime = Date.now() - startTime;
+      const remainingBytes = file.size - progress;
+      const bytesPerMillisecond = progress / elapsedTime;
+      const remainingTime = remainingBytes / bytesPerMillisecond;
+      const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
+      handlers.includes("onProgress") &&
+        callback({
+          type: "onProgress",
+          params: { id: file.upload_id, progress, timeLeft },
+        });
+
       return response;
     } catch (error: any) {
       console.error("ERROR", error);
