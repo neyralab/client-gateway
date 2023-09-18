@@ -156,7 +156,6 @@ await crypter.encodeFile({
     file: customFile,
     oneTimeToken,
     endpoint,
-    getOneTimeToken,
     callback,
     handlers,
     key
@@ -168,10 +167,9 @@ Accepts:
 1. file - current file that is supposed to be encrypted and uploaded
 2. oneTimeToken - token from /generate/token request
 3. endpoint - endpoint from /generate/token request
-4. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed
-5. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-6. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
-7. key - Crypto Key for file encryption;
+4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+5. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+6. key - Crypto Key for file encryption;
 
 ### Encrypt already uploaded file
 ```javascript
@@ -181,7 +179,6 @@ const crypter = new WebCrypto();
 
 await crypter.encodeExistingFile({
     file,
-    getImagePreviewEffect,
     getOneTimeToken,
     getDownloadOTT,
     callback,
@@ -193,12 +190,11 @@ await crypter.encodeExistingFile({
 
 Accepts:
 1. file - current file that is supposed to be encrypted and updated
-2. getImagePreviewEffect - callback function that return current file thumbnail (image/video) to be generated on frontend and saved on /chunked/thumb/{slug}
-3. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
-4. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
-5. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-6. handlers - all possible handlers of callback functions (should include 'type' of callback function);
-7. key - Crypto Key for file encryption;
+2. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
+3. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
+4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+5. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+6. key - Crypto Key for file encryption;
 
 
 ### Decrypt chunk

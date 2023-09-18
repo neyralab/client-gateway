@@ -10,10 +10,6 @@ import {
   swapChunk,
 } from "../index";
 
-import { getThumbnailImage, getThumbnailVideo } from "../utils/getThumbnail";
-import { convertTextToBase64 } from "../utils/convertTextToBase64";
-import { convertBlobToBase64 } from "../utils/convertBlobToBase64";
-import { fetchBlobFromUrl } from "../utils/fetchBlobFromUrl";
 import { getCrypto } from "../utils/getCrypto";
 
 import { IEncodeExistingFile, IEncodeFile } from "../types";
@@ -32,7 +28,6 @@ export class WebCrypto {
     file,
     oneTimeToken,
     endpoint,
-    getOneTimeToken,
     callback,
     handlers,
     key,
@@ -41,20 +36,6 @@ export class WebCrypto {
     const arrayBuffer = await file.arrayBuffer();
     const chunks = chunkFile({ arrayBuffer });
 
-    let base64Image;
-    switch (true) {
-      case file.type.startsWith("image"):
-        getThumbnailImage(file).then((result) => {
-          base64Image = result;
-        });
-        break;
-      case file.type.startsWith("video"):
-        getThumbnailVideo(file).then((result) => {
-          base64Image = result;
-        });
-        break;
-    }
-
     let result;
 
     const totalProgress = { number: 0 };
@@ -62,6 +43,7 @@ export class WebCrypto {
     for (const chunk of chunks) {
       const currentIndex = chunks.findIndex((el) => el === chunk);
       const encryptedChunk = await encryptChunk({ chunk, iv: this.iv, key });
+
       result = await sendChunk({
         chunk: encryptedChunk,
         index: currentIndex,
@@ -84,37 +66,11 @@ export class WebCrypto {
 
     totalProgress.number = 0;
 
-    const {
-      data: {
-        user_token: { token: thumbToken },
-        endpoint: thumbEndpoint,
-      },
-    } = await getOneTimeToken({ filename: file.name, filesize: file.size });
-
-    const instance = axios.create({
-      headers: {
-        "x-file-name": file.name,
-        "Content-Type": "application/octet-stream",
-        "one-time-token": thumbToken,
-      },
-    });
-    try {
-      if (base64Image) {
-        await instance.post(
-          `${thumbEndpoint}/chunked/thumb/${result?.data?.data?.slug}`,
-          base64Image
-        );
-      }
-    } catch (e) {
-      return { failed: true };
-    }
-
     return result;
   }
 
   async encodeExistingFile({
     file,
-    getImagePreviewEffect,
     getOneTimeToken,
     getDownloadOTT,
     callback,
@@ -141,9 +97,6 @@ export class WebCrypto {
     const chunks = chunkFile({ arrayBuffer });
 
     const fileSignal = axios.CancelToken.source();
-    let thumbnail;
-    const hasThumbnail =
-      file.mime.startsWith("image") || file.mime.startsWith("video");
 
     handlers.includes("onStart") &&
       callback({
@@ -151,16 +104,6 @@ export class WebCrypto {
         params: { file, size: arrayBuffer.byteLength },
       });
 
-    if (hasThumbnail) {
-      thumbnail = await getImagePreviewEffect(
-        file.slug,
-        300,
-        164,
-        "crop",
-        fileSignal.token,
-        file.mime
-      );
-    }
     const {
       data: {
         user_token: { token: oneTimeToken },
@@ -209,44 +152,6 @@ export class WebCrypto {
           type: "onSuccess",
           params: { isCancelModalOpen, response: responseFromIpfs },
         });
-
-      if (hasThumbnail) {
-        try {
-          const {
-            data: {
-              user_token: { token: thumbToken },
-              endpoint: thumbEndpoint,
-            },
-          } = await getOneTimeToken({
-            filename: file.name,
-            filesize: file.size,
-          });
-          const fileName = convertTextToBase64(file.name);
-          fetchBlobFromUrl(thumbnail)
-            .then((blob) => {
-              return convertBlobToBase64(blob);
-            })
-            .then((base64Data) => {
-              axios
-                .create({
-                  headers: {
-                    "x-file-name": fileName,
-                    "Content-Type": "application/octet-stream",
-                    "one-time-token": thumbToken,
-                  },
-                })
-                .post(
-                  `${thumbEndpoint}/chunked/thumb/${responseFromIpfs?.data?.slug}`,
-                  base64Data
-                );
-            })
-            .catch((e) => {
-              console.error("ERROR", e);
-            });
-        } catch (e) {
-          console.error("ERROR", e);
-        }
-      }
       return responseFromIpfs;
     }
   }

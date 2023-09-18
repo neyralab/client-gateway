@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "compile": "rm -rf lib && tsc && tsc --build tsconfig.es5.json",
+    "compile-win": "rimraf lib && tsc && tsc --build tsconfig.es5.json",
     "test": "jest"
   },
   "repository": {

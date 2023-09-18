@@ -42,7 +42,6 @@ export interface IDownloadFile {
 }
 export interface IEncodeExistingFile {
   file: File | any;
-  getImagePreviewEffect: ImagePreviewEffect;
   getOneTimeToken: GetOneTimeToken;
   getDownloadOTT: GetDownloadOTT;
   callback: Callback;
@@ -53,7 +52,6 @@ export interface IEncodeFile {
   file: File | any;
   oneTimeToken: string;
   endpoint: string;
-  getOneTimeToken: GetOneTimeToken;
   callback: Callback;
   handlers: any[];
   key: CryptoKey;
