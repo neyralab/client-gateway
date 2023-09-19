@@ -77,7 +77,7 @@ export const sendChunk = async ({
       handlers.includes("onProgress") &&
         callback({
           type: "onProgress",
-          params: { id: file.upload_id, progress, timeLeft },
+          params: { id: file.uploadId, progress, timeLeft },
         });
 
       return response;

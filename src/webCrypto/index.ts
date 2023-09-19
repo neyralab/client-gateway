@@ -1,16 +1,14 @@
-import axios from "axios";
 import * as forge from "node-forge";
 import * as Base64 from "base64-js";
 
-import {
-  chunkFile,
-  downloadFile,
-  encryptChunk,
-  sendChunk,
-  swapChunk,
-} from "../index";
+import { downloadFile, encryptChunk, sendChunk, swapChunk } from "../index";
 
 import { getCrypto } from "../utils/getCrypto";
+import { chunkStream } from "../utils/chunkStream";
+import { hasWindow } from "../utils/hasWindow";
+import { chunkBuffer } from "../utils/chunkBuffer";
+
+import { CHUNK_SIZE } from "../config";
 
 import { IEncodeExistingFile, IEncodeFile } from "../types";
 
@@ -24,52 +22,6 @@ export class WebCrypto {
   readonly clientsideKeySha3Hash = md.digest().toHex();
   public iv: Uint8Array = crypto.getRandomValues(new Uint8Array(12));
 
-  // 1. implementation we have for now
-  // async encodeFile({
-  //   file,
-  //   oneTimeToken,
-  //   endpoint,
-  //   callback,
-  //   handlers,
-  //   key,
-  // }: IEncodeFile) {
-  //   const startTime = Date.now();
-  //   const arrayBuffer = await file.arrayBuffer();
-  //   const chunks = chunkFile({ arrayBuffer });
-
-  //   let result;
-
-  //   const totalProgress = { number: 0 };
-
-  //   for (const chunk of chunks) {
-  //     const currentIndex = chunks.findIndex((el) => el === chunk);
-  //     const encryptedChunk = await encryptChunk({ chunk, iv: this.iv, key });
-
-  //     result = await sendChunk({
-  //       chunk: encryptedChunk,
-  //       index: currentIndex,
-  //       chunksLength: chunks.length - 1,
-  //       file,
-  //       startTime,
-  //       oneTimeToken,
-  //       endpoint,
-  //       iv: this.iv,
-  //       clientsideKeySha3Hash: this.clientsideKeySha3Hash,
-  //       totalProgress,
-  //       callback,
-  //       handlers,
-  //     });
-  //     if (result?.failed) {
-  //       totalProgress.number = 0;
-  //       return;
-  //     }
-  //   }
-
-  //   totalProgress.number = 0;
-
-  //   return result;
-  // }
-
   async encodeFile({
     file,
     oneTimeToken,
@@ -78,25 +30,25 @@ export class WebCrypto {
     handlers,
     key,
   }: IEncodeFile) {
-    const chunkSize = 1024 * 1024; // 1MB
-
-    const totalChunks = Math.ceil(Math.floor(file.size / chunkSize) / 2);
-
     const startTime = Date.now();
-    const reader = file.stream().getReader();
-
     let currentIndex = 0;
     let result;
 
     const totalProgress = { number: 0 };
+    if (file?.isStream && !hasWindow()) {
+      const stream = file.stream();
+      const chunksLength = Math.floor(file.size / CHUNK_SIZE);
+      const lastChunkSize =
+        file.size > CHUNK_SIZE
+          ? file.size - chunksLength * CHUNK_SIZE
+          : file.size;
 
-    try {
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
+      for await (const chunk of chunkStream({
+        stream,
+        lastChunkSize,
+      })) {
         const encryptedChunk = await encryptChunk({
-          chunk: value,
+          chunk,
           iv: this.iv,
           key,
         });
@@ -105,7 +57,7 @@ export class WebCrypto {
           chunk: encryptedChunk,
           index: currentIndex,
           file,
-          chunksLength: totalChunks,
+          chunksLength,
           startTime,
           oneTimeToken,
           endpoint,
@@ -119,17 +71,44 @@ export class WebCrypto {
           totalProgress.number = 0;
           return;
         }
-
+        if (result?.data?.data?.slug) {
+          totalProgress.number = 0;
+          return result;
+        }
         currentIndex++;
       }
+    } else {
+      const arrayBuffer = await file.arrayBuffer();
+      const chunks = chunkBuffer({ arrayBuffer });
 
+      const totalProgress = { number: 0 };
+
+      for (const chunk of chunks) {
+        const currentIndex = chunks.findIndex((el) => el === chunk);
+        const encryptedChunk = await encryptChunk({ chunk, iv: this.iv, key });
+
+        result = await sendChunk({
+          chunk: encryptedChunk,
+          index: currentIndex,
+          chunksLength: chunks.length - 1,
+          file,
+          startTime,
+          oneTimeToken,
+          endpoint,
+          iv: this.iv,
+          clientsideKeySha3Hash: this.clientsideKeySha3Hash,
+          totalProgress,
+          callback,
+          handlers,
+        });
+        if (result?.failed) {
+          totalProgress.number = 0;
+          return;
+        }
+      }
       totalProgress.number = 0;
 
       return result;
-    } catch (error) {
-      console.error("Error processing file:", error);
-    } finally {
-      reader.releaseLock();
     }
   }
 
@@ -158,9 +137,7 @@ export class WebCrypto {
       isEncrypted: false,
     });
     const arrayBuffer = await fileBlob.arrayBuffer();
-    const chunks = chunkFile({ arrayBuffer });
-
-    const fileSignal = axios.CancelToken.source();
+    const chunks = chunkBuffer({ arrayBuffer });
 
     handlers.includes("onStart") &&
       callback({

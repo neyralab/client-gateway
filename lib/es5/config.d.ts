@@ -4,3 +4,4 @@ export declare const FILE_ACTION_TYPES: {
     VIEW: number;
     DOWNLOAD: number;
 };
+export declare const CHUNK_SIZE: number;
