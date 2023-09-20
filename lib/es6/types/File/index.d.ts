@@ -17,6 +17,5 @@ export declare class LocalFileStream extends LocalFile {
 }
 export declare class LocalFileBuffer extends LocalFile {
     arrayBuffer?: () => Promise<ArrayBuffer>;
-    controller?: () => Promise<ArrayBuffer>;
     constructor(size: number, filename: string, mimeType: string, fileFolderId: string, arrayBuffer: () => Promise<ArrayBuffer>, source?: CancelTokenSource);
 }

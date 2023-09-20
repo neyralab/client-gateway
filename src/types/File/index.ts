@@ -1,4 +1,4 @@
-import axios, { CancelTokenSource } from "axios";
+import { CancelTokenSource } from "axios";
 import * as fs from "fs";
 
 export class LocalFile {
@@ -44,7 +44,6 @@ export class LocalFileStream extends LocalFile {
 
 export class LocalFileBuffer extends LocalFile {
   public arrayBuffer?: () => Promise<ArrayBuffer>;
-  public controller?: () => Promise<ArrayBuffer>;
 
   constructor(
     size: number,
