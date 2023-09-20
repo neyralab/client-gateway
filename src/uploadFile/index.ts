@@ -1,10 +1,7 @@
 import { CHUNK_SIZE } from "../config";
 
 import { sendChunk } from "../sendChunk";
-
-import { chunkBuffer } from "../utils/chunkBuffer";
-import { chunkStream } from "../utils/chunkStream";
-import { hasWindow } from "../utils/hasWindow";
+import { chunkFile } from "../utils/chunkFile";
 
 import { IUploadFile } from "../types";
 
@@ -20,63 +17,31 @@ export const uploadFile = async ({
 
   let result: any;
 
-  if (file?.isStream && !hasWindow()) {
-    const stream = file.stream();
-    const chunksLength = Math.floor(file.size / CHUNK_SIZE);
-    const lastChunkSize =
-      file.size > CHUNK_SIZE
-        ? file.size - chunksLength * CHUNK_SIZE
-        : file.size;
+  const chunksLength = Math.floor(file.size / CHUNK_SIZE);
 
-    let currentIndex = 0;
+  let currentIndex = 0;
 
-    for await (const chunk of chunkStream({ stream, lastChunkSize })) {
-      result = await sendChunk({
-        chunk,
-        index: currentIndex,
-        chunksLength,
-        file,
-        startTime,
-        oneTimeToken,
-        endpoint,
-        totalProgress,
-        callback,
-        handlers,
-      });
-      if (result?.failed) {
-        totalProgress.number = 0;
-        return;
-      }
-      if (result?.data?.data?.slug) {
-        totalProgress.number = 0;
-        return result;
-      }
-      currentIndex++;
+  for await (const chunk of chunkFile({ file })) {
+    result = await sendChunk({
+      chunk,
+      index: currentIndex,
+      chunksLength,
+      file,
+      startTime,
+      oneTimeToken,
+      endpoint,
+      totalProgress,
+      callback,
+      handlers,
+    });
+    if (result?.failed) {
+      totalProgress.number = 0;
+      return;
     }
-  } else {
-    const arrayBuffer = await file.arrayBuffer();
-    const chunks = chunkBuffer({ arrayBuffer });
-
-    for (const chunk of chunks) {
-      const currentIndex = chunks.findIndex((el) => el === chunk);
-      result = await sendChunk({
-        chunk,
-        index: currentIndex,
-        chunksLength: chunks.length - 1,
-        file,
-        startTime,
-        oneTimeToken,
-        endpoint,
-        totalProgress,
-        callback,
-        handlers,
-      });
-      if (result?.failed) {
-        totalProgress.number = 0;
-        return;
-      }
+    if (result?.data?.data?.slug) {
+      totalProgress.number = 0;
+      return result;
     }
-    totalProgress.number = 0;
-    return result;
+    currentIndex++;
   }
 };

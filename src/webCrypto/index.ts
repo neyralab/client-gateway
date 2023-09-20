@@ -4,9 +4,8 @@ import * as Base64 from "base64-js";
 import { downloadFile, encryptChunk, sendChunk, swapChunk } from "../index";
 
 import { getCrypto } from "../utils/getCrypto";
-import { chunkStream } from "../utils/chunkStream";
-import { hasWindow } from "../utils/hasWindow";
 import { chunkBuffer } from "../utils/chunkBuffer";
+import { chunkFile } from "../utils/chunkFile";
 
 import { CHUNK_SIZE } from "../config";
 
@@ -35,80 +34,38 @@ export class WebCrypto {
     let result;
 
     const totalProgress = { number: 0 };
-    if (file?.isStream && !hasWindow()) {
-      const stream = file.stream();
-      const chunksLength = Math.floor(file.size / CHUNK_SIZE);
-      const lastChunkSize =
-        file.size > CHUNK_SIZE
-          ? file.size - chunksLength * CHUNK_SIZE
-          : file.size;
+    const chunksLength = Math.floor(file.size / CHUNK_SIZE);
 
-      for await (const chunk of chunkStream({
-        stream,
-        lastChunkSize,
-      })) {
-        const encryptedChunk = await encryptChunk({
-          chunk,
-          iv: this.iv,
-          key,
-        });
+    for await (const chunk of chunkFile({ file })) {
+      const encryptedChunk = await encryptChunk({
+        chunk,
+        iv: this.iv,
+        key,
+      });
 
-        result = await sendChunk({
-          chunk: encryptedChunk,
-          index: currentIndex,
-          file,
-          chunksLength,
-          startTime,
-          oneTimeToken,
-          endpoint,
-          iv: this.iv,
-          clientsideKeySha3Hash: this.clientsideKeySha3Hash,
-          totalProgress,
-          callback,
-          handlers,
-        });
-        if (result?.failed) {
-          totalProgress.number = 0;
-          return;
-        }
-        if (result?.data?.data?.slug) {
-          totalProgress.number = 0;
-          return result;
-        }
-        currentIndex++;
+      result = await sendChunk({
+        chunk: encryptedChunk,
+        index: currentIndex,
+        file,
+        chunksLength,
+        startTime,
+        oneTimeToken,
+        endpoint,
+        iv: this.iv,
+        clientsideKeySha3Hash: this.clientsideKeySha3Hash,
+        totalProgress,
+        callback,
+        handlers,
+      });
+      if (result?.failed) {
+        totalProgress.number = 0;
+        return;
       }
-    } else {
-      const arrayBuffer = await file.arrayBuffer();
-      const chunks = chunkBuffer({ arrayBuffer });
-
-      const totalProgress = { number: 0 };
-
-      for (const chunk of chunks) {
-        const currentIndex = chunks.findIndex((el) => el === chunk);
-        const encryptedChunk = await encryptChunk({ chunk, iv: this.iv, key });
-
-        result = await sendChunk({
-          chunk: encryptedChunk,
-          index: currentIndex,
-          chunksLength: chunks.length - 1,
-          file,
-          startTime,
-          oneTimeToken,
-          endpoint,
-          iv: this.iv,
-          clientsideKeySha3Hash: this.clientsideKeySha3Hash,
-          totalProgress,
-          callback,
-          handlers,
-        });
-        if (result?.failed) {
-          totalProgress.number = 0;
-          return;
-        }
+      if (result?.data?.data?.slug) {
+        totalProgress.number = 0;
+        return result;
       }
-      totalProgress.number = 0;
-
-      return result;
+      currentIndex++;
     }
   }
 

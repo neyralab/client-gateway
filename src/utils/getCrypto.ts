@@ -1,8 +1,8 @@
 import { Crypto } from "@peculiar/webcrypto";
-import { hasWindow } from "./hasWindow";
+import { isBrowser } from "./isBrowser";
 
 export const getCrypto = () => {
-  if (!hasWindow()) {
+  if (!isBrowser()) {
     return new Crypto();
   } else if (!window.crypto?.subtle) {
     return new Crypto();

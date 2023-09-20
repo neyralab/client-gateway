@@ -2,7 +2,7 @@ import * as forge from "node-forge";
 
 import { downloadChunk, countChunks, decryptChunk } from "../index";
 
-import { hasWindow } from "../utils/hasWindow";
+import { isBrowser } from "../utils/isBrowser";
 import { joinChunks } from "../utils/joinChunks";
 
 import { IDownloadFile } from "../types";
@@ -45,7 +45,7 @@ export const downloadFile = async ({
     data: { count },
   } = chunkCountResponse;
 
-  if (!hasWindow()) {
+  if (!isBrowser()) {
     const { Readable } = require("stream");
     fileStream = new Readable({
       read() {},

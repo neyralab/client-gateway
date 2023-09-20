@@ -1,4 +1,5 @@
 import { AxiosResponse } from "axios";
+import { LocalFile } from "./File";
 export type ImagePreviewEffect = (fileId: string, width: number, height: number, fit: string, cancelToken: AbortSignal | any, type: string | undefined) => any;
 export type GetOneTimeToken = (params: {
     filename: string;
@@ -31,7 +32,7 @@ export interface IEncodeExistingFile {
     key: CryptoKey;
 }
 export interface IEncodeFile {
-    file: File | any;
+    file: LocalFile;
     oneTimeToken: string;
     endpoint: string;
     callback: Callback;
@@ -42,7 +43,7 @@ export interface ISendChunk {
     chunk: ArrayBuffer;
     index: number;
     chunksLength: number;
-    file: File | any;
+    file: LocalFile;
     startTime: any;
     oneTimeToken: string;
     endpoint: string;
@@ -55,7 +56,7 @@ export interface ISendChunk {
     handlers: any[];
 }
 export interface IUploadFile {
-    file: File | any;
+    file: LocalFile;
     oneTimeToken: string;
     endpoint: string;
     callback: Callback;

@@ -10,4 +10,4 @@ export { countChunks } from "./countChunks";
 export { getUserRSAKeys } from "./getUserRSAKeys";
 export { publicKeyToPem } from "./publicKeyToPem";
 export { WebCrypto } from "./webCrypto";
-export { LocalFile } from "./localFile";
+export { LocalFile, LocalFileStream, LocalFileBuffer } from "./types/File";
