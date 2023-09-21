@@ -425,112 +425,58 @@ Accepts:
 1. publicKey - generated public key using getUserRSAKeys function
 
 
-## How to generate thumbnails
+## How to generate and save thumbnails from node
 
 ```javascript
-const MAX_WIDTH = 240;
-const MAX_HEIGHT = 240;
+import * as fs from "fs";
+import * as sharp from "sharp";
 
-export const getReductionFactor = (size: number) => { // used to reduce thumbnail quality
-  const oneMB = 1000000;
-  const fileMB = Math.ceil(size / oneMB);
-
-  if (fileMB > 10) {
-    return 0.1;
-  }
-  if (fileMB < 1) {
-    return 0.9;
-  }
-  return 1 - fileMB * 0.1;
-};
-
-export const getThumbnailImage = (file: LocalFile) => {
+export const getThumbnailImage = ({ path }: { path: string }) => {
   return new Promise((resolve, reject) => {
-    const imageURL = URL.createObjectURL(file);
-    const image = new Image();
-    image.src = imageURL;
+    const inputStream = fs.createReadStream(path);
 
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-
-    image.onload = () => {
-      const aspectRatio = image.width / image.height;
-
-      let newWidth = MAX_WIDTH;
-      let newHeight = MAX_HEIGHT;
-
-      if (image.width > image.height) {
-        newHeight = MAX_WIDTH / aspectRatio;
-      } else {
-        newWidth = MAX_HEIGHT * aspectRatio;
-      }
-
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-
-      ctx?.drawImage(image, 0, 0, newWidth, newHeight);
-
-      const qualityReduction = getReductionFactor(file.size);
-
-      const dataURL = canvas.toDataURL(
-        "image/jpeg",
-        +qualityReduction.toFixed(1)
-      );
-      URL.revokeObjectURL(imageURL);
-
-      resolve(dataURL);
-    };
-    image.onerror = (error) => {
-      reject(error);
-    };
+    inputStream
+      .pipe(sharp().resize(240, 240).jpeg({ quality: 10 })) // You can adjust the quality value as needed, with 100 being the highest quality (least compression) and lower values reducing the quality and increasing compression.
+      .toBuffer((err, buffer) => {
+        if (err) {
+          reject(err);
+        } else {
+          const base64Thumbnail = `data:image/jpeg;base64,${buffer.toString(
+            "base64"
+          )}`;
+          resolve(base64Thumbnail);
+        }
+      });
   });
 };
 
-export const getThumbnailVideo = (file: LocalFile) => { 
-  return new Promise((resolve, reject) => {
-    const video = document.createElement("video");
-    video.src = URL.createObjectURL(file);
+  // EXAMPLE
+  const path = = "./src/river-5.jpg"; 
+  const base64Image = await getThumbnailImage({ path }); // create thumbnail
 
-    video.onloadedmetadata = () => {
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d");
+  // ..upload file and get response
 
-      const aspectRatio = video.videoWidth / video.videoHeight;
-
-      let newWidth = MAX_WIDTH;
-      let newHeight = MAX_HEIGHT;
-
-      if (video.videoWidth > video.videoHeight) {
-        newHeight = MAX_WIDTH / aspectRatio;
-      } else {
-        newWidth = MAX_HEIGHT * aspectRatio;
-      }
-
-      canvas.width = newWidth;
-      canvas.height = newHeight;
-
-      video.currentTime = 0.1;
-
-      video.onseeked = () => {
-        ctx?.drawImage(video, 0, 0, newWidth, newHeight);
-
-        const qualityReduction = getReductionFactor(file.size);
-
-        const dataURL = canvas.toDataURL(
-          "image/jpeg",
-          +qualityReduction.toFixed(1)
-        );
-        resolve(dataURL);
-      };
-
-      video.onerror = (error) => {
-        reject(error);
-      };
-    };
-
-    video.onerror = (error) => {
-      reject(error);
-    };
+  const {
+    data: {
+      user_token: { token: thumbToken }, // get token and endpoint for saving thumbnail to server
+      endpoint: thumbEndpoint,
+    },
+  } = await getOneTimeToken({
+    filename: file.name,
+    filesize: file.size,
   });
-};
+
+  const instance = axios.create({
+    headers: {
+      "x-file-name": file.name,
+      "Content-Type": "application/octet-stream",
+      "one-time-token": thumbToken,
+    },
+  });
+  if (base64Image) {
+    await instance.post(
+      `${thumbEndpoint}/chunked/thumb/${slug}`, // send thumbnail to server (use slug from response)
+      base64Image
+    );
+  }
 ```
