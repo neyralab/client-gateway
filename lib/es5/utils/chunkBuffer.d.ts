@@ -1,3 +1,3 @@
-export declare const chunkBuffer: ({ arrayBuffer }: {
+export declare function chunkBuffer({ arrayBuffer, }: {
     arrayBuffer: ArrayBuffer;
-}) => any[];
+}): AsyncGenerator<ArrayBuffer>;

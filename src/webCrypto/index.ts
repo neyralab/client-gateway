@@ -90,7 +90,6 @@ export class WebCrypto {
       isEncrypted: false,
     });
     const arrayBuffer = await fileBlob.arrayBuffer();
-    const chunks = chunkBuffer({ arrayBuffer });
 
     handlers.includes("onStart") &&
       callback({
@@ -109,19 +108,18 @@ export class WebCrypto {
     const base64iv = Base64.fromByteArray(this.iv);
 
     const totalProgress = { number: 0 };
-    let data: any;
+    let result: any;
+    let currentIndex = 1;
     try {
-      for (const chunk of chunks) {
-        const currentIndex = chunks.findIndex((el) => el === chunk);
+      for await (const chunk of chunkBuffer({ arrayBuffer })) {
         const encryptedChunk = await encryptChunk({ chunk, iv: this.iv, key });
 
-        data = await swapChunk({
+        result = await swapChunk({
           file,
           endpoint,
           base64iv,
           clientsideKeySha3Hash: this.clientsideKeySha3Hash,
           index: currentIndex,
-          chunksLength: chunks.length - 1,
           oneTimeToken,
           encryptedChunk,
           fileSize: arrayBuffer.byteLength,
@@ -130,23 +128,28 @@ export class WebCrypto {
           callback,
           handlers,
         });
+
+        if (result?.data?.data?.slug) {
+          totalProgress.number = 0;
+          const { data: responseFromIpfs } = result;
+          if (responseFromIpfs) {
+            const isCancelModalOpen = document.body.querySelector(
+              ".download__modal__button__cancel"
+            );
+            handlers.includes("onSuccess") &&
+              callback({
+                type: "onSuccess",
+                params: { isCancelModalOpen, response: responseFromIpfs },
+              });
+            return responseFromIpfs;
+          }
+        }
+        currentIndex++;
       }
     } catch (e) {
       handlers.includes("onError") &&
         callback({ type: "onError", params: { slug: file.slug } });
       return;
-    }
-    const { data: responseFromIpfs } = data;
-    if (responseFromIpfs) {
-      const isCancelModalOpen = document.body.querySelector(
-        ".download__modal__button__cancel"
-      );
-      handlers.includes("onSuccess") &&
-        callback({
-          type: "onSuccess",
-          params: { isCancelModalOpen, response: responseFromIpfs },
-        });
-      return responseFromIpfs;
     }
   }
 }

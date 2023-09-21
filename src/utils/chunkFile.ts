@@ -1,5 +1,6 @@
 import { CHUNK_SIZE } from "../config";
 import { LocalFileBuffer, LocalFileStream } from "../types/File";
+import { chunkBuffer } from "./chunkBuffer";
 
 export async function* chunkFile({
   file,
@@ -43,13 +44,6 @@ export async function* chunkFile({
     }
   } else {
     const arrayBuffer = await file.arrayBuffer();
-    let start = 0;
-
-    while (start < arrayBuffer.byteLength) {
-      const end = Math.min(arrayBuffer.byteLength, start + CHUNK_SIZE);
-      const chunk = arrayBuffer.slice(start, end);
-      yield chunk;
-      start = end;
-    }
+    yield* chunkBuffer({ arrayBuffer });
   }
 }

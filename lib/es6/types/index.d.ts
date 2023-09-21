@@ -69,7 +69,6 @@ export interface ISwapChunk {
     base64iv: string;
     clientsideKeySha3Hash: string;
     index: number;
-    chunksLength: number;
     oneTimeToken: string;
     encryptedChunk: ArrayBuffer;
     fileSize: number;

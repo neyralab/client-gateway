@@ -323,7 +323,6 @@ import { sendChunk } from 'gdgateway-client/lib/es5';
 await sendChunk({
     chunk,
     index,
-    chunksLength,
     file,
     startTime,
     oneTimeToken,
@@ -340,23 +339,22 @@ await sendChunk({
 Accepts:
 1. chunk - arraybuffer chunk to be send
 2. index - current index chunk (get array of chunks from chunkFile function)
-3. chunksLength - the length of arraybuffer chunk (chunk.byteLength)
-4. file - current file that is supposed to be uploaded
-5. startTime - Date.now(), required to calculate how much time the file upload takes
-6. oneTimeToken - token from /generate/token request
-7. endpoint - endpoint from /generate/token request
-8. iv - should be null if file is unencrypted; if file is encrypted we get generate iv using crypto object 
+3. file - current file that is supposed to be uploaded
+4. startTime - Date.now(), required to calculate how much time the file upload takes
+5. oneTimeToken - token from /generate/token request
+6. endpoint - endpoint from /generate/token request
+7. iv - should be null if file is unencrypted; if file is encrypted we get generate iv using crypto object 
     import { getCrypto } from 'gdgateway-client/lib/es5/utils/getCrypto';
     const crypto = getCrypto();
     const iv = crypto.getRandomValues(new Uint8Array(12));
-9. clientsideKeySha3Hash - should be null if file is unencrypted; if file is encrypted we get generate clientsideKeySha3Hash using node-forge
+8. clientsideKeySha3Hash - should be null if file is unencrypted; if file is encrypted we get generate clientsideKeySha3Hash using node-forge
     const fileKey = forge.random.getBytesSync(32);
     const md = forge.md.sha512.create();
     md.update(fileKey);
     const clientsideKeySha3Hash = md.digest().toHex();
-10. totalProgress - used to update and calculate progress;
-11. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-12. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+9. totalProgress - used to update and calculate progress;
+10. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+11. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Swap chunk (make simple chunk to be encrypted and send it to server)
 ```javascript
@@ -368,7 +366,6 @@ await swapChunk({
   base64iv,
   clientsideKeySha3Hash,
   index,
-  chunksLength,
   oneTimeToken,
   encryptedChunk,
   arrayBuffer,
@@ -394,14 +391,13 @@ Accepts:
     md.update(fileKey);
     const clientsideKeySha3Hash = md.digest().toHex();
 5. index - current index chunk (get array of chunks from chunkFile function)
-6. chunkLength - the length of arraybuffer chunk (chunk.byteLength)
-7. oneTimeToken - token from /generate/token request
-8. encryptedChunk - encrypted arraybuffer chunk to be swapped
-9. fileSize - the whole file's size
-10. startTime - Date.now(), required to calculate how much time the file upload takes
-12. totalProgress - used to update and calculate progress
-13. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-14. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+6. oneTimeToken - token from /generate/token request
+7. encryptedChunk - encrypted arraybuffer chunk to be swapped
+8. fileSize - the whole file's size
+9. startTime - Date.now(), required to calculate how much time the file upload takes
+10. totalProgress - used to update and calculate progress
+11. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+12. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Get user's RSA keys
 ```javascript

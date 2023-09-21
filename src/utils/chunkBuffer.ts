@@ -1,15 +1,16 @@
 import { CHUNK_SIZE } from "../config";
 
-export const chunkBuffer = ({ arrayBuffer }: { arrayBuffer: ArrayBuffer }) => {
-  const chunks = [];
+export async function* chunkBuffer({
+  arrayBuffer,
+}: {
+  arrayBuffer: ArrayBuffer;
+}): AsyncGenerator<ArrayBuffer> {
   let start = 0;
 
   while (start < arrayBuffer.byteLength) {
     const end = Math.min(arrayBuffer.byteLength, start + CHUNK_SIZE);
     const chunk = arrayBuffer.slice(start, end);
-    chunks.push(chunk);
+    yield chunk;
     start = end;
   }
-
-  return chunks;
-};
+}
