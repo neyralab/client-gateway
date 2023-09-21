@@ -1,5 +1,3 @@
-import { CHUNK_SIZE } from "../config";
-
 import { sendChunk } from "../sendChunk";
 import { chunkFile } from "../utils/chunkFile";
 
@@ -17,15 +15,12 @@ export const uploadFile = async ({
 
   let result: any;
 
-  const chunksLength = Math.floor(file.size / CHUNK_SIZE);
-
-  let currentIndex = 0;
+  let currentIndex = 1;
 
   for await (const chunk of chunkFile({ file })) {
     result = await sendChunk({
       chunk,
       index: currentIndex,
-      chunksLength,
       file,
       startTime,
       oneTimeToken,

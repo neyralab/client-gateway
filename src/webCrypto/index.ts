@@ -7,8 +7,6 @@ import { getCrypto } from "../utils/getCrypto";
 import { chunkBuffer } from "../utils/chunkBuffer";
 import { chunkFile } from "../utils/chunkFile";
 
-import { CHUNK_SIZE } from "../config";
-
 import { IEncodeExistingFile, IEncodeFile } from "../types";
 
 const crypto = getCrypto();
@@ -30,11 +28,10 @@ export class WebCrypto {
     key,
   }: IEncodeFile) {
     const startTime = Date.now();
-    let currentIndex = 0;
+    let currentIndex = 1;
     let result;
 
     const totalProgress = { number: 0 };
-    const chunksLength = Math.floor(file.size / CHUNK_SIZE);
 
     for await (const chunk of chunkFile({ file })) {
       const encryptedChunk = await encryptChunk({
@@ -47,7 +44,6 @@ export class WebCrypto {
         chunk: encryptedChunk,
         index: currentIndex,
         file,
-        chunksLength,
         startTime,
         oneTimeToken,
         endpoint,

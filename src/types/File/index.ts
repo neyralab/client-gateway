@@ -1,43 +1,36 @@
-import { CancelTokenSource } from "axios";
 import * as fs from "fs";
 
-export class LocalFile {
+class LocalFile {
   public name: string;
   public type: string;
   public folderId: string;
   public size: number;
   public uploadId: string;
-  public source?: CancelTokenSource;
 
   constructor(
     size: number,
     filename: string,
     mimeType: string,
-    fileFolderId: string,
-    source?: CancelTokenSource
+    fileFolderId: string
   ) {
     this.name = filename;
     this.type = mimeType;
     this.folderId = fileFolderId;
     this.size = size;
     this.uploadId = `${filename}_${size}_${fileFolderId}`;
-    this.source = source;
   }
 }
 
 export class LocalFileStream extends LocalFile {
   public stream: () => fs.ReadStream;
-  public isStream: boolean;
 
   constructor(
     size: number,
     filename: string,
     mimeType: string,
-    fileFolderId: string,
-    source?: CancelTokenSource
+    fileFolderId: string
   ) {
-    super(size, filename, mimeType, fileFolderId, source);
-    this.isStream = true;
+    super(size, filename, mimeType, fileFolderId);
     this.stream = () => fs.createReadStream(filename);
   }
 }
@@ -50,10 +43,9 @@ export class LocalFileBuffer extends LocalFile {
     filename: string,
     mimeType: string,
     fileFolderId: string,
-    arrayBuffer: () => Promise<ArrayBuffer>,
-    source?: CancelTokenSource
+    arrayBuffer: () => Promise<ArrayBuffer>
   ) {
-    super(size, filename, mimeType, fileFolderId, source);
+    super(size, filename, mimeType, fileFolderId);
     this.arrayBuffer = arrayBuffer;
   }
 }

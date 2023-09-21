@@ -7,14 +7,13 @@ import { convertTextToBase64 } from "../utils/convertTextToBase64";
 import { postWithCookies } from "../utils/makeRequestWithCookies";
 import { isBrowser } from "../utils/isBrowser";
 
-import { MAX_TRIES } from "../config";
+import { CHUNK_SIZE, MAX_TRIES } from "../config";
 
 import { ISendChunk } from "../types";
 
 export const sendChunk = async ({
   chunk,
   index,
-  chunksLength,
   file,
   startTime,
   oneTimeToken,
@@ -27,6 +26,7 @@ export const sendChunk = async ({
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const fileName = convertTextToBase64(file.name);
+  const chunksLength = Math.ceil(file.size / CHUNK_SIZE);
   let currentTry = 1;
   let cookieJar = [];
 

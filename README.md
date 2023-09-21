@@ -67,7 +67,6 @@ import { uploadFile } from 'gdgateway-client/lib/es5';
 class CustomFile {
   constructor(size, stream, filename, mimeType, fileFolderId) {
     this.stream = () => stream;
-    this.isStream = true;
     this.name = filename;
     this.type = mimeType;
     this.folderId = fileFolderId;
@@ -105,7 +104,7 @@ await uploadFile({
 For now there is issue with using node environment (for files with size > 1mb): despite of the fact that we send all chunks, later we get only half of them (for preview/downloading);
 
 Accepts:
-1. file - current file that is supposed to be uploaded; (if node environment and need to send stream - file object should have isStream: true, stream: () => 'ReadableStream with data' properties)
+1. file - current file that is supposed to be uploaded; (if node environment and need to send stream - file object should have  stream: () => 'ReadableStream with data')
 2. oneTimeToken - token from /generate/token request
 3. endpoint - endpoint from /generate/token request
 4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
@@ -127,7 +126,6 @@ const getOneTimeToken = ({ filesize = "", filename = "" }) => {
 class CustomFile {
   constructor(size, stream, filename, mimeType, fileFolderId) {
     this.stream = () => stream;
-    this.isStream = true;
     this.name = filename;
     this.type = mimeType;
     this.folderId = fileFolderId;
