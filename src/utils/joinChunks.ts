@@ -1,7 +1,7 @@
-import { hasWindow } from "./hasWindow";
+import { isBrowser } from "./isBrowser";
 
 export const joinChunks = (chunks: ArrayBuffer[]) => {
-  if (hasWindow() && window.Blob) {
+  if (isBrowser() && window.Blob) {
     return new Blob(chunks);
   } else if (
     typeof process !== "undefined" &&

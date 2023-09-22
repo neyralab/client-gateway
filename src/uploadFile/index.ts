@@ -1,8 +1,10 @@
-import { chunkFile, chunkFileStream } from "../chunkFile";
 import { sendChunk } from "../sendChunk";
+import { chunkFile } from "../utils/chunkFile";
 
 import { IUploadFile } from "../types";
-import { streamToBuffer } from "../utils/streamToBuffer";
+
+const fileControllers = {};
+const cancelledFiles = new Set();
 
 export const uploadFile = async ({
   file,
@@ -12,28 +14,22 @@ export const uploadFile = async ({
   handlers,
 }: IUploadFile) => {
   const startTime = Date.now();
+  const controller = new AbortController();
   let totalProgress = { number: 0 };
-  let chunks: any[] | any;
+
   let result: any;
 
-  if (file?.isStream) {
-    // need it in the future
-    // const stream = await file.stream();
-    // chunks = await chunkFileStream({ stream });
-    const stream = await file.stream();
-    const arrayBuffer: any = await streamToBuffer({ stream });
-    chunks = chunkFile({ arrayBuffer });
-  } else {
-    const arrayBuffer = await file.arrayBuffer();
-    chunks = chunkFile({ arrayBuffer });
-  }
+  let currentIndex = 1;
+  fileControllers[file.uploadId] = controller;
 
-  for (const chunk of chunks) {
-    const currentIndex = chunks.findIndex((el) => el === chunk);
+  if (cancelledFiles.has(file.uploadId)) {
+    fileControllers[file.uploadId].abort();
+    cancelledFiles.delete(file.uploadId);
+  }
+  for await (const chunk of chunkFile({ file })) {
     result = await sendChunk({
       chunk,
       index: currentIndex,
-      chunksLength: chunks.length - 1,
       file,
       startTime,
       oneTimeToken,
@@ -41,13 +37,25 @@ export const uploadFile = async ({
       totalProgress,
       callback,
       handlers,
+      controller,
     });
+
     if (result?.failed) {
+      delete fileControllers[file.uploadId];
       totalProgress.number = 0;
       return;
     }
+    if (result?.data?.data?.slug) {
+      delete fileControllers[file.uploadId];
+      totalProgress.number = 0;
+      return result;
+    }
+    currentIndex++;
   }
-  totalProgress.number = 0;
+};
 
-  return result;
+export const cancelingUpload = (uploadId) => {
+  if (fileControllers[uploadId]) {
+    fileControllers[uploadId].abort();
+  } else cancelledFiles.add(uploadId);
 };

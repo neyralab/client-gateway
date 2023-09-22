@@ -1,6 +1,7 @@
 import axios from "axios";
 
 import { ISwapChunk } from "../types";
+import { CHUNK_SIZE } from "../config";
 
 export const swapChunk = async ({
   file,
@@ -8,7 +9,6 @@ export const swapChunk = async ({
   base64iv,
   clientsideKeySha3Hash,
   index,
-  chunksLength,
   oneTimeToken,
   encryptedChunk,
   fileSize,
@@ -17,6 +17,7 @@ export const swapChunk = async ({
   callback,
   handlers,
 }: ISwapChunk) => {
+  const chunksLength = Math.ceil(file.size / CHUNK_SIZE);
   const url = `${endpoint}/chunked/swap/${file.slug}`;
   const inst = axios.create({
     headers: {
@@ -39,7 +40,7 @@ export const swapChunk = async ({
         handlers.includes("onProgress") &&
           callback({
             type: "onProgress",
-            params: { id: file.upload_id, progress, timeLeft },
+            params: { id: file.uploadId, progress, timeLeft },
           });
       }
     },

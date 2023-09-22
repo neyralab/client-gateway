@@ -67,7 +67,6 @@ import { uploadFile } from 'gdgateway-client/lib/es5';
 class CustomFile {
   constructor(size, stream, filename, mimeType, fileFolderId) {
     this.stream = () => stream;
-    this.isStream = true;
     this.name = filename;
     this.type = mimeType;
     this.folderId = fileFolderId;
@@ -105,7 +104,7 @@ await uploadFile({
 For now there is issue with using node environment (for files with size > 1mb): despite of the fact that we send all chunks, later we get only half of them (for preview/downloading);
 
 Accepts:
-1. file - current file that is supposed to be uploaded; (if node environment and need to send stream - file object should have isStream: true, stream: () => 'ReadableStream with data' properties)
+1. file - current file that is supposed to be uploaded; (if node environment and need to send stream - file object should have  stream: () => 'ReadableStream with data')
 2. oneTimeToken - token from /generate/token request
 3. endpoint - endpoint from /generate/token request
 4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
@@ -127,7 +126,6 @@ const getOneTimeToken = ({ filesize = "", filename = "" }) => {
 class CustomFile {
   constructor(size, stream, filename, mimeType, fileFolderId) {
     this.stream = () => stream;
-    this.isStream = true;
     this.name = filename;
     this.type = mimeType;
     this.folderId = fileFolderId;
@@ -156,7 +154,6 @@ await crypter.encodeFile({
     file: customFile,
     oneTimeToken,
     endpoint,
-    getOneTimeToken,
     callback,
     handlers,
     key
@@ -168,10 +165,9 @@ Accepts:
 1. file - current file that is supposed to be encrypted and uploaded
 2. oneTimeToken - token from /generate/token request
 3. endpoint - endpoint from /generate/token request
-4. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed
-5. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-6. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
-7. key - Crypto Key for file encryption;
+4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+5. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+6. key - Crypto Key for file encryption;
 
 ### Encrypt already uploaded file
 ```javascript
@@ -181,7 +177,6 @@ const crypter = new WebCrypto();
 
 await crypter.encodeExistingFile({
     file,
-    getImagePreviewEffect,
     getOneTimeToken,
     getDownloadOTT,
     callback,
@@ -193,12 +188,11 @@ await crypter.encodeExistingFile({
 
 Accepts:
 1. file - current file that is supposed to be encrypted and updated
-2. getImagePreviewEffect - callback function that return current file thumbnail (image/video) to be generated on frontend and saved on /chunked/thumb/{slug}
-3. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
-4. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
-5. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-6. handlers - all possible handlers of callback functions (should include 'type' of callback function);
-7. key - Crypto Key for file encryption;
+2. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
+3. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
+4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+5. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+6. key - Crypto Key for file encryption;
 
 
 ### Decrypt chunk
@@ -329,7 +323,6 @@ import { sendChunk } from 'gdgateway-client/lib/es5';
 await sendChunk({
     chunk,
     index,
-    chunksLength,
     file,
     startTime,
     oneTimeToken,
@@ -338,7 +331,8 @@ await sendChunk({
     clientsideKeySha3Hash,
     totalProgress,
     callback,
-    handlers
+    handlers,
+    controller
 }) 
 ```
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
@@ -346,23 +340,23 @@ await sendChunk({
 Accepts:
 1. chunk - arraybuffer chunk to be send
 2. index - current index chunk (get array of chunks from chunkFile function)
-3. chunksLength - the length of arraybuffer chunk (chunk.byteLength)
-4. file - current file that is supposed to be uploaded
-5. startTime - Date.now(), required to calculate how much time the file upload takes
-6. oneTimeToken - token from /generate/token request
-7. endpoint - endpoint from /generate/token request
-8. iv - should be null if file is unencrypted; if file is encrypted we get generate iv using crypto object 
+3. file - current file that is supposed to be uploaded
+4. startTime - Date.now(), required to calculate how much time the file upload takes
+5. oneTimeToken - token from /generate/token request
+6. endpoint - endpoint from /generate/token request
+7. iv - should be null if file is unencrypted; if file is encrypted we get generate iv using crypto object 
     import { getCrypto } from 'gdgateway-client/lib/es5/utils/getCrypto';
     const crypto = getCrypto();
     const iv = crypto.getRandomValues(new Uint8Array(12));
-9. clientsideKeySha3Hash - should be null if file is unencrypted; if file is encrypted we get generate clientsideKeySha3Hash using node-forge
+8. clientsideKeySha3Hash - should be null if file is unencrypted; if file is encrypted we get generate clientsideKeySha3Hash using node-forge
     const fileKey = forge.random.getBytesSync(32);
     const md = forge.md.sha512.create();
     md.update(fileKey);
     const clientsideKeySha3Hash = md.digest().toHex();
-10. totalProgress - used to update and calculate progress;
-11. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-12. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+9. totalProgress - used to update and calculate progress;
+10. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+11. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+12. controller - AbortController is used to cancel file uploading process;
 
 ### Swap chunk (make simple chunk to be encrypted and send it to server)
 ```javascript
@@ -374,7 +368,6 @@ await swapChunk({
   base64iv,
   clientsideKeySha3Hash,
   index,
-  chunksLength,
   oneTimeToken,
   encryptedChunk,
   arrayBuffer,
@@ -400,14 +393,13 @@ Accepts:
     md.update(fileKey);
     const clientsideKeySha3Hash = md.digest().toHex();
 5. index - current index chunk (get array of chunks from chunkFile function)
-6. chunkLength - the length of arraybuffer chunk (chunk.byteLength)
-7. oneTimeToken - token from /generate/token request
-8. encryptedChunk - encrypted arraybuffer chunk to be swapped
-9. fileSize - the whole file's size
-10. startTime - Date.now(), required to calculate how much time the file upload takes
-12. totalProgress - used to update and calculate progress
-13. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-14. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+6. oneTimeToken - token from /generate/token request
+7. encryptedChunk - encrypted arraybuffer chunk to be swapped
+8. fileSize - the whole file's size
+9. startTime - Date.now(), required to calculate how much time the file upload takes
+10. totalProgress - used to update and calculate progress
+11. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+12. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 
 ### Get user's RSA keys
 ```javascript
@@ -433,3 +425,60 @@ const public_key = publicKeyToPem({publicKey: keys.publicKey});
 ```
 Accepts:
 1. publicKey - generated public key using getUserRSAKeys function
+
+
+## How to generate and save thumbnails from node
+
+```javascript
+import * as fs from "fs";
+import * as sharp from "sharp";
+
+export const getThumbnailImage = ({ path }: { path: string }) => {
+  return new Promise((resolve, reject) => {
+    const inputStream = fs.createReadStream(path);
+
+    inputStream
+      .pipe(sharp().resize(240, 240).jpeg({ quality: 10 })) // You can adjust the quality value as needed, with 100 being the highest quality (least compression) and lower values reducing the quality and increasing compression.
+      .toBuffer((err, buffer) => {
+        if (err) {
+          reject(err);
+        } else {
+          const base64Thumbnail = `data:image/jpeg;base64,${buffer.toString(
+            "base64"
+          )}`;
+          resolve(base64Thumbnail);
+        }
+      });
+  });
+};
+
+  // EXAMPLE
+  const path = = "./src/river-5.jpg"; 
+  const base64Image = await getThumbnailImage({ path }); // create thumbnail
+
+  // ..upload file and get response
+
+  const {
+    data: {
+      user_token: { token: thumbToken }, // get token and endpoint for saving thumbnail to server
+      endpoint: thumbEndpoint,
+    },
+  } = await getOneTimeToken({
+    filename: file.name,
+    filesize: file.size,
+  });
+
+  const instance = axios.create({
+    headers: {
+      "x-file-name": file.name,
+      "Content-Type": "application/octet-stream",
+      "one-time-token": thumbToken,
+    },
+  });
+  if (base64Image) {
+    await instance.post(
+      `${thumbEndpoint}/chunked/thumb/${slug}`, // send thumbnail to server (use slug from response)
+      base64Image
+    );
+  }
+```
