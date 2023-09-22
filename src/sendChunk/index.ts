@@ -82,7 +82,7 @@ export const sendChunk = async ({
               `${endpoint}/chunked/uploadChunk`,
               headers,
               cookieJar,
-              controller.signal,
+              controller ? controller.signal : undefined,
               chunk
             );
           })
@@ -92,6 +92,7 @@ export const sendChunk = async ({
       } else {
         response = await axios.post(`${endpoint}/chunked/uploadChunk`, chunk, {
           headers,
+          signal: controller.signal,
         });
       }
       if (currentTry > 1) {
