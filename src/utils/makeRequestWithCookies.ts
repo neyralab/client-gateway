@@ -1,6 +1,12 @@
 import axios from "axios";
 
-export const postWithCookies = async (url, headers, cookieJar, data = {}) => {
+export const postWithCookies = async (
+  url,
+  headers,
+  cookieJar,
+  signal,
+  data = {}
+) => {
   const cookieString = cookieJar.join("; ");
   const config = {
     method: "POST",
@@ -9,6 +15,7 @@ export const postWithCookies = async (url, headers, cookieJar, data = {}) => {
       Cookie: cookieString,
       ...headers,
     },
+    signal,
     data,
   };
   return axios(config);

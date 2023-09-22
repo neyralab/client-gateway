@@ -69,6 +69,8 @@ export interface ISendChunk {
   totalProgress: { number: number };
   callback: Callback;
   handlers: any[];
+  listUploadIdsOfCancelledFiles?: Set<string>;
+  controller?: AbortController;
 }
 
 export interface IUploadFile {

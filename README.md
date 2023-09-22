@@ -331,7 +331,8 @@ await sendChunk({
     clientsideKeySha3Hash,
     totalProgress,
     callback,
-    handlers
+    handlers,
+    controller
 }) 
 ```
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
@@ -355,6 +356,7 @@ Accepts:
 9. totalProgress - used to update and calculate progress;
 10. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 11. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+12. controller - AbortController is used to cancel file uploading process;
 
 ### Swap chunk (make simple chunk to be encrypted and send it to server)
 ```javascript

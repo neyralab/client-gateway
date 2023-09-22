@@ -23,6 +23,7 @@ export const sendChunk = async ({
   totalProgress,
   callback,
   handlers,
+  controller,
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const fileName = convertTextToBase64(file.name);
@@ -81,6 +82,7 @@ export const sendChunk = async ({
               `${endpoint}/chunked/uploadChunk`,
               headers,
               cookieJar,
+              controller.signal,
               chunk
             );
           })

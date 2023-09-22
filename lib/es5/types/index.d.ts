@@ -53,6 +53,8 @@ export interface ISendChunk {
     };
     callback: Callback;
     handlers: any[];
+    listUploadIdsOfCancelledFiles?: Set<string>;
+    controller?: AbortController;
 }
 export interface IUploadFile {
     file: LocalFileStream | LocalFileBuffer;
