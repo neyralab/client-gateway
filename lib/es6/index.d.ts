@@ -9,5 +9,5 @@ export { saveBlob } from "./saveBlob";
 export { countChunks } from "./countChunks";
 export { getUserRSAKeys } from "./getUserRSAKeys";
 export { publicKeyToPem } from "./publicKeyToPem";
-export { WebCrypto } from "./webCrypto";
+export { WebCrypto, cancelingEncryptAndUpload } from "./webCrypto";
 export { LocalFileStream, LocalFileBuffer } from "./types/File";

@@ -15,6 +15,9 @@ const fileKey = forge.random.getBytesSync(32); // 32 bytes for AES-256
 const md = forge.md.sha512.create();
 md.update(fileKey);
 
+const fileControllers = {};
+const cancelledFiles = new Set();
+
 export class WebCrypto {
   readonly clientsideKeySha3Hash = md.digest().toHex();
   public iv: Uint8Array = crypto.getRandomValues(new Uint8Array(12));
@@ -27,11 +30,18 @@ export class WebCrypto {
     handlers,
     key,
   }: IEncodeFile) {
+    const controller = new AbortController();
     const startTime = Date.now();
+    const totalProgress = { number: 0 };
     let currentIndex = 1;
     let result;
 
-    const totalProgress = { number: 0 };
+    fileControllers[file.uploadId] = controller;
+
+    if (cancelledFiles.has(file.uploadId)) {
+      fileControllers[file.uploadId].abort();
+      cancelledFiles.delete(file.uploadId);
+    }
 
     for await (const chunk of chunkFile({ file })) {
       const encryptedChunk = await encryptChunk({
@@ -52,12 +62,15 @@ export class WebCrypto {
         totalProgress,
         callback,
         handlers,
+        controller,
       });
       if (result?.failed) {
+        delete fileControllers[file.uploadId];
         totalProgress.number = 0;
         return;
       }
       if (result?.data?.data?.slug) {
+        delete fileControllers[file.uploadId];
         totalProgress.number = 0;
         return result;
       }
@@ -153,3 +166,9 @@ export class WebCrypto {
     }
   }
 }
+
+export const cancelingEncryptAndUpload = (uploadId) => {
+  if (fileControllers[uploadId]) {
+    fileControllers[uploadId].abort();
+  } else cancelledFiles.add(uploadId);
+};
