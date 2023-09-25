@@ -430,31 +430,17 @@ Accepts:
 ## How to generate and save thumbnails from node
 
 ```javascript
-import * as fs from "fs";
-import * as sharp from "sharp";
+  import { getThumbnailImage } from 'gdgateway-client/lib/es5';
 
-export const getThumbnailImage = ({ path }: { path: string }) => {
-  return new Promise((resolve, reject) => {
-    const inputStream = fs.createReadStream(path);
+// NODE EXAMPLE
+  const path = "./src/river-5.jpg"; 
+  const quality = 3; // 1 to 10 number where 1 is 10% quality and 10 is 100%;
+  const base64Image = await getThumbnailImage({ path, quality }); // create thumbnail
 
-    inputStream
-      .pipe(sharp().resize(240, 240).jpeg({ quality: 10 })) // You can adjust the quality value as needed, with 100 being the highest quality (least compression) and lower values reducing the quality and increasing compression.
-      .toBuffer((err, buffer) => {
-        if (err) {
-          reject(err);
-        } else {
-          const base64Thumbnail = `data:image/jpeg;base64,${buffer.toString(
-            "base64"
-          )}`;
-          resolve(base64Thumbnail);
-        }
-      });
-  });
-};
-
-  // EXAMPLE
-  const path = = "./src/river-5.jpg"; 
-  const base64Image = await getThumbnailImage({ path }); // create thumbnail
+  // BROWSER EXAMPLE
+  const file = {...} // file object created by browser
+  const quality = 3; // 1 to 10 number where 1 is 10% quality and 10 is 100%;
+  const base64Image = await getThumbnailImage({ file, quality }); // create thumbnail
 
   // ..upload file and get response
 
