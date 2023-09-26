@@ -49,15 +49,6 @@ export interface IEncodeExistingFile {
   handlers: any[];
   key: CryptoKey;
 }
-export interface IEncodeFile {
-  file: LocalFileStream | LocalFileBuffer;
-  oneTimeToken: string;
-  endpoint: string;
-  callback: Callback;
-  handlers: any[];
-  key: CryptoKey;
-  crypto?: Crypto | undefined;
-}
 export interface ISendChunk {
   chunk: ArrayBuffer;
   index: number;
@@ -80,8 +71,8 @@ export interface IUploadFile {
   endpoint: string;
   callback: Callback;
   handlers: any[];
-  needStream?: boolean;
-  stream?: any;
+  key?: CryptoKey;
+  crypto?: Crypto | undefined;
 }
 
 export interface ISwapChunk {

@@ -112,9 +112,7 @@ Accepts:
 
 ### Upload encrypted file
 ```javascript
-import { WebCrypto } from 'gdgateway-client/lib/es5';
-
-const crypter = new WebCrypto();
+import { uploadFile } from 'gdgateway-client/lib/es5';
 
 // getOneTimeToken example: request for endpoint and token
 const getOneTimeToken = ({ filesize = "", filename = "" }) => {
@@ -150,15 +148,15 @@ class CustomFile {
     fileFolderId
   );
 
-await crypter.encodeFile({
-    file: customFile,
-    oneTimeToken,
-    endpoint,
-    callback,
-    handlers,
-    key,
-    crypto
-}) 
+  await uploadFile({
+      file: customFile,
+      oneTimeToken,
+      endpoint,
+      callback,
+      handlers,
+      key,
+      crypto
+  }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
 
@@ -178,11 +176,9 @@ Accepts:
 
 ### Encrypt already uploaded file
 ```javascript
-import { WebCrypto } from 'gdgateway-client/lib/es5';
+import { encodeExistingFile } from 'gdgateway-client/lib/es5';
 
-const crypter = new WebCrypto();
-
-await crypter.encodeExistingFile({
+await encodeExistingFile({
     file,
     getOneTimeToken,
     getDownloadOTT,
