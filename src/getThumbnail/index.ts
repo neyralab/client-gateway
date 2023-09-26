@@ -1,6 +1,5 @@
 import axios from "axios";
 import * as fs from "fs";
-
 import { IGetThumbnail } from "../types";
 
 const MAX_WIDTH = 240;
@@ -65,7 +64,7 @@ export const getThumbnailImage = async ({
 
         const qualityReduction = quality / 10;
 
-        const base64Image = canvas.toDataURL("image/jpeg", +qualityReduction);
+        const base64Image = canvas.toDataURL("image/webp", +qualityReduction);
         URL.revokeObjectURL(imageURL);
         sendThumbnail({ base64Image, getOneTimeToken, file, slug }).then(() => {
           resolve(base64Image);
@@ -150,7 +149,7 @@ export const getThumbnailVideo = async ({
           const qualityReduction = quality / 10;
 
           const base64Image = canvas.toDataURL(
-            "image/jpeg",
+            "image/webp",
             +qualityReduction.toFixed(1)
           );
           sendThumbnail({ base64Image, getOneTimeToken, file, slug }).then(
