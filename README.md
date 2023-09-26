@@ -430,41 +430,50 @@ Accepts:
 ## How to generate and save thumbnails from node
 
 ```javascript
-  import { getThumbnailImage } from 'gdgateway-client/lib/es5';
+  import { getThumbnailImage, getThumbnailVideo } from 'gdgateway-client/lib/es5';
 
-// NODE EXAMPLE
-  const path = "./src/river-5.jpg"; 
+  // ..upload file and get response (you need file's slug from the response)
+
+  // NODE EXAMPLE
+  const filename = "./src/video.mp4"; // (30 chunks) - video
+  const mimeType = "video/mp4";
+
+  const folderId = "";
+
+  const { size } = await fs.promises.stat(filename);
+
+  const file = new LocalFileStream(size, filename, mimeType, folderId, getOneTimeToken, slug);
+
   const quality = 3; // 1 to 10 number where 1 is 10% quality and 10 is 100%;
-  const base64Image = await getThumbnailImage({ path, quality }); // create thumbnail
+
+  if (file.type.startsWith("image")) {
+    await getThumbnailImage({ path: filename, file, quality: 3 });
+  } else if (file.type.startsWith("video")) {
+    const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
+    const ffmpeg = require("fluent-ffmpeg");
+
+    ffmpeg.setFfmpegPath(ffmpegPath);
+
+    const currentPath = process.cwd();
+    const ffmpegCommand = ffmpeg(`${currentPath}/${filename}`);
+
+    await getThumbnailVideo({
+        file,
+        path: filename,
+        ffmpegCommand,
+        quality: 3,
+        getOneTimeToken,
+        slug,
+    });
+  }
 
   // BROWSER EXAMPLE
   const file = {...} // file object created by browser
   const quality = 3; // 1 to 10 number where 1 is 10% quality and 10 is 100%;
-  const base64Image = await getThumbnailImage({ file, quality }); // create thumbnail
 
-  // ..upload file and get response
-
-  const {
-    data: {
-      user_token: { token: thumbToken }, // get token and endpoint for saving thumbnail to server
-      endpoint: thumbEndpoint,
-    },
-  } = await getOneTimeToken({
-    filename: file.name,
-    filesize: file.size,
-  });
-
-  const instance = axios.create({
-    headers: {
-      "x-file-name": file.name,
-      "Content-Type": "application/octet-stream",
-      "one-time-token": thumbToken,
-    },
-  });
-  if (base64Image) {
-    await instance.post(
-      `${thumbEndpoint}/chunked/thumb/${slug}`, // send thumbnail to server (use slug from response)
-      base64Image
-    );
+  if (file.type.startsWith('image')) {
+    await getThumbnailImage({ file, quality, getOneTimeToken, slug });
+  } else if (file.type.startsWith('video')) {
+    await getThumbnailVideo({ file, quality, getOneTimeToken, slug });
   }
 ```
