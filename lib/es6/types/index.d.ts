@@ -38,6 +38,7 @@ export interface IEncodeFile {
     callback: Callback;
     handlers: any[];
     key: CryptoKey;
+    crypto?: Crypto | undefined;
 }
 export interface ISendChunk {
     chunk: ArrayBuffer;
@@ -85,6 +86,7 @@ export interface IEncryptChunk {
     chunk: ArrayBuffer;
     iv: Uint8Array;
     key: CryptoKey;
+    crypto?: Crypto | undefined;
 }
 export interface IDecryptChunk {
     chunk: ArrayBuffer;

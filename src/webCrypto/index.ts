@@ -29,6 +29,7 @@ export class WebCrypto {
     callback,
     handlers,
     key,
+    crypto,
   }: IEncodeFile) {
     const controller = new AbortController();
     const startTime = Date.now();
@@ -48,6 +49,7 @@ export class WebCrypto {
         chunk,
         iv: this.iv,
         key,
+        crypto,
       });
 
       result = await sendChunk({
