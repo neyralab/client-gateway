@@ -111,3 +111,11 @@ export interface ICountChunks {
     slug: string;
     signal: any;
 }
+export interface IGetThumbnail {
+    path?: string;
+    ffmpegCommand?: any;
+    file?: File | any;
+    quality: number;
+    getOneTimeToken: GetOneTimeToken;
+    slug: string;
+}
