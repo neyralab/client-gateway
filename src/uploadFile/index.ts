@@ -11,7 +11,7 @@ import { IUploadFile } from "../types";
 const fileControllers = {};
 const cancelledFiles = new Set();
 
-const cryptoLibrary = getCrypto();
+const crypto = getCrypto();
 
 export const uploadFile = async ({
   file,
@@ -20,7 +20,6 @@ export const uploadFile = async ({
   callback,
   handlers,
   key,
-  crypto,
 }: IUploadFile) => {
   const startTime = Date.now();
   const controller = new AbortController();
@@ -43,7 +42,7 @@ export const uploadFile = async ({
     const md = forge.md.sha512.create();
     md.update(fileKey);
     clientsideKeySha3Hash = md.digest().toHex();
-    iv = cryptoLibrary.getRandomValues(new Uint8Array(12));
+    iv = crypto.getRandomValues(new Uint8Array(12));
   }
 
   for await (const chunk of chunkFile({ file })) {
@@ -54,7 +53,6 @@ export const uploadFile = async ({
         chunk,
         iv,
         key,
-        crypto,
       });
     }
 

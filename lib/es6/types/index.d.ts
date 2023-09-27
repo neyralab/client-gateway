@@ -55,7 +55,6 @@ export interface IUploadFile {
     callback: Callback;
     handlers: any[];
     key?: CryptoKey;
-    crypto?: Crypto | undefined;
 }
 export interface ISwapChunk {
     file: File | any;
@@ -77,7 +76,6 @@ export interface IEncryptChunk {
     chunk: ArrayBuffer;
     iv: Uint8Array;
     key: CryptoKey;
-    crypto?: Crypto | undefined;
 }
 export interface IDecryptChunk {
     chunk: ArrayBuffer;

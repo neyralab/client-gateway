@@ -154,8 +154,7 @@ class CustomFile {
       endpoint,
       callback,
       handlers,
-      key,
-      crypto
+      key
   }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
@@ -167,12 +166,6 @@ Accepts:
 4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 5. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 6. key - Crypto Key for file encryption;
-7. crypto - temporary fix - only for node environment; need it to fix "Key is not of type CryptoKey" issue;
-
-```javascript
-  import { Crypto } from "@peculiar/webcrypto";
-  const crypto = new Crypto();
-```
 
 ### Encrypt already uploaded file
 ```javascript
@@ -227,7 +220,7 @@ import * as Base64 from "base64-js";
 import { encryptChunk } from 'gdgateway-client/lib/es5';
 import { getCrypto } from 'gdgateway-client/lib/es5/utils/getCrypto';
 
-await encryptChunk({chunk, iv, key, crypto})
+await encryptChunk({chunk, iv, key})
 ```
 1. Return encrypted chunk if correct parameters are provided
 
@@ -241,12 +234,6 @@ Accepts:
     const key = await crypto.subtle.generateKey({ name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]) - generated key should be used as key parameter
     const buffer = await crypto.subtle.exportKey("raw", key);
     const keyBase64 = convertArrayBufferToBase64(buffer); - this is what should be used as activationKey for future decrypting;   
-4. crypto - temporary fix - only for node environment; need it to fix "Key is not of type CryptoKey" issue;
-
-```javascript
-  import { Crypto } from "@peculiar/webcrypto";
-  const crypto = new Crypto();
-```
 
 ### Chunk file
 ```javascript
