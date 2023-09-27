@@ -11,10 +11,10 @@ export const getThumbnailImage = async ({
   quality,
   getOneTimeToken,
   slug,
+  sharp,
 }: IGetThumbnail) => {
   return new Promise((resolve, reject) => {
     if (path) {
-      const sharp = require("sharp");
       const inputStream = fs.createReadStream(path);
 
       inputStream
@@ -84,6 +84,7 @@ export const getThumbnailVideo = async ({
   getOneTimeToken,
   slug,
   ffmpegCommand,
+  sharp,
 }: IGetThumbnail) => {
   return new Promise((resolve, reject) => {
     if (path && ffmpegCommand) {
@@ -105,6 +106,7 @@ export const getThumbnailVideo = async ({
             quality,
             getOneTimeToken,
             slug,
+            sharp,
           });
           fs.unlink(thumbnailPath, (err) => {
             err && console.error("Error deleting file:", err);

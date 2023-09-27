@@ -444,6 +444,8 @@ Accepts:
   // ..upload file and get response (you need file's slug from the response)
 
   // NODE EXAMPLE
+  const sharp = require("sharp");
+
   const filename = "./src/video.mp4"; // (30 chunks) - video
   const mimeType = "video/mp4";
 
@@ -451,12 +453,12 @@ Accepts:
 
   const { size } = await fs.promises.stat(filename);
 
-  const file = new LocalFileStream(size, filename, mimeType, folderId, getOneTimeToken, slug);
+  const file = new LocalFileStream(size, filename, mimeType, folderId);
 
   const quality = 3; // 1 to 10 number where 1 is 10% quality and 10 is 100%;
 
   if (file.type.startsWith("image")) {
-    await getThumbnailImage({ path: filename, file, quality: 3 });
+    await getThumbnailImage({ path: filename, file, quality: 3, getOneTimeToken, slug, sharp });
   } else if (file.type.startsWith("video")) {
     const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
     const ffmpeg = require("fluent-ffmpeg");
@@ -473,6 +475,7 @@ Accepts:
         quality: 3,
         getOneTimeToken,
         slug,
+        sharp
     });
   }
 

@@ -111,4 +111,5 @@ export interface IGetThumbnail {
     quality: number;
     getOneTimeToken: GetOneTimeToken;
     slug: string;
+    sharp?: any;
 }
