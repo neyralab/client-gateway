@@ -10,13 +10,6 @@ export type ImagePreviewEffect = (
   type: string | undefined
 ) => any;
 
-export type GetOneTimeToken = (params: {
-  filename: string;
-  filesize: string | number;
-}) => AxiosResponse;
-
-export type GetDownloadOTT = (params: [{ slug: string }]) => AxiosResponse;
-
 export type CallbackTypeNames =
   | "onStart"
   | "onSuccess"
@@ -43,8 +36,10 @@ export interface IDownloadFile {
 }
 export interface IEncodeExistingFile {
   file: File | any;
-  getOneTimeToken: GetOneTimeToken;
-  getDownloadOTT: GetDownloadOTT;
+  oneTimeToken: string;
+  endpoint: string;
+  downloadToken: string;
+  downloadEndpoint: string;
   callback: Callback;
   handlers: any[];
   key: CryptoKey;
@@ -126,7 +121,8 @@ export interface IGetThumbnail {
   ffmpegCommand?: any;
   file?: File | any;
   quality: number;
-  getOneTimeToken: GetOneTimeToken;
+  oneTimeToken: string;
+  endpoint: string;
   slug: string;
   sharp?: any;
 }

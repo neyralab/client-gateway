@@ -1,13 +1,5 @@
-import { AxiosResponse } from "axios";
 import { LocalFileStream, LocalFileBuffer } from "./File";
 export type ImagePreviewEffect = (fileId: string, width: number, height: number, fit: string, cancelToken: AbortSignal | any, type: string | undefined) => any;
-export type GetOneTimeToken = (params: {
-    filename: string;
-    filesize: string | number;
-}) => AxiosResponse;
-export type GetDownloadOTT = (params: [{
-    slug: string;
-}]) => AxiosResponse;
 export type CallbackTypeNames = "onStart" | "onSuccess" | "onError" | "onProgress";
 export type Callback = ({ type, params, }: {
     type: CallbackTypeNames;
@@ -25,8 +17,10 @@ export interface IDownloadFile {
 }
 export interface IEncodeExistingFile {
     file: File | any;
-    getOneTimeToken: GetOneTimeToken;
-    getDownloadOTT: GetDownloadOTT;
+    oneTimeToken: string;
+    endpoint: string;
+    downloadToken: string;
+    downloadEndpoint: string;
     callback: Callback;
     handlers: any[];
     key: CryptoKey;
@@ -107,7 +101,8 @@ export interface IGetThumbnail {
     ffmpegCommand?: any;
     file?: File | any;
     quality: number;
-    getOneTimeToken: GetOneTimeToken;
+    oneTimeToken: string;
+    endpoint: string;
     slug: string;
     sharp?: any;
 }

@@ -9,20 +9,16 @@ export const getThumbnailImage = async ({
   path,
   file,
   quality,
-  getOneTimeToken,
+  oneTimeToken,
+  endpoint,
   slug,
   sharp,
 }: IGetThumbnail) => {
   return new Promise((resolve, reject) => {
     if (path) {
-      const inputStream = fs.createReadStream(path);
-
-      inputStream
-        .pipe(
-          sharp()
-            .resize(MAX_WIDTH, MAX_HEIGHT)
-            .jpeg({ quality: quality * 10 })
-        )
+      sharp(path)
+        .resize(MAX_WIDTH, MAX_HEIGHT)
+        .webp({ quality: quality * 10 })
         .toBuffer((err, buffer) => {
           if (err) {
             reject(err);
@@ -30,11 +26,16 @@ export const getThumbnailImage = async ({
             const base64Image = `data:image/webp;base64,${buffer.toString(
               "base64"
             )}`;
-            sendThumbnail({ base64Image, getOneTimeToken, file, slug }).then(
-              () => {
-                resolve(base64Image);
-              }
-            );
+            console.log("base64Image", base64Image);
+            sendThumbnail({
+              base64Image,
+              oneTimeToken,
+              endpoint,
+              file,
+              slug,
+            }).then(() => {
+              resolve(base64Image);
+            });
           }
         });
     } else {
@@ -66,9 +67,11 @@ export const getThumbnailImage = async ({
 
         const base64Image = canvas.toDataURL("image/webp", +qualityReduction);
         URL.revokeObjectURL(imageURL);
-        sendThumbnail({ base64Image, getOneTimeToken, file, slug }).then(() => {
-          resolve(base64Image);
-        });
+        sendThumbnail({ base64Image, oneTimeToken, endpoint, file, slug }).then(
+          () => {
+            resolve(base64Image);
+          }
+        );
       };
       image.onerror = (error) => {
         reject(error);
@@ -81,7 +84,8 @@ export const getThumbnailVideo = async ({
   path,
   file,
   quality,
-  getOneTimeToken,
+  oneTimeToken,
+  endpoint,
   slug,
   ffmpegCommand,
   sharp,
@@ -104,18 +108,23 @@ export const getThumbnailVideo = async ({
             file,
             path: thumbnailPath,
             quality,
-            getOneTimeToken,
+            oneTimeToken,
+            endpoint,
             slug,
             sharp,
           });
           fs.unlink(thumbnailPath, (err) => {
             err && console.error("Error deleting file:", err);
           });
-          sendThumbnail({ base64Image, getOneTimeToken, file, slug }).then(
-            () => {
-              resolve(base64Image);
-            }
-          );
+          sendThumbnail({
+            base64Image,
+            oneTimeToken,
+            endpoint,
+            file,
+            slug,
+          }).then(() => {
+            resolve(base64Image);
+          });
         })
         .on("error", (err: any) => {
           console.error("Error generating thumbnail:", err);
@@ -154,11 +163,15 @@ export const getThumbnailVideo = async ({
             "image/webp",
             +qualityReduction.toFixed(1)
           );
-          sendThumbnail({ base64Image, getOneTimeToken, file, slug }).then(
-            () => {
-              resolve(base64Image);
-            }
-          );
+          sendThumbnail({
+            base64Image,
+            oneTimeToken,
+            endpoint,
+            file,
+            slug,
+          }).then(() => {
+            resolve(base64Image);
+          });
         };
 
         video.onerror = (error) => {
@@ -173,22 +186,18 @@ export const getThumbnailVideo = async ({
   });
 };
 
-const sendThumbnail = async ({ base64Image, getOneTimeToken, file, slug }) => {
-  const {
-    data: {
-      user_token: { token: token },
-      endpoint,
-    },
-  } = await getOneTimeToken({
-    filename: file.name,
-    filesize: file.size,
-  });
-
+const sendThumbnail = async ({
+  base64Image,
+  oneTimeToken,
+  endpoint,
+  file,
+  slug,
+}) => {
   const instance = axios.create({
     headers: {
       "x-file-name": file.name,
       "Content-Type": "application/octet-stream",
-      "one-time-token": token,
+      "one-time-token": oneTimeToken,
     },
   });
   if (base64Image) {

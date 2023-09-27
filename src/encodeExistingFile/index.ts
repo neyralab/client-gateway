@@ -16,8 +16,10 @@ md.update(fileKey);
 
 export const encodeExistingFile = async ({
   file,
-  getOneTimeToken,
-  getDownloadOTT,
+  oneTimeToken,
+  endpoint,
+  downloadToken,
+  downloadEndpoint,
   callback,
   handlers,
   key,
@@ -32,13 +34,6 @@ export const encodeExistingFile = async ({
 
   let result: any;
   let currentIndex = 1;
-
-  const {
-    data: {
-      user_tokens: { token: downloadToken },
-      endpoint: downloadEndpoint,
-    },
-  } = await getDownloadOTT([{ slug: file.slug }]);
 
   const fileBlob: Blob = await downloadFile({
     file,
@@ -55,13 +50,6 @@ export const encodeExistingFile = async ({
       type: "onStart",
       params: { file, size: arrayBuffer.byteLength },
     });
-
-  const {
-    data: {
-      user_token: { token: oneTimeToken },
-      endpoint,
-    },
-  } = await getOneTimeToken({ filename: file.name, filesize: file.size });
 
   try {
     for await (const chunk of chunkBuffer({ arrayBuffer })) {

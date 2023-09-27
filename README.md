@@ -173,8 +173,10 @@ import { encodeExistingFile } from 'gdgateway-client/lib/es5';
 
 await encodeExistingFile({
     file,
-    getOneTimeToken,
-    getDownloadOTT,
+    oneTimeToken,
+    endpoint,
+    downloadToken,
+    downloadEndpoint,
     callback,
     handlers,
     key
@@ -184,11 +186,13 @@ await encodeExistingFile({
 
 Accepts:
 1. file - current file that is supposed to be encrypted and updated
-2. getOneTimeToken - used to get OTT & endpoint for saving thumbnail on /chunked/thumb/{slug} if needed and for swapping chunks on /chunked/swap/{slug};
-3. getDownloadOTT - used to get OTT & endpoint for downloading previous unencrypted file;
-4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-5. handlers - all possible handlers of callback functions (should include 'type' of callback function);
-6. key - Crypto Key for file encryption;
+2. oneTimeToken - OOT for swapping chunks on /chunked/swap/{slug}; (getOneTimeToken)
+3. endpoint - endpoint for swapping chunks on /chunked/swap/{slug}; (getOneTimeToken)
+4. downloadToken - OOT for downloading previous unencrypted file; (getDownloadOOT)
+5. downloadEndpoint - endpoint for downloading previous unencrypted file; (getDownloadOOT)
+6. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+7. handlers - all possible handlers of callback functions (should include 'type' of callback function);
+8. key - Crypto Key for file encryption
 
 
 ### Decrypt chunk
@@ -430,6 +434,16 @@ Accepts:
 
   // ..upload file and get response (you need file's slug from the response)
 
+  const {
+    data: {
+      user_token: { token: token },
+      endpoint,
+    },
+  } = await getOneTimeToken({
+    filename: file.name,
+    filesize: file.size,
+  });
+
   // NODE EXAMPLE
   const sharp = require("sharp");
 
@@ -445,7 +459,7 @@ Accepts:
   const quality = 3; // 1 to 10 number where 1 is 10% quality and 10 is 100%;
 
   if (file.type.startsWith("image")) {
-    await getThumbnailImage({ path: filename, file, quality: 3, getOneTimeToken, slug, sharp });
+    await getThumbnailImage({ path: filename, file, quality: 3, token, endpoint, slug, sharp });
   } else if (file.type.startsWith("video")) {
     const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
     const ffmpeg = require("fluent-ffmpeg");
@@ -460,7 +474,8 @@ Accepts:
         path: filename,
         ffmpegCommand,
         quality: 3,
-        getOneTimeToken,
+        token, 
+        endpoint,
         slug,
         sharp
     });
@@ -471,8 +486,8 @@ Accepts:
   const quality = 3; // 1 to 10 number where 1 is 10% quality and 10 is 100%;
 
   if (file.type.startsWith('image')) {
-    await getThumbnailImage({ file, quality, getOneTimeToken, slug });
+    await getThumbnailImage({ file, quality, token, endpoint, slug });
   } else if (file.type.startsWith('video')) {
-    await getThumbnailVideo({ file, quality, getOneTimeToken, slug });
+    await getThumbnailVideo({ file, quality, token, endpoint, slug });
   }
 ```
