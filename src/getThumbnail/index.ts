@@ -26,7 +26,7 @@ export const getThumbnailImage = async ({
             const base64Image = `data:image/webp;base64,${buffer.toString(
               "base64"
             )}`;
-            console.log("base64Image", base64Image);
+
             sendThumbnail({
               base64Image,
               oneTimeToken,

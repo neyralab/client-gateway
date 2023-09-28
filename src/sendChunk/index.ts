@@ -6,6 +6,7 @@ import { getFibonacciNumber } from "../utils/getFibonacciNumber";
 import { convertTextToBase64 } from "../utils/convertTextToBase64";
 import { postWithCookies } from "../utils/makeRequestWithCookies";
 import { isBrowser } from "../utils/isBrowser";
+import { createSHA256Hash } from "../utils/createSHA256Hash";
 
 import { CHUNK_SIZE, MAX_TRIES } from "../config";
 
@@ -26,6 +27,7 @@ export const sendChunk = async ({
   controller,
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
+  const xHash = iv ? createSHA256Hash(chunk) : null;
   const fileName = convertTextToBase64(file.name);
   const chunksLength = Math.ceil(file.size / CHUNK_SIZE);
   let currentTry = 1;
@@ -40,7 +42,10 @@ export const sendChunk = async ({
     "X-folder": file.folderId || "",
     "x-mime": file?.type,
     "X-Ai-Generated": false,
-    "x-clientsideKeySha3Hash": iv ? clientsideKeySha3Hash : "null",
+    "x-clientsideKeySha3Hash": clientsideKeySha3Hash
+      ? clientsideKeySha3Hash
+      : "null",
+    "x-hash": xHash ? xHash : "null",
     "x-iv": iv ? base64iv : "null",
   };
 
