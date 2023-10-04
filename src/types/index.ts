@@ -67,6 +67,7 @@ export interface IUploadFile {
   callback: Callback;
   handlers: any[];
   key?: CryptoKey;
+  progress?: number;
 }
 
 export interface ISwapChunk {

@@ -11,13 +11,14 @@ class LocalFile {
     size: number,
     filename: string,
     mimeType: string,
-    fileFolderId: string
+    fileFolderId: string,
+    uploadId: string
   ) {
     this.name = filename;
     this.type = mimeType;
     this.folderId = fileFolderId;
     this.size = size;
-    this.uploadId = `${filename}_${size}_${fileFolderId}`;
+    this.uploadId = uploadId;
   }
 }
 
@@ -28,9 +29,10 @@ export class LocalFileStream extends LocalFile {
     size: number,
     filename: string,
     mimeType: string,
-    fileFolderId: string
+    fileFolderId: string,
+    uploadId: string
   ) {
-    super(size, filename, mimeType, fileFolderId);
+    super(size, filename, mimeType, fileFolderId, uploadId);
     this.stream = () => fs.createReadStream(filename);
   }
 }
@@ -43,9 +45,10 @@ export class LocalFileBuffer extends LocalFile {
     filename: string,
     mimeType: string,
     fileFolderId: string,
+    uploadId: string,
     arrayBuffer: () => Promise<ArrayBuffer>
   ) {
-    super(size, filename, mimeType, fileFolderId);
+    super(size, filename, mimeType, fileFolderId, uploadId);
     this.arrayBuffer = arrayBuffer;
   }
 }
