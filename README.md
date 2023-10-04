@@ -97,6 +97,7 @@ await uploadFile({
   endpoint,
   callback,
   handlers,
+  progress
 }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
@@ -109,6 +110,7 @@ Accepts:
 3. endpoint - endpoint from /generate/token request
 4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 5. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+6. progress - previous uploaded file's size in bytes - required only for folder uploading;
 
 ### Upload encrypted file
 ```javascript
@@ -154,7 +156,8 @@ class CustomFile {
       endpoint,
       callback,
       handlers,
-      key
+      key,
+      progress
   }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
@@ -166,6 +169,7 @@ Accepts:
 4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 5. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 6. key - Crypto Key for file encryption;
+7. progress - previous uploaded file's size in bytes - required only for folder uploading;
 
 ### Encrypt already uploaded file
 ```javascript
@@ -447,14 +451,13 @@ Accepts:
   // NODE EXAMPLE
   const sharp = require("sharp");
 
-  const filename = "./src/video.mp4"; // (30 chunks) - video
-  const mimeType = "video/mp4";
-
-  const folderId = "";
-
   const { size } = await fs.promises.stat(filename);
+  const filename = "./src/video.mp4";
+  const mimeType = "video/mp4";
+  const folderId = "";
+  const uploadId = `${filename}_${size}_${folderId}`;
 
-  const file = new LocalFileStream(size, filename, mimeType, folderId);
+  const file = new LocalFileStream(size, filename, mimeType, folderId, uploadId);
 
   const quality = 3; // 1 to 10 number where 1 is 10% quality and 10 is 100%;
 

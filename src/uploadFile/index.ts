@@ -20,13 +20,14 @@ export const uploadFile = async ({
   callback,
   handlers,
   key,
+  progress,
 }: IUploadFile) => {
   const startTime = Date.now();
   const controller = new AbortController();
   let clientsideKeySha3Hash: string | undefined;
   let iv: Uint8Array | undefined;
 
-  let totalProgress = { number: 0 };
+  let totalProgress = { number: progress || 0 };
   let currentIndex = 1;
   let result: any;
 
