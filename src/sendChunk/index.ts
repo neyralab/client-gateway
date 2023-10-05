@@ -25,6 +25,7 @@ export const sendChunk = async ({
   callback,
   handlers,
   controller,
+  totalSize,
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const xHash = iv ? createSHA256Hash(chunk) : null;
@@ -107,7 +108,8 @@ export const sendChunk = async ({
       const progress = +prevProgress + chunk.byteLength;
       totalProgress.number = progress;
       const elapsedTime = Date.now() - startTime;
-      const remainingBytes = file.size - progress;
+      const size = totalSize || file.size;
+      const remainingBytes = size - progress;
       const bytesPerMillisecond = progress / elapsedTime;
       const remainingTime = remainingBytes / bytesPerMillisecond;
       const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));

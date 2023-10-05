@@ -97,7 +97,9 @@ await uploadFile({
   endpoint,
   callback,
   handlers,
-  progress
+  progress,
+  totalSize,
+  startedAt,
 }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
@@ -111,6 +113,8 @@ Accepts:
 4. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 5. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 6. progress - previous uploaded file's size in bytes - required only for folder uploading;
+7. totalSize - total size of the folder - required only for folder uploading;
+8. startedAt - Date.now() - required only for folder uploading;
 
 ### Upload encrypted file
 ```javascript
@@ -157,7 +161,9 @@ class CustomFile {
       callback,
       handlers,
       key,
-      progress
+      progress,
+      totalSize,
+      startedAt
   }) 
 ```
 1. Returns response from the /chunked/uploadChunk request - the whole information about the file
@@ -170,6 +176,8 @@ Accepts:
 5. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 6. key - Crypto Key for file encryption;
 7. progress - previous uploaded file's size in bytes - required only for folder uploading;
+8. totalSize - total size of the folder (in bytes) - required only for folder uploading;
+9. startedAt - Date.now() - required only for folder uploading;
 
 ### Encrypt already uploaded file
 ```javascript
@@ -336,7 +344,8 @@ await sendChunk({
     totalProgress,
     callback,
     handlers,
-    controller
+    controller,
+    totalSize
 }) 
 ```
 1. If it is the last chunk returns the whole information about the file, else returns { success: true }
@@ -361,6 +370,7 @@ Accepts:
 10. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 11. handlers - all possible handlers of callback functions (should include 'type' of callback function);
 12. controller - AbortController is used to cancel file uploading process;
+13. totalSize - total size of the folder (in bytes) - required only for folder uploading;
 
 ### Swap chunk (make simple chunk to be encrypted and send it to server)
 ```javascript

@@ -41,6 +41,7 @@ export interface ISendChunk {
     handlers: any[];
     listUploadIdsOfCancelledFiles?: Set<string>;
     controller?: AbortController;
+    totalSize?: number;
 }
 export interface IUploadFile {
     file: LocalFileStream | LocalFileBuffer;
@@ -50,6 +51,8 @@ export interface IUploadFile {
     handlers: any[];
     key?: CryptoKey;
     progress?: number;
+    totalSize?: number;
+    startedAt?: any;
 }
 export interface ISwapChunk {
     file: File | any;

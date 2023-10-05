@@ -21,8 +21,10 @@ export const uploadFile = async ({
   handlers,
   key,
   progress,
+  totalSize,
+  startedAt,
 }: IUploadFile) => {
-  const startTime = Date.now();
+  const startTime = startedAt || Date.now();
   const controller = new AbortController();
   let clientsideKeySha3Hash: string | undefined;
   let iv: Uint8Array | undefined;
@@ -70,6 +72,7 @@ export const uploadFile = async ({
       callback,
       handlers,
       controller,
+      totalSize,
     });
 
     if (result?.failed) {
