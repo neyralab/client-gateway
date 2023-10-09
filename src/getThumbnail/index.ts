@@ -1,5 +1,8 @@
 import axios from "axios";
 import * as fs from "fs";
+
+import { convertTextToBase64 } from "../utils/convertTextToBase64";
+
 import { IGetThumbnail } from "../types";
 
 const MAX_WIDTH = 240;
@@ -193,9 +196,10 @@ const sendThumbnail = async ({
   file,
   slug,
 }) => {
+  const fileName = convertTextToBase64(file.name);
   const instance = axios.create({
     headers: {
-      "x-file-name": file.name,
+      "x-file-name": fileName,
       "Content-Type": "application/octet-stream",
       "one-time-token": oneTimeToken,
     },
