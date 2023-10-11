@@ -39,7 +39,6 @@ import { downloadFile } from 'gdgateway-client/lib/es5';
 const blob = await downloadFile({
     file, 
     oneTimeToken, 
-    signal, 
     endpoint, 
     isEncrypted, 
     key, 
@@ -52,12 +51,11 @@ const blob = await downloadFile({
 Accepts:  
 1. currentFile - file to be downloaded,
 2. oneTimeToken - token from /generate/token request
-3. signal - AbortController for downloading cancellation
-4. endpoint - endpoint from /generate/token request
-5. isEncrypted - boolean flag
-6. key - a key got from getEncryptedFileKey function and used for file decryption or null is file is unencrypted
-7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+3. endpoint - endpoint from /generate/token request
+4. isEncrypted - boolean flag
+5. key - a key got from getEncryptedFileKey function and used for file decryption or null is file is unencrypted
+6. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+7. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 
 ### Upload unencrypted file
 ```javascript
@@ -274,7 +272,7 @@ await countChunks({
     endpoint,
     oneTimeToken,
     slug,
-    signal
+    controller
 });
 ```
 1. The countChunk function returns the {count: 3, end: 4819} - 'count' is quantity of chunks and 'end' is size of the last chunk.
@@ -283,7 +281,7 @@ Accepts:
 1. endpoint - endpoint from /generate/token request
 2. oneTimeToken - token from /generate/token request
 3. slug - slug we can get from the full information about the file
-4. signal - AbortController for request cancellation
+4. controller - AbortController for request cancellation
 
 ### Download chunk
 ```javascript
@@ -293,7 +291,7 @@ await downloadChunk = async ({
   index,
   sha3_hash,
   oneTimeToken,
-  signal,
+  controller,
   endpoint,
   file,
   startTime,
@@ -308,7 +306,7 @@ Accepts:
 1. index - index of chunk to be downloaded; quantity of all chunks we get from countChunks function
 2. sha3_hash - should be null if file is unencrypted; if file is encrypted we get sha3_hash from full information about the file (file.entry_clientside_key.sha3_hash)
 3. oneTimeToken - token from /generate/token request
-4. signal - AbortController for request cancellation
+4. controller - AbortController for request cancellation
 5. endpoint - endpoint from /generate/token request
 6. file - current file that is supposed to be uploaded
 7. startTime - Date.now(), required to calculate how much time the file upload takes

@@ -1,5 +1,3 @@
-import * as forge from "node-forge";
-
 import { downloadChunk, countChunks, decryptChunk } from "../index";
 
 import { isBrowser } from "../utils/isBrowser";
@@ -8,10 +6,12 @@ import { joinChunks } from "../utils/joinChunks";
 import { IDownloadFile } from "../types";
 import { convertBase64ToArrayBuffer } from "../utils/convertBase64ToArrayBuffer";
 
+const fileControllers = {};
+const cancelledFiles = new Set();
+
 export const downloadFile = async ({
   file,
   oneTimeToken,
-  signal,
   endpoint,
   isEncrypted,
   key,
@@ -19,6 +19,7 @@ export const downloadFile = async ({
   handlers,
 }: IDownloadFile) => {
   const startTime = Date.now();
+  const controller = new AbortController();
   const chunks = [];
   let totalProgress = { number: 0 };
   let fileStream = null;
@@ -30,11 +31,18 @@ export const downloadFile = async ({
     : entry_clientside_key?.clientsideKeySha3Hash ||
       entry_clientside_key?.sha3_hash;
 
+  fileControllers[file.uploadId] = controller;
+
+  if (cancelledFiles.has(file.uploadId)) {
+    fileControllers[file.uploadId].abort();
+    cancelledFiles.delete(file.uploadId);
+  }
+
   const chunkCountResponse = await countChunks({
     endpoint,
     oneTimeToken,
     slug,
-    signal,
+    controller,
   });
 
   if (chunkCountResponse.status !== 200) {
@@ -58,7 +66,7 @@ export const downloadFile = async ({
       index,
       sha3_hash: sha3,
       oneTimeToken,
-      signal,
+      controller,
       endpoint,
       file,
       startTime,
@@ -102,4 +110,10 @@ export const downloadFile = async ({
     const file = joinChunks(chunks);
     return file;
   }
+};
+
+export const cancelingDownload = (slug) => {
+  if (fileControllers[slug]) {
+    fileControllers[slug].abort();
+  } else cancelledFiles.add(slug);
 };

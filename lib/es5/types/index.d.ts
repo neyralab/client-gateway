@@ -84,7 +84,7 @@ export interface IDownloadChunk {
     index: number;
     sha3_hash: string | null;
     oneTimeToken: string;
-    signal: any;
+    controller: any;
     endpoint: string;
     file: File | any;
     startTime: any;
@@ -98,7 +98,7 @@ export interface ICountChunks {
     endpoint: string;
     oneTimeToken: string;
     slug: string;
-    signal: any;
+    controller: any;
 }
 export interface IGetThumbnail {
     path?: string;
