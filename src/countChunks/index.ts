@@ -8,7 +8,7 @@ export const countChunks = async ({
   endpoint,
   oneTimeToken,
   slug,
-  controller,
+  signal,
 }: ICountChunks) => {
   let currentTry = 1;
   const instance = axios.create({
@@ -29,7 +29,7 @@ export const countChunks = async ({
 
     try {
       const response = await instance.get(endpoint + "/chunked/chunkCount", {
-        signal: controller.signal,
+        signal,
       });
       if (currentTry > 1) {
         currentTry = 1;

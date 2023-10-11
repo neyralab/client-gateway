@@ -8,7 +8,7 @@ export const downloadChunk = async ({
   index,
   sha3_hash,
   oneTimeToken,
-  controller,
+  signal,
   endpoint,
   file,
   startTime,
@@ -25,7 +25,7 @@ export const downloadChunk = async ({
       "one-time-token": oneTimeToken,
     },
     responseType: "arraybuffer",
-    signal: controller.signal,
+    signal,
   });
 
   const download: () => Promise<any> = async () => {

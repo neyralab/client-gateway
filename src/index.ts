@@ -3,7 +3,7 @@ export { decryptChunk } from "./decryptChunk";
 export { sendChunk } from "./sendChunk";
 export { uploadFile, cancelingUpload } from "./uploadFile";
 export { downloadChunk } from "./downloadChunk";
-export { downloadFile, cancelingDownload } from "./downloadFile";
+export { downloadFile } from "./downloadFile";
 export { swapChunk } from "./swapChunk";
 export { saveBlob } from "./saveBlob";
 export { countChunks } from "./countChunks";

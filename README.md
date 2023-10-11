@@ -42,6 +42,7 @@ const blob = await downloadFile({
     endpoint, 
     isEncrypted, 
     key, 
+    signal
     callback,
     handlers
 })
@@ -54,8 +55,9 @@ Accepts:
 3. endpoint - endpoint from /generate/token request
 4. isEncrypted - boolean flag
 5. key - a key got from getEncryptedFileKey function and used for file decryption or null is file is unencrypted
-6. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
-7. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
+6. signal - AbortController's signal is used to cancel file uploading process
+7. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
+8. handlers - an array with all possible handlers of callback function (should include 'type' param of callback function);
 
 ### Upload unencrypted file
 ```javascript
@@ -291,7 +293,7 @@ await downloadChunk = async ({
   index,
   sha3_hash,
   oneTimeToken,
-  controller,
+  signal,
   endpoint,
   file,
   startTime,
@@ -306,7 +308,7 @@ Accepts:
 1. index - index of chunk to be downloaded; quantity of all chunks we get from countChunks function
 2. sha3_hash - should be null if file is unencrypted; if file is encrypted we get sha3_hash from full information about the file (file.entry_clientside_key.sha3_hash)
 3. oneTimeToken - token from /generate/token request
-4. controller - AbortController for request cancellation
+4. signal - AbortController's signal for request cancellation
 5. endpoint - endpoint from /generate/token request
 6. file - current file that is supposed to be uploaded
 7. startTime - Date.now(), required to calculate how much time the file upload takes
@@ -342,7 +344,7 @@ await sendChunk({
     totalProgress,
     callback,
     handlers,
-    controller,
+    signal,
     totalSize
 }) 
 ```
@@ -367,7 +369,7 @@ Accepts:
 9. totalProgress - used to update and calculate progress;
 10. callback - callbacks that are responsible for UI updating; accepts 'type' and 'params' parameters;
 11. handlers - all possible handlers of callback functions (should include 'type' of callback function);
-12. controller - AbortController is used to cancel file uploading process;
+12. signal - AbortController's signal is used to cancel file uploading process;
 13. totalSize - total size of the folder (in bytes) - required only for folder uploading;
 
 ### Swap chunk (make simple chunk to be encrypted and send it to server)
