@@ -20,7 +20,7 @@ export const uploadFile = async ({
   callback,
   handlers,
   key,
-}: IUploadFile) => {
+}: IUploadFile, signal: AbortSignal) => {
   const startTime = Date.now();
   const controller = new AbortController();
   let clientsideKeySha3Hash: string | undefined;
@@ -46,6 +46,10 @@ export const uploadFile = async ({
   }
 
   for await (const chunk of chunkFile({ file })) {
+    if (signal.aborted) {
+      throw new Error('Upload was cancelled');
+    }
+
     let finalChunk = chunk;
 
     if (key) {

@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as path from 'path';
 
 class LocalFile {
   public name: string;
@@ -30,7 +31,7 @@ export class LocalFileStream extends LocalFile {
     mimeType: string,
     fileFolderId: string
   ) {
-    super(size, filename, mimeType, fileFolderId);
+    super(size, path.basename(filename), mimeType, fileFolderId);
     this.stream = () => fs.createReadStream(filename);
   }
 }
