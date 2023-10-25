@@ -48,7 +48,6 @@ export const decryptChunk = async ({ chunk, iv, key }: IDecryptChunk) => {
       }
       return response;
     } catch (error: any) {
-      console.error("ERROR", error);
       if (currentTry >= MAX_DECRYPTION_TRIES) {
         currentTry = 1;
         return { failed: true };

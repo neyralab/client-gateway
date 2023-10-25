@@ -1,57 +1,68 @@
+import axios from "axios";
+import MockAdapter from "axios-mock-adapter";
+
 import { downloadChunk } from "./index";
 
+const mockAdapter = new MockAdapter(axios);
 const abortController = new AbortController();
 
-const mockIndex = 0;
-const mockSha3_hash = "sha3_hash";
-const mockSlug = "slug";
-const mockOneTimeToken = "oneTimeToken";
-const mockSignal = abortController.signal;
-const mockEndpoint = "https://example.com";
+const index = 1;
+const sha3_hash = "hash123";
+const oneTimeToken = "token123";
+const signal = abortController.signal;
+const endpoint = "https://example.com";
+const file = { slug: "some-slug", size: 1024 };
+const startTime = Date.now();
+const totalProgress = { number: 0 };
+const callback = jest.fn();
+const handlers = ["onProgress"];
 
-const mockData = new Uint8Array([0x41, 0x42, 0x43, 0x44]).buffer;
-// @ts-ignore
-global.fetch = jest.fn();
+const mockResponseData = new ArrayBuffer(1024);
+const customError = new Error("Internal Server Error");
 
 describe("Test downloadChunk", () => {
-  beforeEach(() => {
-    // @ts-ignore
-    fetch.mockClear();
+  afterEach(() => {
+    mockAdapter.reset();
   });
   it("should return chunk of the file", async () => {
-    // @ts-ignore
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: true,
-        arrayBuffer: () => Promise.resolve(mockData),
-      })
-    );
-    const data = await downloadChunk(
-      mockIndex,
-      mockSha3_hash,
-      mockSlug,
-      mockOneTimeToken,
-      mockSignal,
-      mockEndpoint
-    );
+    mockAdapter
+      .onGet(`${endpoint}/chunked/downloadChunk/some-slug`)
+      .reply(200, mockResponseData);
 
-    expect(data).toEqual(mockData);
-  });
-  it("should return error", async () => {
-    // @ts-ignore
-    global.fetch = jest.fn(() => {
-      throw new Error("Other Error");
+    const result = await downloadChunk({
+      index,
+      sha3_hash,
+      oneTimeToken,
+      signal,
+      endpoint,
+      file,
+      startTime,
+      totalProgress,
+      callback,
+      handlers,
     });
 
+    expect(result).toEqual(mockResponseData);
+  });
+
+  it("should simulate a failed download", async () => {
+    mockAdapter
+      .onGet(`${endpoint}/chunked/downloadChunk/some-slug`)
+      .reply(500, customError);
+    let result;
     try {
-      const test = await downloadChunk(
-        mockIndex,
-        mockSha3_hash,
-        mockSlug,
-        mockOneTimeToken,
-        mockSignal,
-        mockEndpoint
-      );
+      result = await downloadChunk({
+        index,
+        sha3_hash,
+        oneTimeToken,
+        signal,
+        endpoint,
+        file,
+        startTime,
+        totalProgress,
+        callback,
+        handlers,
+      });
     } catch (error) {
       expect(error.message).toEqual("HTTP error! status: undefined");
     }

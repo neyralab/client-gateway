@@ -78,7 +78,7 @@ export const uploadFile = async ({
     if (result?.failed) {
       delete fileControllers[file.uploadId];
       totalProgress.number = 0;
-      return;
+      return result;
     }
     if (result?.data?.data?.slug) {
       delete fileControllers[file.uploadId];

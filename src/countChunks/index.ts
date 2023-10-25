@@ -16,6 +16,7 @@ export const countChunks = async ({
       "one-time-token": oneTimeToken,
       "X-Slug": slug,
     },
+    signal,
   });
   const getChunkCount: () => Promise<any> = async () => {
     await new Promise<void>((resolve) => {
@@ -28,9 +29,7 @@ export const countChunks = async ({
     });
 
     try {
-      const response = await instance.get(endpoint + "/chunked/chunkCount", {
-        signal,
-      });
+      const response = await instance.get(endpoint + "/chunked/chunkCount");
       if (currentTry > 1) {
         currentTry = 1;
       }

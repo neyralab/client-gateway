@@ -1,41 +1,36 @@
+import * as forge from "node-forge";
+
 import { publicKeyToPem } from "./index";
 
-const publicKey = "test-public-key";
+describe("publicKeyToPem", () => {
+  let publicKeyToPemMock;
 
-describe("publicKeyToPem function", () => {
-  it("should convert public key to PEM format", () => {
-    const mockPublicKeyToPem = jest.fn().mockReturnValue("mock-pem");
-    //@ts-ignore
-    window.forge = {
-      pki: {
-        publicKeyToPem: mockPublicKeyToPem,
-      },
-    };
-
-    const result = publicKeyToPem(publicKey);
-
-    expect(result).toBe("mock-pem");
-    expect(mockPublicKeyToPem).toHaveBeenCalledWith(publicKey);
+  beforeEach(() => {
+    publicKeyToPemMock = jest.spyOn(forge.pki, "publicKeyToPem");
   });
 
-  it("should handle missing forge or publicKeyToPem", () => {
-    // @ts-ignore
-    const originalForge = window.forge;
-    // @ts-ignore
-    const originalPublicKeyToPem = window.forge?.pki?.publicKeyToPem;
-    //@ts-ignore
-    window.forge = undefined;
+  afterEach(() => {
+    publicKeyToPemMock.mockRestore();
+  });
 
-    try {
-      publicKeyToPem(publicKey);
-    } catch (error) {
-      expect(error.message).toBe(
-        "TypeError: Cannot read properties of undefined (reading 'pki')"
-      );
-    }
-    //@ts-ignore
-    window.forge = originalForge;
-    //@ts-ignore
-    window.forge.pki.publicKeyToPem = originalPublicKeyToPem;
+  it("should convert a public key to PEM", () => {
+    const publicKey = "publicKey";
+
+    publicKeyToPemMock.mockReturnValue("Mocked PEM");
+
+    const result = publicKeyToPem({ publicKey });
+    expect(result).toBe("Mocked PEM");
+
+    expect(publicKeyToPemMock).toHaveBeenCalledWith(publicKey);
+  });
+
+  it("should throw an error when publicKeyToPem fails", () => {
+    const publicKey = "publicKey";
+
+    publicKeyToPemMock.mockImplementation(() => {
+      throw new Error("Mocked Error");
+    });
+
+    expect(() => publicKeyToPem({ publicKey })).toThrow(Error);
   });
 });

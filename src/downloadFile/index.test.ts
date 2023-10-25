@@ -10,6 +10,8 @@ const mockOneTimeToken = "mock-one-time-token";
 const mockEndpoint = "https://example.com";
 const mockFile = { slug: "mock-slug" };
 const mockSignal = abortController.signal;
+const callback = jest.fn();
+const handlers = ["onProgress"];
 
 const chunk = new ArrayBuffer(5);
 const chunks = [chunk, chunk, chunk];
@@ -20,8 +22,8 @@ describe("downloadFile", () => {
   it("should download and join chunks", async () => {
     //@ts-ignore
     countChunks.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve({ count: 3, end: 3072 }),
+      status: 200,
+      data: { count: 3, end: 3072 },
     });
     //@ts-ignore
     downloadChunk.mockImplementation(async () => {
@@ -31,12 +33,15 @@ describe("downloadFile", () => {
     joinChunks.mockImplementation(async () => {
       return expectedResult;
     });
-    const result = await downloadFile(
-      mockFile,
-      mockOneTimeToken,
-      mockSignal,
-      mockEndpoint
-    );
+    const result = await downloadFile({
+      file: mockFile,
+      oneTimeToken: mockOneTimeToken,
+      signal: mockSignal,
+      endpoint: mockEndpoint,
+      callback,
+      handlers,
+      isEncrypted: false,
+    });
     expect(countChunks).toHaveBeenCalledTimes(1);
     expect(downloadChunk).toHaveBeenCalledTimes(3);
     expect(result).toEqual(expectedResult);
@@ -47,9 +52,16 @@ describe("downloadFile", () => {
       ok: false,
       status: 404,
     });
-
     try {
-      await downloadFile(mockFile, mockOneTimeToken, mockSignal, mockEndpoint);
+      await downloadFile({
+        file: mockFile,
+        oneTimeToken: mockOneTimeToken,
+        signal: mockSignal,
+        endpoint: mockEndpoint,
+        callback,
+        handlers,
+        isEncrypted: false,
+      });
     } catch (error) {
       expect(error.message).toEqual("HTTP error! status:404");
     }

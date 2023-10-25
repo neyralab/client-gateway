@@ -1,47 +1,48 @@
+import axios from "axios";
+import MockAdapter from "axios-mock-adapter";
+
 import { countChunks } from "./index";
 
-const abortController = new AbortController();
-const mockEndpoint = "https://example.com";
-const mockOneTimeToken = "mockToken";
-const mockSlug = "mockSlug";
-const mockSignal = abortController.signal;
+const mockAdapter = new MockAdapter(axios);
+const controller = new AbortController();
+const signal = controller.signal;
+const endpoint = "https://example.com";
+const oneTimeToken = "mockToken";
+const slug = "mockSlug";
 
-const result = { count: 1, end: 1024 };
-// @ts-ignore
-global.fetch = jest.fn();
+const mockResponseData = { count: 1, end: 1024 };
 
 describe("Test countChunks", () => {
-  beforeEach(() => {
-    // @ts-ignore
-    fetch.mockClear();
+  afterEach(() => {
+    mockAdapter.reset();
   });
   it("should return quantity of chunks and size of the file", async () => {
-    // @ts-ignore
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        json: () => Promise.resolve({ result }),
-      })
-    );
-    const rawData = await countChunks(
-      mockEndpoint,
-      mockOneTimeToken,
-      mockSlug,
-      mockSignal
-    );
-    const data = await rawData.json();
+    mockAdapter
+      .onGet(`${endpoint}/chunked/chunkCount`)
+      .reply(200, mockResponseData);
 
-    expect(data.result).toEqual({ count: 1, end: 1024 });
-  });
-  it("should return failed status if other error", async () => {
-    global.fetch = jest.fn(() => {
-      throw new Error("Other Error");
+    const response = await countChunks({
+      endpoint,
+      oneTimeToken,
+      slug,
+      signal,
     });
-    const rawData = await countChunks(
-      mockEndpoint,
-      mockOneTimeToken,
-      mockSlug,
-      mockSignal
-    );
-    expect(rawData.failed).toEqual(true);
+    expect(response.data).toEqual(mockResponseData);
+  });
+
+  it("should return failed status if other error", async () => {
+    mockAdapter.onGet(endpoint).reply(500, { error: "Other Error" });
+    let rawData;
+    try {
+      rawData = await countChunks({
+        endpoint,
+        oneTimeToken,
+        slug,
+        signal,
+      });
+    } catch (error) {
+      expect(rawData.failed).toEqual(true);
+      expect(error.message).toBe("Other Error");
+    }
   });
 });

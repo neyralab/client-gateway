@@ -1,41 +1,37 @@
+import * as forge from "node-forge";
+
 import { getUserRSAKeys } from "./index";
 
-describe("getUserRSAKeys", () => {
-  it("should generate RSA keys successfully", async () => {
+describe("Test getUserRSAKeys", () => {
+  it("should generate RSA key pair", async () => {
     const mockSigner = {
-      signMessage: jest.fn().mockResolvedValue("mockSignature"),
+      signMessage: jest.fn().mockResolvedValue("mockedSignature"),
     };
-    const mockPublicKeyToPem = jest.fn().mockReturnValue("mock-pem");
-    //@ts-ignore
-    global.window = Object.create(window);
-    //@ts-ignore
-    window.forge = {
-      pki: {
-        publicKeyToPem: mockPublicKeyToPem,
-        rsa: {
-          generateKeyPair: jest.fn(() => ({
-            privateKey: "mockPrivateKey",
-            publicKey: "mockPublicKey",
-          })),
-        },
-      },
-      random: {
-        createInstance: jest.fn(() => ({
-          seedFileSync: jest.fn((needed) => "mockSeed".repeat(needed)),
-        })),
-      },
-    };
-    const rsaKeys = await getUserRSAKeys(mockSigner);
 
-    expect(mockSigner.signMessage).toHaveBeenCalled();
-    expect(rsaKeys.privateKey).toBeDefined();
-    expect(rsaKeys.publicKey).toBeDefined();
+    const rsaGenerateKeyPairMock = jest.spyOn(forge.pki.rsa, "generateKeyPair");
+    const expectedKeyPair = {
+      publicKey: "mockedPublicKey",
+      privateKey: "mockedPrivateKey",
+    };
+    // @ts-ignore
+    rsaGenerateKeyPairMock.mockReturnValue(expectedKeyPair);
+
+    const keyPair = await getUserRSAKeys({ signer: mockSigner });
+
+    expect(keyPair).toEqual(expectedKeyPair);
+    expect(mockSigner.signMessage).toHaveBeenCalledWith(
+      expect.stringContaining("Welcome to GhostDrive")
+    );
+
+    rsaGenerateKeyPairMock.mockRestore();
   });
-
   it("should handle signer error", async () => {
     const mockSigner = {
       signMessage: jest.fn().mockRejectedValue(new Error("Signer error")),
     };
-    await expect(getUserRSAKeys(mockSigner)).rejects.toThrow("Signer error");
+
+    await expect(getUserRSAKeys({ signer: mockSigner })).rejects.toThrow(
+      "Signer error"
+    );
   });
 });

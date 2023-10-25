@@ -1,6 +1,5 @@
 import * as Base64 from "base64-js";
 
-import { convertArrayBufferToBase64 } from "../utils/convertArrayBufferToBase64";
 import { getCrypto } from "../utils/getCrypto";
 
 import { decryptChunk } from "./index";
@@ -23,17 +22,20 @@ describe("decryptChunk", () => {
       ["encrypt"]
     );
 
-    const encryptedChunk = await encryptChunk(mockChunk, mockIv, mockKey);
+    const encryptedChunk = await encryptChunk({
+      chunk: mockChunk,
+      iv: mockIv,
+      key: mockKey,
+    });
 
-    const buffer = await crypto.subtle.exportKey("raw", mockKey);
-    const keyBase64 = convertArrayBufferToBase64(buffer);
+    const bufferKey = await crypto.subtle.exportKey("raw", mockKey);
     const base64iv = Base64.fromByteArray(mockIv);
 
-    const decryptedChunk = await decryptChunk(
-      encryptedChunk,
-      base64iv,
-      keyBase64
-    );
+    const decryptedChunk = await decryptChunk({
+      chunk: encryptedChunk,
+      iv: base64iv,
+      key: bufferKey,
+    });
 
     expect(decryptedChunk).toEqual(mockChunk);
   });
@@ -48,11 +50,14 @@ describe("decryptChunk", () => {
         ["encrypt"]
       );
 
-      const buffer = await crypto.subtle.exportKey("raw", mockKey);
-      const keyBase64 = convertArrayBufferToBase64(buffer);
+      const bufferKey = await crypto.subtle.exportKey("raw", mockKey);
       const base64iv = Base64.fromByteArray(mockIv);
 
-      const errorResult = await decryptChunk(mockChunk, base64iv, keyBase64);
+      const errorResult = await decryptChunk({
+        chunk: mockChunk,
+        iv: base64iv,
+        key: bufferKey,
+      });
 
       expect(errorResult.failed).toBe(true);
     },

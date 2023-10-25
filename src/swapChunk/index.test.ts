@@ -3,29 +3,26 @@ import MockAdapter from "axios-mock-adapter";
 import { swapChunk } from "./index";
 
 describe("Test swapChunk", () => {
-  const mockArrayBuffer = new ArrayBuffer(10);
-  const mockEncryptedChunk = new ArrayBuffer(10);
+  const encryptedChunk = new ArrayBuffer(10);
   const mockCancelToken = {
     promise: new Promise(() => {}),
     throwIfRequested: () => {},
   };
-  const mockFile = {
+  const file = {
     slug: "mock-slug",
     upload_id: "mock_upload_id",
     source: { token: mockCancelToken },
+    size: 10000,
   };
 
-  const mockUpdateProgressCallback = jest.fn();
-  const mockGetProgressFromLSCallback = jest.fn();
-  const mockSetProgressToLSCallback = jest.fn();
-
-  const mockDispatch = jest.fn();
-
-  const mockStartTime = 1234567890;
-  const mockOneTimeToken = "mock-one-time-token";
-  const mockEndpoint = "https://example.com";
-  const mockIv = "base64iv";
-  const mockClientsideKeySha3Hash = "mock-hash";
+  const startTime = 1234567890;
+  const oneTimeToken = "mock-one-time-token";
+  const endpoint = "https://example.com";
+  const base64iv = "base64iv";
+  const clientsideKeySha3Hash = "mock-hash";
+  const totalProgress = { number: 0 };
+  const callback = jest.fn();
+  const handlers = ["onProgress"];
 
   it("should successfully swap a chunk", async () => {
     const mockResponse = { success: true };
@@ -33,51 +30,47 @@ describe("Test swapChunk", () => {
     const mockAdapter = new MockAdapter(axios);
 
     mockAdapter
-      .onPost(`${mockEndpoint}/chunked/swap/${mockFile.slug}`)
+      .onPost(`${endpoint}/chunked/swap/${file.slug}`)
       .reply(200, mockResponse);
 
-    const { data: result } = await swapChunk(
-      mockFile,
-      mockEndpoint,
-      mockIv,
-      mockClientsideKeySha3Hash,
-      0,
-      10,
-      mockOneTimeToken,
-      mockEncryptedChunk,
-      mockArrayBuffer,
-      mockStartTime,
-      mockDispatch,
-      mockUpdateProgressCallback,
-      mockGetProgressFromLSCallback,
-      mockSetProgressToLSCallback
-    );
+    const { data: result } = await swapChunk({
+      file,
+      endpoint,
+      base64iv,
+      clientsideKeySha3Hash,
+      index: 0,
+      oneTimeToken,
+      encryptedChunk,
+      fileSize: file.size,
+      startTime,
+      totalProgress,
+      callback,
+      handlers,
+    });
 
     expect(result).toEqual(mockResponse);
   });
   it("should throw an error", async () => {
     const mockAdapter = new MockAdapter(axios);
     mockAdapter
-      .onPost(`${mockEndpoint}/chunked/swap/${mockFile.slug}`)
+      .onPost(`${endpoint}/chunked/swap/${file.slug}`)
       .reply(500, "Internal Server Error");
 
     try {
-      await swapChunk(
-        mockFile,
-        mockEndpoint,
-        mockIv,
-        mockClientsideKeySha3Hash,
-        0,
-        10,
-        mockOneTimeToken,
-        mockEncryptedChunk,
-        mockArrayBuffer,
-        mockStartTime,
-        mockDispatch,
-        mockUpdateProgressCallback,
-        mockGetProgressFromLSCallback,
-        mockSetProgressToLSCallback
-      );
+      await swapChunk({
+        file,
+        endpoint,
+        base64iv,
+        clientsideKeySha3Hash,
+        index: 0,
+        oneTimeToken,
+        encryptedChunk,
+        fileSize: file.size,
+        startTime,
+        totalProgress,
+        callback,
+        handlers,
+      });
     } catch (error) {
       expect(error.message).toEqual("Request failed with status code 500");
     }

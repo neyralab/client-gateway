@@ -3,33 +3,27 @@ import { getCrypto } from "../utils/getCrypto";
 
 const crypto = getCrypto();
 
+const chunk = new ArrayBuffer(10);
+const iv = new Uint8Array(16);
+
 describe("encryptChunk", () => {
-  beforeEach(() => {
-    // @ts-ignore
-    window.key = undefined;
-  });
   it("should encrypt a chunk", async () => {
-    const mockKey = await crypto.subtle.generateKey(
+    const key = await crypto.subtle.generateKey(
       { name: "AES-GCM", length: 256 },
       true,
       ["encrypt"]
     );
 
-    // @ts-ignore
-    window.key = mockKey;
+    const result = await encryptChunk({ chunk, iv, key });
 
-    const mockChunk = new ArrayBuffer(10);
-    const mockIv = new Uint8Array(16);
-    const result = await encryptChunk(mockChunk, mockIv);
-
-    expect(result.byteLength).toBe(mockChunk.byteLength + 16);
+    expect(result.byteLength).toBe(chunk.byteLength + 16);
   });
-  it("should handle encryption error if window.key is not set", async () => {
-    const mockChunk = new ArrayBuffer(10);
-    const mockIv = new Uint8Array(16);
+  it("should handle encryption error if key is not of type CryptoKey", async () => {
+    const key = "mockKey";
 
     try {
-      await encryptChunk(mockChunk, mockIv);
+      // @ts-ignore
+      await encryptChunk({ chunk, iv, key });
     } catch (error) {
       expect(error.message).toBe("Key is not of type 'CryptoKey'");
     }

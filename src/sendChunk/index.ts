@@ -121,7 +121,6 @@ export const sendChunk = async ({
 
       return response;
     } catch (error: any) {
-      console.error("ERROR", error);
       if (
         currentTry >= MAX_TRIES ||
         !error?.message?.includes("Network Error")
