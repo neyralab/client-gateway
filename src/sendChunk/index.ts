@@ -28,7 +28,7 @@ export const sendChunk = async ({
   totalSize,
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
-  const xHash = iv ? createSHA256Hash(chunk) : null;
+  const xHash = createSHA256Hash(chunk);
   const fileName = convertTextToBase64(file.name);
   const chunksLength = Math.ceil(file.size / CHUNK_SIZE);
   let currentTry = 1;
@@ -46,7 +46,7 @@ export const sendChunk = async ({
     "x-clientsideKeySha3Hash": clientsideKeySha3Hash
       ? clientsideKeySha3Hash
       : "null",
-    "x-hash": xHash ? xHash : "null",
+    "x-hash": xHash,
     "x-iv": iv ? base64iv : "null",
   };
 
