@@ -47,6 +47,7 @@ export const sendChunk = async ({
       ? clientsideKeySha3Hash
       : "null",
     "x-hash": xHash,
+    "x-size": totalSize,
     "x-iv": iv ? base64iv : "null",
   };
 
