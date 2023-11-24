@@ -8,7 +8,7 @@ import { postWithCookies } from "../utils/makeRequestWithCookies";
 import { isBrowser } from "../utils/isBrowser";
 import { createSHA256Hash } from "../utils/createSHA256Hash";
 
-import { CHUNK_SIZE, MAX_TRIES } from "../config";
+import { CHUNK_SIZE, MAX_TRIES, MAX_TRIES_502 } from "../config";
 
 import { ISendChunk } from "../types";
 
@@ -122,9 +122,12 @@ export const sendChunk = async ({
 
       return response;
     } catch (error: any) {
+      const isNetworkError = error?.message?.includes("Network Error");
+      const is502Error = error?.response?.status === 502;
+
       if (
-        currentTry >= MAX_TRIES ||
-        !error?.message?.includes("Network Error")
+        currentTry >= (is502Error ? MAX_TRIES_502 : MAX_TRIES) ||
+        (!isNetworkError && !is502Error)
       ) {
         currentTry = 1;
         return { failed: true };
