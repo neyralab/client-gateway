@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { FILE_ACTION_TYPES, MAX_TRIES, MAX_TRIES_502 } from "../config";
+import { ERRORS, FILE_ACTION_TYPES, MAX_TRIES, MAX_TRIES_502 } from "../config";
 import { IDownloadChunk } from "../types";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
 
@@ -50,12 +50,11 @@ export const downloadChunk = async ({
       const isNetworkError =
         error?.message?.includes("Network Error") ||
         error?.message?.includes("Failed to fetch");
-      const is502or504Error =
-        error?.response?.status === 502 || error?.response?.status === 504;
+      const isOtherError = ERRORS.includes(error?.response?.status);
 
       if (
-        currentTry >= (is502or504Error ? MAX_TRIES_502 : MAX_TRIES) ||
-        (!isNetworkError && !is502or504Error)
+        currentTry >= (isOtherError ? MAX_TRIES_502 : MAX_TRIES) ||
+        (!isNetworkError && !isOtherError)
       ) {
         currentTry = 1;
         return { failed: true };

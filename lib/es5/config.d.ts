@@ -6,3 +6,4 @@ export declare const FILE_ACTION_TYPES: {
     DOWNLOAD: number;
 };
 export declare const CHUNK_SIZE: number;
+export declare const ERRORS: number[];

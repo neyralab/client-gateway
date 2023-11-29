@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import { MAX_TRIES, MAX_TRIES_502 } from "../config";
+import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from "../config";
 import { getFibonacciNumber } from "../utils/getFibonacciNumber";
 import { ICountChunks } from "../types";
 
@@ -38,12 +38,11 @@ export const countChunks = async ({
       const isNetworkError =
         error?.message?.includes("Network Error") ||
         error?.message?.includes("Failed to fetch");
-      const is502or504Error =
-        error?.response?.status === 502 || error?.response?.status === 504;
+      const isOtherError = ERRORS.includes(error?.response?.status);
 
       if (
-        currentTry >= (is502or504Error ? MAX_TRIES_502 : MAX_TRIES) ||
-        (!isNetworkError && !is502or504Error)
+        currentTry >= (isOtherError ? MAX_TRIES_502 : MAX_TRIES) ||
+        (!isNetworkError && !isOtherError)
       ) {
         currentTry = 1;
         return { failed: true };
