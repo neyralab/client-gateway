@@ -38,11 +38,12 @@ export const countChunks = async ({
       const isNetworkError =
         error?.message?.includes("Network Error") ||
         error?.message?.includes("Failed to fetch");
-      const is502Error = error?.response?.status === 502;
+      const is502or504Error =
+        error?.response?.status === 502 || error?.response?.status === 504;
 
       if (
-        currentTry >= (is502Error ? MAX_TRIES_502 : MAX_TRIES) ||
-        (!isNetworkError && !is502Error)
+        currentTry >= (is502or504Error ? MAX_TRIES_502 : MAX_TRIES) ||
+        (!isNetworkError && !is502or504Error)
       ) {
         currentTry = 1;
         return { failed: true };
