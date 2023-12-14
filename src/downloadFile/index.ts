@@ -5,6 +5,7 @@ import { joinChunks } from "../utils/joinChunks";
 
 import { IDownloadFile } from "../types";
 import { convertBase64ToArrayBuffer } from "../utils/convertBase64ToArrayBuffer";
+import axios from "axios";
 
 export const downloadFile = async ({
   file,
@@ -15,7 +16,12 @@ export const downloadFile = async ({
   callback,
   handlers,
   signal,
+  cidUrl,
 }: IDownloadFile) => {
+  console.log("file", file);
+  console.log("gateway", endpoint);
+  const isFileFromSP = file.storage_provider;
+  const gateway = isFileFromSP ? file.storage_provider.url : endpoint;
   const startTime = Date.now();
   const chunks = [];
   let totalProgress = { number: 0 };
@@ -27,9 +33,15 @@ export const downloadFile = async ({
     ? null
     : entry_clientside_key?.clientsideKeySha3Hash ||
       entry_clientside_key?.sha3_hash;
+  if (isFileFromSP) {
+    const test_url = `${cidUrl}/${file.cid}/1`;
+    const cid_data = axios.get(test_url);
+
+    console.log("cid_data", cid_data);
+  }
 
   const chunkCountResponse = await countChunks({
-    endpoint,
+    endpoint: gateway,
     oneTimeToken,
     slug,
     signal,
@@ -57,7 +69,7 @@ export const downloadFile = async ({
       sha3_hash: sha3,
       oneTimeToken,
       signal,
-      endpoint,
+      endpoint: gateway,
       file,
       startTime,
       totalProgress,
