@@ -14,6 +14,7 @@ export interface IDownloadFile {
     key?: string | undefined;
     callback?: Callback;
     handlers?: any[];
+    carReader?: any;
 }
 export interface IEncodeExistingFile {
     file: File | any;
