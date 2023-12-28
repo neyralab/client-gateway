@@ -28,7 +28,7 @@ export const downloadFile = async ({
     const fileBlob = await loadFileFromSP({
       carReader,
       type: file.mime,
-      url: `${file.storage_provider.url}/${file.cid.path}`,
+      url: `${file.storage_provider.url}/${file.cid.cid[0]}`,
     });
     return fileBlob;
   } else {
