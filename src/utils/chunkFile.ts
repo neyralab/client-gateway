@@ -5,7 +5,10 @@ export async function* chunkFile({
   file,
   uploadChunkSize,
 }: {
-  file: LocalFileBuffer | LocalFileStream;
+  file:
+    | LocalFileBuffer
+    | LocalFileStream
+    | { size: number; arrayBuffer: () => Promise<ArrayBuffer> };
   uploadChunkSize: number;
 }): AsyncGenerator<Buffer | ArrayBuffer> {
   if (file instanceof LocalFileStream) {

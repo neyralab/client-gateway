@@ -42,6 +42,7 @@ export interface IDownloadFile {
   callback?: Callback;
   handlers?: any[];
   carReader?: any;
+  uploadChunkSize?: number;
 }
 export interface IEncodeExistingFile {
   file: File | any;

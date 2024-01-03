@@ -5,7 +5,7 @@ import { joinChunks } from '../utils/joinChunks';
 
 import { IDownloadFile } from '../types';
 import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer';
-import { loadFileFromSP } from './loadFileFromSP';
+import { downloadFileFromSP } from './downloadFileFromSP';
 
 export const downloadFile = async ({
   file,
@@ -17,28 +17,32 @@ export const downloadFile = async ({
   handlers,
   signal,
   carReader,
+  uploadChunkSize,
 }: IDownloadFile) => {
-  const isFileFromSP = file.is_on_storage_provider;
   const startTime = Date.now();
   const chunks = [];
+  const { entry_clientside_key, slug } = file;
+
+  const sha3 = !isEncrypted
+    ? null
+    : entry_clientside_key?.clientsideKeySha3Hash ||
+      entry_clientside_key?.sha3_hash;
+
   let totalProgress = { number: 0 };
   let fileStream = null;
 
-  if (isFileFromSP) {
-    const fileBlob = await loadFileFromSP({
+  if (file.is_on_storage_provider) {
+    const fileBlob = await downloadFileFromSP({
       carReader,
-      type: file.mime,
       url: `${file.storage_provider.url}/${file.cid.cid[0]}`,
+      isEncrypted,
+      uploadChunkSize,
+      key,
+      iv: entry_clientside_key?.iv,
+      file,
     });
     return fileBlob;
   } else {
-    const { entry_clientside_key, slug } = file;
-
-    const sha3 = !isEncrypted
-      ? null
-      : entry_clientside_key?.clientsideKeySha3Hash ||
-        entry_clientside_key?.sha3_hash;
-
     const chunkCountResponse = await countChunks({
       endpoint,
       oneTimeToken,
