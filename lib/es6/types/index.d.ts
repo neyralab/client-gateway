@@ -1,10 +1,18 @@
-import { LocalFileStream, LocalFileBuffer } from "./File";
+import { LocalFileStream, LocalFileBuffer } from './File';
 export type ImagePreviewEffect = (fileId: string, width: number, height: number, fit: string, cancelToken: AbortSignal | any, type: string | undefined) => any;
-export type CallbackTypeNames = "onStart" | "onSuccess" | "onError" | "onProgress";
+export type CallbackTypeNames = 'onStart' | 'onSuccess' | 'onError' | 'onProgress';
 export type Callback = ({ type, params, }: {
     type: CallbackTypeNames;
     params: any;
 }) => void;
+export type GatewayType = {
+    url: string;
+    upload_chunk_size: number;
+    interim_chunk_size: number;
+    id: number;
+    type: string;
+    same_ip_upload: boolean;
+};
 export interface IDownloadFile {
     file: File | any;
     oneTimeToken: string;
@@ -19,7 +27,7 @@ export interface IDownloadFile {
 export interface IEncodeExistingFile {
     file: File | any;
     oneTimeToken: string;
-    endpoint: string;
+    gateway: GatewayType;
     downloadToken: string;
     downloadEndpoint: string;
     callback: Callback;
@@ -32,7 +40,7 @@ export interface ISendChunk {
     file: LocalFileStream | LocalFileBuffer;
     startTime: any;
     oneTimeToken: string;
-    endpoint: string;
+    gateway: GatewayType;
     iv?: Uint8Array | null;
     clientsideKeySha3Hash?: string | null;
     totalProgress: {
@@ -47,7 +55,7 @@ export interface ISendChunk {
 export interface IUploadFile {
     file: LocalFileStream | LocalFileBuffer;
     oneTimeToken: string;
-    endpoint: string;
+    gateway: GatewayType;
     callback: Callback;
     handlers: any[];
     key?: CryptoKey;
@@ -57,7 +65,7 @@ export interface IUploadFile {
 }
 export interface ISwapChunk {
     file: File | any;
-    endpoint: string;
+    gateway: GatewayType;
     base64iv: string;
     clientsideKeySha3Hash: string;
     index: number;

@@ -1,12 +1,12 @@
-import * as forge from "node-forge";
-import * as Base64 from "base64-js";
+import * as forge from 'node-forge';
+import * as Base64 from 'base64-js';
 
-import { downloadFile, encryptChunk, swapChunk } from "../index";
+import { downloadFile, encryptChunk, swapChunk } from '../index';
 
-import { getCrypto } from "../utils/getCrypto";
-import { chunkBuffer } from "../utils/chunkBuffer";
+import { getCrypto } from '../utils/getCrypto';
+import { chunkBuffer } from '../utils/chunkBuffer';
 
-import { IEncodeExistingFile } from "../types";
+import { IEncodeExistingFile } from '../types';
 
 const crypto = getCrypto();
 
@@ -17,7 +17,7 @@ md.update(fileKey);
 export const encodeExistingFile = async ({
   file,
   oneTimeToken,
-  endpoint,
+  gateway,
   downloadToken,
   downloadEndpoint,
   callback,
@@ -45,19 +45,22 @@ export const encodeExistingFile = async ({
 
   const arrayBuffer = await fileBlob.arrayBuffer();
 
-  handlers.includes("onStart") &&
+  handlers.includes('onStart') &&
     callback({
-      type: "onStart",
+      type: 'onStart',
       params: { file, size: arrayBuffer.byteLength },
     });
 
   try {
-    for await (const chunk of chunkBuffer({ arrayBuffer })) {
+    for await (const chunk of chunkBuffer({
+      arrayBuffer,
+      uploadChunkSize: gateway.upload_chunk_size,
+    })) {
       const encryptedChunk = await encryptChunk({ chunk, iv, key });
 
       result = await swapChunk({
         file,
-        endpoint,
+        gateway,
         base64iv,
         clientsideKeySha3Hash,
         index: currentIndex,
@@ -75,11 +78,11 @@ export const encodeExistingFile = async ({
         const { data: responseFromIpfs } = result;
         if (responseFromIpfs) {
           const isCancelModalOpen = document.body.querySelector(
-            ".download__modal__button__cancel"
+            '.download__modal__button__cancel'
           );
-          handlers.includes("onSuccess") &&
+          handlers.includes('onSuccess') &&
             callback({
-              type: "onSuccess",
+              type: 'onSuccess',
               params: { isCancelModalOpen, response: responseFromIpfs },
             });
           return responseFromIpfs;
@@ -88,8 +91,8 @@ export const encodeExistingFile = async ({
       currentIndex++;
     }
   } catch (e) {
-    handlers.includes("onError") &&
-      callback({ type: "onError", params: { slug: file.slug } });
+    handlers.includes('onError') &&
+      callback({ type: 'onError', params: { slug: file.slug } });
     return;
   }
 };

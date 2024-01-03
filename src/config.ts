@@ -5,5 +5,4 @@ export const FILE_ACTION_TYPES = {
   VIEW: 6,
   DOWNLOAD: 5,
 };
-export const CHUNK_SIZE = 1024 * 1024;
 export const ERRORS = [502, 504, 400];

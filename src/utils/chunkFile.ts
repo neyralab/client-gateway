@@ -1,20 +1,21 @@
-import { CHUNK_SIZE } from "../config";
-import { LocalFileBuffer, LocalFileStream } from "../types/File";
-import { chunkBuffer } from "./chunkBuffer";
+import { LocalFileBuffer, LocalFileStream } from '../types/File';
+import { chunkBuffer } from './chunkBuffer';
 
 export async function* chunkFile({
   file,
+  uploadChunkSize,
 }: {
   file: LocalFileBuffer | LocalFileStream;
+  uploadChunkSize: number;
 }): AsyncGenerator<Buffer | ArrayBuffer> {
   if (file instanceof LocalFileStream) {
     const stream = file.stream();
     const lastChunkSize =
-      file.size > CHUNK_SIZE
-        ? file.size - Math.floor(file.size / CHUNK_SIZE) * CHUNK_SIZE
+      file.size > uploadChunkSize
+        ? file.size - Math.floor(file.size / uploadChunkSize) * uploadChunkSize
         : file.size;
 
-    let buffer: Buffer = Buffer.alloc(CHUNK_SIZE);
+    let buffer: Buffer = Buffer.alloc(uploadChunkSize);
     let offset: number = 0;
 
     for await (const chunk of stream) {
@@ -23,7 +24,7 @@ export async function* chunkFile({
         buffer = Buffer.alloc(lastChunkSize);
       }
       while (position < chunk.length) {
-        const spaceLeft = CHUNK_SIZE - offset;
+        const spaceLeft = uploadChunkSize - offset;
         const chunkToCopy = Math.min(spaceLeft, chunk.length - position);
 
         chunk.copy(buffer, offset, position, position + chunkToCopy);
@@ -31,9 +32,9 @@ export async function* chunkFile({
         position += chunkToCopy;
         offset += chunkToCopy;
 
-        if (offset === CHUNK_SIZE) {
+        if (offset === uploadChunkSize) {
           yield buffer;
-          buffer = Buffer.alloc(CHUNK_SIZE);
+          buffer = Buffer.alloc(uploadChunkSize);
           offset = 0;
         }
       }
@@ -44,6 +45,6 @@ export async function* chunkFile({
     }
   } else {
     const arrayBuffer = await file.arrayBuffer();
-    yield* chunkBuffer({ arrayBuffer });
+    yield* chunkBuffer({ arrayBuffer, uploadChunkSize });
   }
 }

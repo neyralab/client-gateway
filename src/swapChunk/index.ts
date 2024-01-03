@@ -1,11 +1,10 @@
-import axios from "axios";
+import axios from 'axios';
 
-import { ISwapChunk } from "../types";
-import { CHUNK_SIZE } from "../config";
+import { ISwapChunk } from '../types';
 
 export const swapChunk = async ({
   file,
-  endpoint,
+  gateway,
   base64iv,
   clientsideKeySha3Hash,
   index,
@@ -17,15 +16,15 @@ export const swapChunk = async ({
   callback,
   handlers,
 }: ISwapChunk) => {
-  const chunksLength = Math.ceil(file.size / CHUNK_SIZE);
-  const url = `${endpoint}/chunked/swap/${file.slug}`;
+  const chunksLength = Math.ceil(file.size / gateway.upload_chunk_size);
+  const url = `${gateway.url}/chunked/swap/${file.slug}`;
   const inst = axios.create({
     headers: {
-      "x-iv": base64iv,
-      "x-clientsideKeySha3Hash": clientsideKeySha3Hash,
-      "x-last": `${index}/${chunksLength}`,
-      "Content-Type": "application/octet-stream",
-      "one-time-token": oneTimeToken,
+      'x-iv': base64iv,
+      'x-clientsideKeySha3Hash': clientsideKeySha3Hash,
+      'x-last': `${index}/${chunksLength}`,
+      'Content-Type': 'application/octet-stream',
+      'one-time-token': oneTimeToken,
     },
     onUploadProgress: (event) => {
       if (event.loaded === encryptedChunk.byteLength) {
@@ -37,9 +36,9 @@ export const swapChunk = async ({
         const bytesPerMillisecond = progress / elapsedTime;
         const remainingTime = remainingBytes / bytesPerMillisecond;
         const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
-        handlers.includes("onProgress") &&
+        handlers.includes('onProgress') &&
           callback({
-            type: "onProgress",
+            type: 'onProgress',
             params: { id: file.uploadId, progress, timeLeft },
           });
       }

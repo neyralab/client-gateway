@@ -1,16 +1,16 @@
-import axios from "axios";
-import * as Base64 from "base64-js";
-import * as setCookieParser from "set-cookie-parser";
+import axios from 'axios';
+import * as Base64 from 'base64-js';
+import * as setCookieParser from 'set-cookie-parser';
 
-import { getFibonacciNumber } from "../utils/getFibonacciNumber";
-import { convertTextToBase64 } from "../utils/convertTextToBase64";
-import { postWithCookies } from "../utils/makeRequestWithCookies";
-import { isBrowser } from "../utils/isBrowser";
-import { createSHA256Hash } from "../utils/createSHA256Hash";
+import { getFibonacciNumber } from '../utils/getFibonacciNumber';
+import { convertTextToBase64 } from '../utils/convertTextToBase64';
+import { postWithCookies } from '../utils/makeRequestWithCookies';
+import { isBrowser } from '../utils/isBrowser';
+import { createSHA256Hash } from '../utils/createSHA256Hash';
 
-import { CHUNK_SIZE, ERRORS, MAX_TRIES, MAX_TRIES_502 } from "../config";
+import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config';
 
-import { ISendChunk } from "../types";
+import { ISendChunk } from '../types';
 
 export const sendChunk = async ({
   chunk,
@@ -18,7 +18,7 @@ export const sendChunk = async ({
   file,
   startTime,
   oneTimeToken,
-  endpoint,
+  gateway,
   iv,
   clientsideKeySha3Hash,
   totalProgress,
@@ -30,25 +30,25 @@ export const sendChunk = async ({
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const xHash = createSHA256Hash(chunk);
   const fileName = convertTextToBase64(file.name);
-  const chunksLength = Math.ceil(file.size / CHUNK_SIZE);
+  const chunksLength = Math.ceil(file.size / gateway.upload_chunk_size);
   let currentTry = 1;
   let cookieJar = [];
 
   const headers = {
-    "content-type": "application/octet-stream",
-    "one-time-token": oneTimeToken,
-    "x-file-name": fileName,
-    "x-last": `${index}/${chunksLength}`,
-    "x-chunk-index": `${index}`,
-    "X-folder": file.folderId || "",
-    "x-mime": file?.type,
-    "X-Ai-Generated": false,
-    "x-clientsideKeySha3Hash": clientsideKeySha3Hash
+    'content-type': 'application/octet-stream',
+    'one-time-token': oneTimeToken,
+    'x-file-name': fileName,
+    'x-last': `${index}/${chunksLength}`,
+    'x-chunk-index': `${index}`,
+    'X-folder': file.folderId || '',
+    'x-mime': file?.type,
+    'X-Ai-Generated': false,
+    'x-clientsideKeySha3Hash': clientsideKeySha3Hash
       ? clientsideKeySha3Hash
-      : "null",
-    "x-hash": xHash,
-    "x-size": file.size,
-    "x-iv": iv ? base64iv : "null",
+      : 'null',
+    'x-hash': xHash,
+    'x-size': file.size,
+    'x-iv': iv ? base64iv : 'null',
   };
 
   const uploadChunk: (chunk: ArrayBuffer) => Promise<any> = async (
@@ -67,16 +67,16 @@ export const sendChunk = async ({
       let response;
       if (!isBrowser()) {
         response = axios
-          .get(`${endpoint}`, {
+          .get(`${gateway.url}`, {
             headers: {
-              "content-type": "application/octet-stream",
-              "one-time-token": oneTimeToken,
+              'content-type': 'application/octet-stream',
+              'one-time-token': oneTimeToken,
             },
           })
           .then((response) => {
-            if (response.headers["set-cookie"]) {
+            if (response.headers['set-cookie']) {
               const parsed = setCookieParser.parse(
-                response.headers["set-cookie"]
+                response.headers['set-cookie']
               );
               for (const cookieObject of parsed) {
                 const cookieString = `${cookieObject.name}=${cookieObject.value}`;
@@ -86,7 +86,7 @@ export const sendChunk = async ({
           })
           .then(() => {
             return postWithCookies(
-              `${endpoint}/chunked/uploadChunk`,
+              `${gateway.url}/chunked/uploadChunk`,
               headers,
               cookieJar,
               controller ? controller.signal : undefined,
@@ -94,13 +94,17 @@ export const sendChunk = async ({
             );
           })
           .catch((error) => {
-            console.log("Error:", error);
+            console.log('Error:', error);
           });
       } else {
-        response = await axios.post(`${endpoint}/chunked/uploadChunk`, chunk, {
-          headers,
-          signal: controller.signal,
-        });
+        response = await axios.post(
+          `${gateway.url}/chunked/uploadChunk`,
+          chunk,
+          {
+            headers,
+            signal: controller.signal,
+          }
+        );
       }
       if (currentTry > 1) {
         currentTry = 1;
@@ -114,15 +118,15 @@ export const sendChunk = async ({
       const bytesPerMillisecond = progress / elapsedTime;
       const remainingTime = remainingBytes / bytesPerMillisecond;
       const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
-      handlers.includes("onProgress") &&
+      handlers.includes('onProgress') &&
         callback({
-          type: "onProgress",
+          type: 'onProgress',
           params: { id: file.uploadId, progress, timeLeft },
         });
 
       return response;
     } catch (error: any) {
-      const isNetworkError = error?.message?.includes("Network Error");
+      const isNetworkError = error?.message?.includes('Network Error');
       const isOtherError = ERRORS.includes(error?.response?.status);
 
       if (

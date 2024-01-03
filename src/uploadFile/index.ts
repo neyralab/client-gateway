@@ -1,12 +1,12 @@
-import * as forge from "node-forge";
+import * as forge from 'node-forge';
 
-import { sendChunk } from "../sendChunk";
-import { encryptChunk } from "../encryptChunk";
+import { sendChunk } from '../sendChunk';
+import { encryptChunk } from '../encryptChunk';
 
-import { chunkFile } from "../utils/chunkFile";
-import { getCrypto } from "../utils/getCrypto";
+import { chunkFile } from '../utils/chunkFile';
+import { getCrypto } from '../utils/getCrypto';
 
-import { IUploadFile } from "../types";
+import { IUploadFile } from '../types';
 
 const fileControllers = {};
 const cancelledFiles = new Set();
@@ -16,7 +16,7 @@ const crypto = getCrypto();
 export const uploadFile = async ({
   file,
   oneTimeToken,
-  endpoint,
+  gateway,
   callback,
   handlers,
   key,
@@ -48,7 +48,10 @@ export const uploadFile = async ({
     iv = crypto.getRandomValues(new Uint8Array(12));
   }
 
-  for await (const chunk of chunkFile({ file })) {
+  for await (const chunk of chunkFile({
+    file,
+    uploadChunkSize: gateway.upload_chunk_size,
+  })) {
     let finalChunk = chunk;
 
     if (key) {
@@ -65,7 +68,7 @@ export const uploadFile = async ({
       file,
       startTime,
       oneTimeToken,
-      endpoint,
+      gateway,
       iv,
       clientsideKeySha3Hash,
       totalProgress,
