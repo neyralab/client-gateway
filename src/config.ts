@@ -6,3 +6,5 @@ export const FILE_ACTION_TYPES = {
   DOWNLOAD: 5,
 };
 export const ERRORS = [502, 504, 400];
+export const ALL_FILE_DOWNLOAD_MAX_SIZE = 20;
+export const ONE_MB = 1024 * 1024;

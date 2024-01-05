@@ -2,9 +2,11 @@ import { downloadChunk, countChunks, decryptChunk } from '../index';
 
 import { isBrowser } from '../utils/isBrowser';
 import { joinChunks } from '../utils/joinChunks';
+import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer';
 
 import { IDownloadFile } from '../types';
-import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer';
+import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config';
+
 import { downloadFileFromSP } from './downloadFileFromSP';
 
 export const downloadFile = async ({
@@ -18,6 +20,7 @@ export const downloadFile = async ({
   signal,
   carReader,
   uploadChunkSize,
+  cidData,
 }: IDownloadFile) => {
   const startTime = Date.now();
   const chunks = [];
@@ -32,16 +35,44 @@ export const downloadFile = async ({
   let fileStream = null;
 
   if (file.is_on_storage_provider) {
-    const fileBlob = await downloadFileFromSP({
-      carReader,
-      url: `${file.storage_provider.url}/${file.cid.cid[0]}`,
-      isEncrypted,
-      uploadChunkSize,
-      key,
-      iv: entry_clientside_key?.iv,
-      file,
-    });
-    return fileBlob;
+    const size = Number((file.size / ONE_MB).toFixed(1));
+
+    if (size < ALL_FILE_DOWNLOAD_MAX_SIZE) {
+      const fileBlob = await downloadFileFromSP({
+        carReader,
+        url: `${file.storage_provider.url}/${file.cid.cid}`,
+        isEncrypted,
+        uploadChunkSize,
+        key,
+        iv: entry_clientside_key?.iv,
+        file,
+        level: 'root',
+      });
+      return fileBlob;
+    }
+
+    if (size >= ALL_FILE_DOWNLOAD_MAX_SIZE) {
+      const cids = cidData.cids;
+      const chunks = [];
+
+      for (let i = 0; i < cids.length; i++) {
+        const fileBlob = await downloadFileFromSP({
+          carReader,
+          url: `${file.storage_provider.url}/${cids[i]}`,
+          isEncrypted,
+          uploadChunkSize,
+          key,
+          iv: entry_clientside_key?.iv,
+          file,
+          level: cidData.level,
+        });
+
+        // @ts-ignore
+        const chunk = await fileBlob.arrayBuffer();
+        chunks.push(chunk);
+      }
+      return joinChunks(chunks);
+    }
   } else {
     const chunkCountResponse = await countChunks({
       endpoint,

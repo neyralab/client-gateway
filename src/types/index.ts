@@ -15,6 +15,8 @@ export type CallbackTypeNames =
   | 'onError'
   | 'onProgress';
 
+export type CidLevelType = 'root' | 'upload' | 'interim';
+
 export type Callback = ({
   type,
   params,
@@ -43,6 +45,12 @@ export interface IDownloadFile {
   handlers?: any[];
   carReader?: any;
   uploadChunkSize?: number;
+  cidData?: {
+    slug: string;
+    cids: [];
+    level: CidLevelType;
+    upload_chunk_size: number;
+  };
 }
 export interface IEncodeExistingFile {
   file: File | any;
@@ -139,4 +147,25 @@ export interface IGetThumbnail {
   endpoint: string;
   slug: string;
   sharp?: any;
+}
+
+export interface IDownloadFileFromSP {
+  carReader: any;
+  url: string;
+  isEncrypted: boolean;
+  uploadChunkSize: number;
+  key: string;
+  iv: string;
+  file: any;
+  level: CidLevelType;
+}
+
+export interface ISaveFileFromGenerator {
+  generator: any;
+  type: string;
+  isEncrypted: boolean;
+  uploadChunkSize: number;
+  key: string;
+  iv: string;
+  level: CidLevelType;
 }

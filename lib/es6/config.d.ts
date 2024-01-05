@@ -6,3 +6,5 @@ export declare const FILE_ACTION_TYPES: {
     DOWNLOAD: number;
 };
 export declare const ERRORS: number[];
+export declare const ALL_FILE_DOWNLOAD_MAX_SIZE = 20;
+export declare const ONE_MB: number;

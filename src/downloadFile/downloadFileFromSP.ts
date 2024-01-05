@@ -5,6 +5,7 @@ import { decryptChunk } from '../decryptChunk';
 import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer';
 import { joinChunks } from '../utils/joinChunks';
 import { chunkFile } from '../utils/chunkFile';
+import { IDownloadFileFromSP, ISaveFileFromGenerator } from '../types';
 
 export async function downloadFileFromSP({
   carReader,
@@ -14,7 +15,8 @@ export async function downloadFileFromSP({
   key,
   iv,
   file,
-}) {
+  level,
+}: IDownloadFileFromSP) {
   return fetch(url)
     .then(async (data) => await data.arrayBuffer())
     .then((blob) => {
@@ -43,7 +45,7 @@ export async function downloadFileFromSP({
             uploadChunkSize,
             key,
             iv,
-            file,
+            level,
           });
           typesEntries['count'][entry.type] =
             (typesEntries['count'][entry.type] || 0) + 1;
@@ -67,8 +69,8 @@ async function saveFileFromGenerator({
   uploadChunkSize,
   key,
   iv,
-  file,
-}) {
+  level,
+}: ISaveFileFromGenerator) {
   let prev = [];
 
   for await (const chunk of generator) {
@@ -81,16 +83,16 @@ async function saveFileFromGenerator({
     return blob;
   }
 
-  if (isEncrypted) {
+  if (isEncrypted && (level === 'root' || level === 'interim')) {
     const bufferKey = convertBase64ToArrayBuffer(key);
     const chunks = [];
 
     for await (const chunk of chunkFile({
       file: {
-        size: file.size,
+        size: (await blob.arrayBuffer()).byteLength,
         arrayBuffer: async () => blob.arrayBuffer(),
       },
-      uploadChunkSize: uploadChunkSize + 16,
+      uploadChunkSize: uploadChunkSize + 16, // test if we need +16 bytes
     })) {
       const decryptedChunk = await decryptChunk({
         chunk,
@@ -101,5 +103,17 @@ async function saveFileFromGenerator({
     }
 
     return joinChunks(chunks);
+  }
+
+  if (isEncrypted && level === 'upload') {
+    const bufferKey = convertBase64ToArrayBuffer(key);
+
+    const decryptedChunk = await decryptChunk({
+      chunk: await blob.arrayBuffer(),
+      iv,
+      key: bufferKey,
+    });
+
+    return joinChunks([decryptedChunk]);
   }
 }
