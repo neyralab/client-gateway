@@ -40,7 +40,7 @@ export const downloadFile = async ({
     if (size < ALL_FILE_DOWNLOAD_MAX_SIZE) {
       const fileBlob = await downloadFileFromSP({
         carReader,
-        url: `${file.storage_provider.url}/${file.cid.cid}`,
+        url: `${file.storage_provider.url}/${file.root_cid}`,
         isEncrypted,
         uploadChunkSize,
         key,
