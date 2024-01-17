@@ -31,7 +31,7 @@ export const uploadFile = async ({
 
   let totalProgress = { number: progress || 0 };
   let currentIndex = 1;
-  let result: any;
+  const promises = [];
 
   fileControllers[file.uploadId] = controller;
 
@@ -62,7 +62,7 @@ export const uploadFile = async ({
       });
     }
 
-    result = await sendChunk({
+    const promise = sendChunk({
       chunk: finalChunk,
       index: currentIndex,
       file,
@@ -78,17 +78,24 @@ export const uploadFile = async ({
       totalSize,
     });
 
-    if (result?.failed) {
-      delete fileControllers[file.uploadId];
-      totalProgress.number = 0;
-      return result;
+    promises.push(promise);
+
+    if (promises.length === 4) {
+      await Promise.all(promises);
+      promises.length = 0;
     }
-    if (result?.data?.data?.slug) {
-      delete fileControllers[file.uploadId];
-      totalProgress.number = 0;
-      return result;
-    }
+
     currentIndex++;
+  }
+
+  const results = await Promise.all(promises);
+
+  for (const result of results) {
+    if (result?.failed || result?.data?.data?.slug) {
+      delete fileControllers[file.uploadId];
+      totalProgress.number = 0;
+      return result;
+    }
   }
 };
 
