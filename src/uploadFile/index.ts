@@ -11,6 +11,8 @@ import { IUploadFile } from '../types';
 const fileControllers = {};
 const cancelledFiles = new Set();
 
+const MAX_PROMISES_LENGTH = 4;
+
 const crypto = getCrypto();
 
 export const uploadFile = async ({
@@ -31,6 +33,9 @@ export const uploadFile = async ({
 
   let totalProgress = { number: progress || 0 };
   let currentIndex = 1;
+  const lastChunkIndex = Math.ceil(file.size / gateway.upload_chunk_size);
+  let leftChunks = lastChunkIndex;
+  const restMaxPromisesLength = (lastChunkIndex - 2) % MAX_PROMISES_LENGTH;
   const promises = [];
 
   fileControllers[file.uploadId] = controller;
@@ -52,6 +57,8 @@ export const uploadFile = async ({
     file,
     uploadChunkSize: gateway.upload_chunk_size,
   })) {
+    const allowedPromisesLength =
+      leftChunks > 4 ? MAX_PROMISES_LENGTH : restMaxPromisesLength;
     let finalChunk = chunk;
 
     if (key) {
@@ -80,22 +87,25 @@ export const uploadFile = async ({
 
     promises.push(promise);
 
-    if (promises.length === 4) {
-      await Promise.all(promises);
+    if (
+      currentIndex === 1 ||
+      promises.length === MAX_PROMISES_LENGTH ||
+      promises.length === allowedPromisesLength ||
+      currentIndex === lastChunkIndex
+    ) {
+      const results = await Promise.all(promises);
+      leftChunks = leftChunks - promises.length;
       promises.length = 0;
+      for (const result of results) {
+        if (result?.failed || result?.data?.data?.slug) {
+          delete fileControllers[file.uploadId];
+          totalProgress.number = 0;
+          return result;
+        }
+      }
     }
 
     currentIndex++;
-  }
-
-  const results = await Promise.all(promises);
-
-  for (const result of results) {
-    if (result?.failed || result?.data?.data?.slug) {
-      delete fileControllers[file.uploadId];
-      totalProgress.number = 0;
-      return result;
-    }
   }
 };
 
