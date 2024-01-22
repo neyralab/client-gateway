@@ -94,8 +94,9 @@ async function saveFileFromGenerator({
       },
       uploadChunkSize: uploadChunkSize + 16, // test if we need +16 bytes
     })) {
+      const chunkArrayBuffer = typeof chunk === 'string' ? Buffer.from(chunk).buffer : chunk;
       const decryptedChunk = await decryptChunk({
-        chunk,
+        chunk: chunkArrayBuffer,
         iv,
         key: bufferKey,
       });

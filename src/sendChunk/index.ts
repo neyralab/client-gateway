@@ -5,9 +5,11 @@ import * as setCookieParser from 'set-cookie-parser';
 import { getFibonacciNumber } from '../utils/getFibonacciNumber';
 import { convertTextToBase64 } from '../utils/convertTextToBase64';
 import { postWithCookies } from '../utils/makeRequestWithCookies';
+import { isMobile } from '../utils/isMobile';
 import { isBrowser } from '../utils/isBrowser';
 import { createSHA256Hash } from '../utils/createSHA256Hash';
 
+import { LocalFileReactNativeStream } from '../types/File';
 import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config';
 
 import { ISendChunk } from '../types';
@@ -28,9 +30,10 @@ export const sendChunk = async ({
   totalSize,
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
-  const xHash = createSHA256Hash(chunk);
+  const xHash = isMobile() ? 'null' : createSHA256Hash(chunk as ArrayBuffer);
   const fileName = convertTextToBase64(file.name);
-  const chunksLength = Math.ceil(file.size / gateway.upload_chunk_size);
+  const fileSize = file instanceof LocalFileReactNativeStream ? file.convertedSize || file.size : file.size;
+  const chunksLength = Math.ceil(fileSize / gateway.upload_chunk_size);
   let currentTry = 1;
   let cookieJar = [];
 
@@ -51,8 +54,14 @@ export const sendChunk = async ({
     'x-iv': iv ? base64iv : 'null',
   };
 
-  const uploadChunk: (chunk: ArrayBuffer) => Promise<any> = async (
-    chunk: ArrayBuffer
+  if (file instanceof LocalFileReactNativeStream) {
+    headers['x-converted-size'] = file.convertedSize;
+    headers['x-converted-extension'] = file.convertedExtension;
+    headers['x-converted-mime'] = file.convertedMime;
+  }
+
+  const uploadChunk: (chunk: ArrayBuffer | string) => Promise<any> = async (
+    chunk: ArrayBuffer | string
   ) => {
     await new Promise<void>((resolve) => {
       setTimeout(
@@ -65,7 +74,7 @@ export const sendChunk = async ({
 
     try {
       let response;
-      if (!isBrowser()) {
+      if (!isBrowser() && !isMobile()) {
         response = axios
           .get(`${gateway.url}`, {
             headers: {
@@ -101,8 +110,8 @@ export const sendChunk = async ({
           `${gateway.url}/chunked/uploadChunk`,
           chunk,
           {
-            headers,
-            signal: controller.signal,
+          headers,
+          signal: controller.signal,
           }
         );
       }
@@ -110,7 +119,8 @@ export const sendChunk = async ({
         currentTry = 1;
       }
       const prevProgress = totalProgress.number || 0;
-      const progress = +prevProgress + chunk.byteLength;
+      const chunkLength = typeof chunk === 'string' ? (chunk.length * 3) / 4 : chunk.byteLength;
+      const progress = +prevProgress + chunkLength;
       totalProgress.number = progress;
       const elapsedTime = Date.now() - startTime;
       const size = totalSize || file.size;

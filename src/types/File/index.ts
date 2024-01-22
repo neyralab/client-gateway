@@ -54,3 +54,28 @@ export class LocalFileBuffer extends LocalFile {
     this.arrayBuffer = arrayBuffer;
   }
 }
+
+export class LocalFileReactNativeStream extends LocalFile {
+  public chunks: string[];
+  public convertedExtension?: string;
+  public convertedMime?: string;
+  public convertedSize?: number;
+
+  constructor(
+    size: number,
+    filename: string,
+    mimeType: string,
+    fileFolderId: string,
+    uploadId: string,
+    chunks: string[],
+    convertedExtension?: string,
+    convertedMime?: string,
+    convertedSize?: number
+  ) {
+    super(size, filename, mimeType, fileFolderId, uploadId);
+    this.chunks = chunks;
+    this.convertedExtension = convertedExtension;
+    this.convertedMime = convertedMime;
+    this.convertedSize = convertedSize;
+  }
+}

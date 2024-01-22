@@ -1,5 +1,6 @@
 import { downloadChunk, countChunks, decryptChunk } from '../index';
 
+import { isMobile } from '../utils/isMobile';
 import { isBrowser } from '../utils/isBrowser';
 import { joinChunks } from '../utils/joinChunks';
 import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer';
@@ -21,6 +22,7 @@ export const downloadFile = async ({
   carReader,
   uploadChunkSize,
   cidData,
+  writeStreamMobile,
 }: IDownloadFile) => {
   const startTime = Date.now();
   const chunks = [];
@@ -89,7 +91,7 @@ export const downloadFile = async ({
       data: { count },
     } = chunkCountResponse;
 
-    if (!isBrowser()) {
+    if (!isBrowser() && !isMobile()) {
       const { Readable } = require('stream');
       fileStream = new Readable({
         read() {},
@@ -134,6 +136,8 @@ export const downloadFile = async ({
       }
       if (fileStream) {
         fileStream.push(new Uint8Array(chunk));
+      } else if (isMobile()) {
+        await writeStreamMobile(chunk);
       } else {
         chunks.push(chunk);
       }
@@ -142,6 +146,8 @@ export const downloadFile = async ({
     if (fileStream) {
       fileStream.push(null);
       return fileStream;
+    } else if (isMobile()) {
+      return { failed: false };
     } else {
       const file = joinChunks(chunks);
       return file;
