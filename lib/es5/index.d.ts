@@ -10,5 +10,5 @@ export { countChunks } from "./countChunks";
 export { getUserRSAKeys } from "./getUserRSAKeys";
 export { publicKeyToPem } from "./publicKeyToPem";
 export { encodeExistingFile } from "./encodeExistingFile";
-export { LocalFileStream, LocalFileBuffer } from "./types/File";
+export { LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream } from "./types/File";
 export { getThumbnailImage, getThumbnailVideo } from "./getThumbnail";

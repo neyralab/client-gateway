@@ -16,4 +16,11 @@ export declare class LocalFileBuffer extends LocalFile {
     arrayBuffer?: () => Promise<ArrayBuffer>;
     constructor(size: number, filename: string, mimeType: string, fileFolderId: string, uploadId: string, arrayBuffer: () => Promise<ArrayBuffer>);
 }
+export declare class LocalFileReactNativeStream extends LocalFile {
+    chunks: string[];
+    convertedExtension?: string;
+    convertedMime?: string;
+    convertedSize?: number;
+    constructor(size: number, filename: string, mimeType: string, fileFolderId: string, uploadId: string, chunks: string[], convertedExtension?: string, convertedMime?: string, convertedSize?: number);
+}
 export {};

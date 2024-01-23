@@ -1,4 +1,4 @@
-import { LocalFileStream, LocalFileBuffer } from './File';
+import { LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream } from './File';
 export type ImagePreviewEffect = (fileId: string, width: number, height: number, fit: string, cancelToken: AbortSignal | any, type: string | undefined) => any;
 export type CallbackTypeNames = 'onStart' | 'onSuccess' | 'onError' | 'onProgress';
 export type CidLevelType = 'root' | 'upload' | 'interim';
@@ -31,6 +31,7 @@ export interface IDownloadFile {
         level: CidLevelType;
         upload_chunk_size: number;
     };
+    writeStreamMobile?: (chunk: Uint8Array) => Promise<void>;
 }
 export interface IEncodeExistingFile {
     file: File | any;
@@ -43,9 +44,9 @@ export interface IEncodeExistingFile {
     key: CryptoKey;
 }
 export interface ISendChunk {
-    chunk: ArrayBuffer;
+    chunk: ArrayBuffer | string;
     index: number;
-    file: LocalFileStream | LocalFileBuffer;
+    file: LocalFileStream | LocalFileBuffer | LocalFileReactNativeStream;
     startTime: any;
     oneTimeToken: string;
     gateway: GatewayType;
@@ -61,7 +62,7 @@ export interface ISendChunk {
     totalSize?: number;
 }
 export interface IUploadFile {
-    file: LocalFileStream | LocalFileBuffer;
+    file: LocalFileStream | LocalFileBuffer | LocalFileReactNativeStream;
     oneTimeToken: string;
     gateway: GatewayType;
     callback: Callback;
