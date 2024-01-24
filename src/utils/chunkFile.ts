@@ -1,4 +1,5 @@
-import { LocalFileBuffer, LocalFileStream } from '../types/File';
+import { LocalFileBuffer, LocalFileReactNativeStream, LocalFileStream } from '../types/File';
+import { chunkBase64 } from './chunkBase64';
 import { chunkBuffer } from './chunkBuffer';
 
 export async function* chunkFile({
@@ -8,9 +9,10 @@ export async function* chunkFile({
   file:
     | LocalFileBuffer
     | LocalFileStream
+    | LocalFileReactNativeStream
     | { size: number; arrayBuffer: () => Promise<ArrayBuffer> };
   uploadChunkSize: number;
-}): AsyncGenerator<Buffer | ArrayBuffer> {
+}): AsyncGenerator<Buffer | ArrayBuffer | string> {
   if (file instanceof LocalFileStream) {
     const stream = file.stream();
     const lastChunkSize =
@@ -46,6 +48,8 @@ export async function* chunkFile({
     if (offset > 0) {
       yield buffer.slice(0, offset);
     }
+  } else if (file instanceof LocalFileReactNativeStream) {
+    yield* chunkBase64(file.chunks);
   } else {
     const arrayBuffer = await file.arrayBuffer();
     yield* chunkBuffer({ arrayBuffer, uploadChunkSize });

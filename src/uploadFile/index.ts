@@ -7,6 +7,7 @@ import { chunkFile } from '../utils/chunkFile';
 import { getCrypto } from '../utils/getCrypto';
 
 import { IUploadFile } from '../types';
+import { LocalFileReactNativeStream } from '../types/File';
 
 const fileControllers = {};
 const cancelledFiles = new Set();
@@ -33,7 +34,8 @@ export const uploadFile = async ({
 
   let totalProgress = { number: progress || 0 };
   let currentIndex = 1;
-  const lastChunkIndex = Math.ceil(file.size / gateway.upload_chunk_size);
+  const fileSize = file instanceof LocalFileReactNativeStream ? file.convertedSize || file.size : file.size;
+  const lastChunkIndex = Math.ceil(fileSize / gateway.upload_chunk_size);
   let leftChunks = lastChunkIndex;
   const restMaxPromisesLength = (lastChunkIndex - 2) % MAX_PROMISES_LENGTH;
   const promises = [];
@@ -62,8 +64,9 @@ export const uploadFile = async ({
     let finalChunk = chunk;
 
     if (key) {
+      const chunkArrayBuffer = typeof chunk === 'string' ? Buffer.from(chunk).buffer : chunk;
       finalChunk = await encryptChunk({
-        chunk,
+        chunk: chunkArrayBuffer,
         iv,
         key,
       });
