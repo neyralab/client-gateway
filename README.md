@@ -188,6 +188,20 @@ Accepts:
 8. totalSize - total size of the folder (in bytes) - required only for folder uploading;
 9. startedAt - Date.now() - required only for folder uploading;
 
+## Cancel file uploading
+
+```javascript
+import { cancelingUpload } from 'gdgateway-client/lib/es5';
+
+cancelingUpload(file.uploadId);
+```
+
+This will cancel current chunk uploading.
+
+Accepts:
+
+1. uploadId - file's upload id is necessary for canceling chunk upload;
+
 ### Encrypt already uploaded file
 
 ```javascript
