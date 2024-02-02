@@ -1,11 +1,11 @@
 import { recursive as exporter } from 'ipfs-unixfs-exporter';
 
-import { decryptChunk } from '../decryptChunk';
+import { decryptChunk } from '../decryptChunk/index.js';
 
-import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer';
-import { joinChunks } from '../utils/joinChunks';
-import { chunkFile } from '../utils/chunkFile';
-import { IDownloadFileFromSP, ISaveFileFromGenerator } from '../types';
+import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer.js';
+import { joinChunks } from '../utils/joinChunks.js';
+import { chunkFile } from '../utils/chunkFile.js';
+import { IDownloadFileFromSP, ISaveFileFromGenerator } from '../types/index.js';
 
 export async function downloadFileFromSP({
   carReader,

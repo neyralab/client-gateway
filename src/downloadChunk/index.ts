@@ -1,8 +1,8 @@
 import axios from "axios";
 
-import { ERRORS, FILE_ACTION_TYPES, MAX_TRIES, MAX_TRIES_502 } from "../config";
-import { IDownloadChunk } from "../types";
-import { getFibonacciNumber } from "../utils/getFibonacciNumber";
+import { ERRORS, FILE_ACTION_TYPES, MAX_TRIES, MAX_TRIES_502 } from "../config.js";
+import { IDownloadChunk } from "../types/index.js";
+import { getFibonacciNumber } from "../utils/getFibonacciNumber.js";
 
 export const downloadChunk = async ({
   index,

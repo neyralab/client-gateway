@@ -1,9 +1,9 @@
 import axios from 'axios';
 import * as fs from 'fs';
 
-import { convertTextToBase64 } from '../utils/convertTextToBase64';
+import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
 
-import { IGetThumbnail } from '../types';
+import { IGetThumbnail } from '../types/index.js';
 
 const MAX_WIDTH = 480;
 const MAX_HEIGHT = 480;

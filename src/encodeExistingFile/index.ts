@@ -1,12 +1,12 @@
-import * as forge from 'node-forge';
-import * as Base64 from 'base64-js';
+import forge from 'node-forge';
+import Base64 from 'base64-js';
 
-import { downloadFile, encryptChunk, swapChunk } from '../index';
+import { downloadFile, encryptChunk, swapChunk } from '../index.js';
 
-import { getCrypto } from '../utils/getCrypto';
-import { chunkBuffer } from '../utils/chunkBuffer';
+import { getCrypto } from '../utils/getCrypto.js';
+import { chunkBuffer } from '../utils/chunkBuffer.js';
 
-import { IEncodeExistingFile } from '../types';
+import { IEncodeExistingFile } from '../types/index.js';
 
 const crypto = getCrypto();
 

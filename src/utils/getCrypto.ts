@@ -1,5 +1,5 @@
 import { Crypto } from "@peculiar/webcrypto";
-import { isBrowser } from "./isBrowser";
+import { isBrowser } from "./isBrowser.js";
 
 export const getCrypto = () => {
   if (!isBrowser()) {

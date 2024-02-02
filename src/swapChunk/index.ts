@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { ISwapChunk } from '../types';
+import { ISwapChunk } from '../types/index.js';
 
 export const swapChunk = async ({
   file,

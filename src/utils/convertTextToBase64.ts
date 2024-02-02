@@ -1,6 +1,6 @@
 import * as Base64 from "base64-js";
-import { isBrowser } from "./isBrowser";
-import { isMobile } from "./isMobile";
+import { isBrowser } from "./isBrowser.js";
+import { isMobile } from "./isMobile.js";
 
 let TextEncoder;
 

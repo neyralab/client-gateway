@@ -1,4 +1,4 @@
-import { isBrowser } from "./isBrowser";
+import { isBrowser } from "./isBrowser.js";
 
 export const joinChunks = (chunks: ArrayBuffer[]) => {
   if (isBrowser() && window.Blob) {
