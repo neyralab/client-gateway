@@ -1,14 +1,14 @@
-import { downloadChunk, countChunks, decryptChunk } from '../index';
+import { downloadChunk, countChunks, decryptChunk } from '../index.js';
 
-import { isMobile } from '../utils/isMobile';
-import { isBrowser } from '../utils/isBrowser';
-import { joinChunks } from '../utils/joinChunks';
-import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer';
+import { isMobile } from '../utils/isMobile.js';
+import { isBrowser } from '../utils/isBrowser.js';
+import { joinChunks } from '../utils/joinChunks.js';
+import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer.js';
 
-import { IDownloadFile } from '../types';
-import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config';
+import { IDownloadFile } from '../types/index.js';
+import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 
-import { downloadFileFromSP } from './downloadFileFromSP';
+import { downloadFileFromSP } from './downloadFileFromSP.js';
 
 export const downloadFile = async ({
   file,

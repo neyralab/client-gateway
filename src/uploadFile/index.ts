@@ -1,13 +1,13 @@
 import * as forge from 'node-forge';
 
-import { sendChunk } from '../sendChunk';
-import { encryptChunk } from '../encryptChunk';
+import { sendChunk } from '../sendChunk/index.js';
+import { encryptChunk } from '../encryptChunk/index.js';
 
-import { chunkFile } from '../utils/chunkFile';
-import { getCrypto } from '../utils/getCrypto';
+import { chunkFile } from '../utils/chunkFile.js';
+import { getCrypto } from '../utils/getCrypto.js';
 
-import { IUploadFile } from '../types';
-import { LocalFileReactNativeStream } from '../types/File';
+import { IUploadFile } from '../types/index.js';
+import { LocalFileReactNativeStream } from '../types/File/index.js';
 
 const fileControllers = {};
 const cancelledFiles = new Set();

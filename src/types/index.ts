@@ -1,4 +1,4 @@
-import { LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream } from './File';
+import { LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream } from './File/index.js';
 
 export type ImagePreviewEffect = (
   fileId: string,

@@ -1,8 +1,8 @@
 import axios from "axios";
 
-import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from "../config";
-import { getFibonacciNumber } from "../utils/getFibonacciNumber";
-import { ICountChunks } from "../types";
+import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from "../config.js";
+import { getFibonacciNumber } from "../utils/getFibonacciNumber.js";
+import { ICountChunks } from "../types/index.js";
 
 export const countChunks = async ({
   endpoint,

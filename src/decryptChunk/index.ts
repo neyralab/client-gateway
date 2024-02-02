@@ -1,10 +1,10 @@
-import { convertBase64ToArrayBuffer } from "../utils/convertBase64ToArrayBuffer";
-import { getFibonacciNumber } from "../utils/getFibonacciNumber";
-import { getCrypto } from "../utils/getCrypto";
+import { convertBase64ToArrayBuffer } from "../utils/convertBase64ToArrayBuffer.js";
+import { getFibonacciNumber } from "../utils/getFibonacciNumber.js";
+import { getCrypto } from "../utils/getCrypto.js";
 
-import { MAX_DECRYPTION_TRIES } from "../config";
+import { MAX_DECRYPTION_TRIES } from "../config.js";
 
-import { IDecryptChunk } from "../types";
+import { IDecryptChunk } from "../types/index.js";
 
 const crypto = getCrypto();
 

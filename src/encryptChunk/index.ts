@@ -1,6 +1,6 @@
-import { getCrypto } from "../utils/getCrypto";
+import { getCrypto } from "../utils/getCrypto.js";
 
-import { IEncryptChunk } from "../types";
+import { IEncryptChunk } from "../types/index.js";
 
 const crypto = getCrypto();
 

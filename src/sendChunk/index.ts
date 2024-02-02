@@ -2,17 +2,17 @@ import axios from 'axios';
 import * as Base64 from 'base64-js';
 import * as setCookieParser from 'set-cookie-parser';
 
-import { getFibonacciNumber } from '../utils/getFibonacciNumber';
-import { convertTextToBase64 } from '../utils/convertTextToBase64';
-import { postWithCookies } from '../utils/makeRequestWithCookies';
-import { isMobile } from '../utils/isMobile';
-import { isBrowser } from '../utils/isBrowser';
-import { createSHA256Hash } from '../utils/createSHA256Hash';
+import { getFibonacciNumber } from '../utils/getFibonacciNumber.js';
+import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
+import { postWithCookies } from '../utils/makeRequestWithCookies.js';
+import { isMobile } from '../utils/isMobile.js';
+import { isBrowser } from '../utils/isBrowser.js';
+import { createSHA256Hash } from '../utils/createSHA256Hash.js';
 
-import { LocalFileReactNativeStream } from '../types/File';
-import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config';
+import { LocalFileReactNativeStream } from '../types/File/index.js';
+import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config.js';
 
-import { ISendChunk } from '../types';
+import { ISendChunk } from '../types/index.js';
 
 export const sendChunk = async ({
   chunk,

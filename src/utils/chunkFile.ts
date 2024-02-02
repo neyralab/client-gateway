@@ -1,6 +1,6 @@
-import { LocalFileBuffer, LocalFileReactNativeStream, LocalFileStream } from '../types/File';
-import { chunkBase64 } from './chunkBase64';
-import { chunkBuffer } from './chunkBuffer';
+import { LocalFileBuffer, LocalFileReactNativeStream, LocalFileStream } from '../types/File/index.js';
+import { chunkBase64 } from './chunkBase64.js';
+import { chunkBuffer } from './chunkBuffer.js';
 
 export async function* chunkFile({
   file,
