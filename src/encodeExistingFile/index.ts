@@ -1,5 +1,5 @@
-import forge from 'node-forge';
-import Base64 from 'base64-js';
+import * as forge from 'node-forge';
+import * as Base64 from 'base64-js';
 
 import { downloadFile, encryptChunk, swapChunk } from '../index.js';
 
