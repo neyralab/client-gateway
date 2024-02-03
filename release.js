@@ -7,6 +7,25 @@ import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
 const Table = require('cli-table3');
 
+async function getDefaultBranch() {
+    try {
+        const defaultBranch = execSync('gh repo view --json defaultBranchRef --jq .defaultBranchRef.name', { encoding: 'utf8' }).trim();
+        return defaultBranch;
+    } catch (error) {
+        console.error('Failed to fetch the default branch:', error);
+        process.exit(1);
+    }
+}
+
+function checkCurrentBranch(defaultBranch) {
+    const currentBranch = execSync('git branch --show-current', { encoding: 'utf8' }).trim();
+    if (currentBranch !== defaultBranch) {
+        console.error(`You are not on the default branch (${defaultBranch}). Current branch is ${currentBranch}.`);
+        process.exit(1);
+    }
+}
+
+
 async function checkForUncommittedChanges() {
     const statusOutput = execSync('git status --porcelain', { encoding: 'utf8' });
     const lines = statusOutput.split('\n').filter(line => line);
@@ -116,12 +135,19 @@ async function main() {
     await updatePackageVersion(newVersion);
     runBuildScript(); // This will update package-lock.json if any dependencies are installed/updated
     await addPackageJson();
+
+    const defaultBranch = await getDefaultBranch();
+    checkCurrentBranch(defaultBranch); // Ensure we're on the default branch
+
     await checkForUncommittedChanges(); // Check for uncommitted changes
     await commitChanges(newVersion);
 
     rl.close();
 
     try {
+        execSync(`git push origin ${defaultBranch}`);
+        console.log(`Changes pushed to ${defaultBranch} successfully.`);
+
         console.log(`Creating new tag: ${newVersion}`);
         execSync(`git tag ${newVersion}`);
         execSync(`git push origin ${newVersion}`);
