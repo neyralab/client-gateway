@@ -54,7 +54,7 @@
   },
   "main": "./lib/es5/index.js",
   "module": "./lib/es6/index.js",
-  "types": "./lib/es6/index.d.ts",
+  "types": "./lib/es6/types/index.d.ts",
   "exports": {
     ".": {
       "import": "./lib/es6/index.js",
@@ -63,10 +63,6 @@
     "./utils/*": {
       "import": "./lib/es6/utils/*.js",
       "require": "./lib/es5/utils/*.js"
-    },
-    "./types/*": {
-      "import": "./lib/es6/types/*.js",
-      "require": "./lib/es5/types/*.js"
     }
   }
 }
