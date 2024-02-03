@@ -1,6 +1,37 @@
+import { promises as fs } from 'fs';
 import { execSync } from 'child_process';
 import readline from 'readline';
 import semver from 'semver';
+import path from 'path';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const Table = require('cli-table3');
+
+async function checkForUncommittedChanges() {
+    const statusOutput = execSync('git status --porcelain', { encoding: 'utf8' });
+    const lines = statusOutput.split('\n').filter(line => line);
+
+    if (lines.length > 2 || (lines.length > 0 && !lines.every(line => line.includes('package.json') || line.includes('package-lock.json')))) {
+        console.log('There are uncommitted changes or untracked files in the repository:');
+        const table = new Table({
+            head: ['Status', 'File'],
+            colWidths: [10, 50],
+        });
+
+        lines.forEach(line => {
+            const [status, file] = line.split(' ').filter(Boolean);
+            table.push([status, file]);
+        });
+
+        console.log(table.toString());
+
+        const confirmation = await askQuestion('Do you want to continue with the release process? (y/N): ');
+        if (!confirmation.toLowerCase().startsWith('y')) {
+            console.log('Release process aborted.');
+            process.exit(1);
+        }
+    }
+}
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -19,6 +50,36 @@ function fetchLatestRelease() {
 
 function askQuestion(question) {
     return new Promise(resolve => rl.question(question, resolve));
+}
+
+async function updatePackageVersion(newVersion) {
+    const packageJsonPath = path.join(process.cwd(), 'package.json');
+    const packageJson = JSON.parse(await fs.readFile(packageJsonPath, 'utf-8'));
+    packageJson.version = newVersion;
+    await fs.writeFile(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+    console.log(`Updated package.json to version ${newVersion}`);
+}
+
+function runBuildScript() {
+    try {
+        console.log('Running npm run build...');
+        execSync('npm run build', { stdio: 'inherit' });
+    } catch (error) {
+        console.error('Failed to run the build script:', error);
+        process.exit(1);
+    }
+}
+
+async function addPackageJson() {
+    execSync('git add package.json package-lock.json');
+}
+async function commitChanges(newVersion) {
+    try {
+        execSync(`git commit -m "Bump version to ${newVersion} and update lock file"`);
+        console.log('Committed package.json and package-lock.json version bump');
+    } catch (error) {
+        console.log('No changes to commit for package.json or package-lock.json');
+    }
 }
 
 async function main() {
@@ -48,8 +109,15 @@ async function main() {
             break;
         default:
             console.error('Invalid choice.');
+            rl.close();
             process.exit(1);
     }
+
+    await updatePackageVersion(newVersion);
+    await runBuildScript(); // This will update package-lock.json if any dependencies are installed/updated
+    await addPackageJson();
+    await checkForUncommittedChanges(); // Check for uncommitted changes
+    await commitChanges(newVersion);
 
     rl.close();
 
