@@ -62,8 +62,8 @@ async function updatePackageVersion(newVersion) {
 
 function runBuildScript() {
     try {
-        console.log('Running npm run build...');
-        execSync('npm run build', { stdio: 'inherit' });
+        console.log('Running npm i && npm run build...');
+        execSync('npm i && npm run build', { stdio: 'inherit' });
     } catch (error) {
         console.error('Failed to run the build script:', error);
         process.exit(1);
@@ -114,7 +114,7 @@ async function main() {
     }
 
     await updatePackageVersion(newVersion);
-    await runBuildScript(); // This will update package-lock.json if any dependencies are installed/updated
+    runBuildScript(); // This will update package-lock.json if any dependencies are installed/updated
     await addPackageJson();
     await checkForUncommittedChanges(); // Check for uncommitted changes
     await commitChanges(newVersion);

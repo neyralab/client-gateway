@@ -1,3 +1,10 @@
+## Release
+1. Install and authenticate github command line tools
+```
+brew install gh
+```
+2. Run `npm run release` command and follow instruction
+
 ### USAGE EXAMPLE
 
 ## Example of 'callback' & 'handlers' parameters
