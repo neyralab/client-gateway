@@ -9,6 +9,7 @@ import { IDownloadFile } from '../types/index.js';
 import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 
 import { downloadFileFromSP } from './downloadFileFromSP.js';
+import {Readable} from "stream";
 
 export const downloadFile = async ({
   file,
@@ -92,7 +93,7 @@ export const downloadFile = async ({
     } = chunkCountResponse;
 
     if (!isBrowser() && !isMobile()) {
-      const { Readable } = require('stream');
+      // const { Readable } = require('stream');
       fileStream = new Readable({
         read() {},
       });

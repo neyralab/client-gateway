@@ -42,6 +42,7 @@ export const downloadChunk = async ({
       const response = await instance.get(
         endpoint + `/chunked/downloadChunk/${file?.slug}`
       );
+
       if (currentTry > 1) {
         currentTry = 1;
       }

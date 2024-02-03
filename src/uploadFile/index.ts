@@ -1,5 +1,6 @@
 import * as forge from 'node-forge';
-
+// @ts-ignore
+const nodeForge = forge.default !== undefined ? forge.default : forge;
 import { sendChunk } from '../sendChunk/index.js';
 import { encryptChunk } from '../encryptChunk/index.js';
 
@@ -48,8 +49,8 @@ export const uploadFile = async ({
   }
 
   if (key) {
-    const fileKey = forge.random.getBytesSync(32); // 32 bytes for AES-256
-    const md = forge.md.sha512.create();
+    const fileKey = nodeForge.random.getBytesSync(32); // 32 bytes for AES-256
+    const md = nodeForge.md.sha512.create();
     md.update(fileKey);
     clientsideKeySha3Hash = md.digest().toHex();
     iv = crypto.getRandomValues(new Uint8Array(12));

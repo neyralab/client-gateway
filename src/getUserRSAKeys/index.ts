@@ -1,5 +1,6 @@
 import * as forge from "node-forge";
-
+// @ts-ignore
+const nodeForge = forge.default !== undefined ? forge.default : forge;
 export const getUserRSAKeys = async function ({ signer }: { signer: any }) {
   const msg =
     "Welcome to GhostDrive! \n\nPlease sign to start using this for encryption with Ghostdrive. \n" +
@@ -9,7 +10,7 @@ export const getUserRSAKeys = async function ({ signer }: { signer: any }) {
     "used only for data encryption.";
 
   const rnd = await signer.signMessage(msg);
-  const prng = forge.random.createInstance();
+  const prng = nodeForge.random.createInstance();
 
   prng.seedFileSync = function (needed: number) {
     let outputString = "";
@@ -19,5 +20,5 @@ export const getUserRSAKeys = async function ({ signer }: { signer: any }) {
     return outputString.slice(0, needed);
   };
 
-  return forge.pki.rsa.generateKeyPair({ bits: 2048, prng });
+  return nodeForge.pki.rsa.generateKeyPair({ bits: 2048, prng });
 };

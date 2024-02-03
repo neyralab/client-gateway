@@ -1,4 +1,3 @@
-import * as forge from "node-forge";
 import { getCrypto } from "../utils/getCrypto";
 import { encodeExistingFile } from "./index";
 import { downloadFile, swapChunk, encryptChunk } from "../index";
@@ -46,7 +45,7 @@ describe("encodeExistingFile", () => {
     await encodeExistingFile({
       file: mockFile,
       oneTimeToken: mockOneTimeToken,
-      endpoint: mockEndpoint,
+      gateway: mockEndpoint,
       downloadToken: mockDownloadToken,
       downloadEndpoint: mockDownloadEndpoint,
       callback: mockCallback,

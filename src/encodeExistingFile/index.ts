@@ -1,5 +1,7 @@
 import * as forge from 'node-forge';
 import * as Base64 from 'base64-js';
+// @ts-ignore
+const nodeForge = forge.default !== undefined ? forge.default : forge;
 
 import { downloadFile, encryptChunk, swapChunk } from '../index.js';
 
@@ -10,8 +12,8 @@ import { IEncodeExistingFile } from '../types/index.js';
 
 const crypto = getCrypto();
 
-const fileKey = forge.random.getBytesSync(32); // 32 bytes for AES-256
-const md = forge.md.sha512.create();
+const fileKey = nodeForge.random.getBytesSync(32); // 32 bytes for AES-256
+const md = nodeForge.md.sha512.create();
 md.update(fileKey);
 
 export const encodeExistingFile = async ({
