@@ -4,7 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
-    "prepare": "npm run es6 && npm run es5",
+    "postinstall": "npm run es6 && npm run es5",
     "es5": "rimraf lib && tsc && tsc --build tsconfig.es5.json",
     "es6": "rimraf lib && tsc && tsc --build tsconfig.json",
     "test": "jest"
