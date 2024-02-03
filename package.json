@@ -4,6 +4,7 @@
   "description": "",
   "type": "module",
   "scripts": {
+    "release": "npm run postinstall && rimraf lib && node release.js",
     "postinstall": "npm run es6 && npm run es5",
     "es5": "rimraf lib && tsc && tsc --build tsconfig.es5.json",
     "es6": "rimraf lib && tsc && tsc --build tsconfig.json",
@@ -44,6 +45,7 @@
     "node-fetch": "^3.3.2",
     "path": "^0.12.7",
     "rimraf": "^5.0.5",
+    "semver": "^7.5.4",
     "ts-jest": "^29.1.1",
     "ts-loader": "^9.4.4",
     "typescript": "^5.1.6"
