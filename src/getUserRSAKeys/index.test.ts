@@ -20,7 +20,7 @@ describe("Test getUserRSAKeys", () => {
 
     expect(keyPair).toEqual(expectedKeyPair);
     expect(mockSigner.signMessage).toHaveBeenCalledWith(
-      expect.stringContaining("Welcome to GhostDrive")
+      expect.stringContaining("Welcome to Neyra Network")
     );
 
     rsaGenerateKeyPairMock.mockRestore();

@@ -3,7 +3,7 @@ import * as forge from "node-forge";
 const nodeForge = forge.default !== undefined ? forge.default : forge;
 export const getUserRSAKeys = async function ({ signer }: { signer: any }) {
   const msg =
-    "Welcome to GhostDrive! \n\nPlease sign to start using this for encryption with Ghostdrive. \n" +
+    "Welcome to Neyra Network! \n\nPlease sign to start using this for encryption with Neyra. \n" +
     "This will not trigger a blockchain transaction or cost any gas fees. \n\n" +
     "What's happening?\n" +
     "A public key will be registered with this address and \n" +
