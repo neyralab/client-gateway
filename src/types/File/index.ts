@@ -56,7 +56,7 @@ export class LocalFileBuffer extends LocalFile {
 }
 
 export class LocalFileReactNativeStream extends LocalFile {
-  public chunks: string[];
+  public chunks: ArrayBuffer[] | string[];
   public convertedExtension?: string;
   public convertedMime?: string;
   public convertedSize?: number;
@@ -67,7 +67,7 @@ export class LocalFileReactNativeStream extends LocalFile {
     mimeType: string,
     fileFolderId: string,
     uploadId: string,
-    chunks: string[],
+    chunks: ArrayBuffer[] | string[],
     convertedExtension?: string,
     convertedMime?: string,
     convertedSize?: number
