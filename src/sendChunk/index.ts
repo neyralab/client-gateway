@@ -144,7 +144,7 @@ export const sendChunk = async ({
         (!isNetworkError && !isOtherError)
       ) {
         currentTry = 1;
-        return { failed: true };
+        return { failed: true, status: error?.response?.status };
       } else {
         currentTry++;
         return uploadChunk(chunk);
