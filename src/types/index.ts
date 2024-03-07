@@ -148,6 +148,7 @@ export interface IGetThumbnail {
   endpoint: string;
   slug: string;
   sharp?: any;
+  blobUtil?: any;
 }
 
 export interface IDownloadFileFromSP {

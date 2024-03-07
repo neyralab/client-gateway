@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as fs from 'fs';
 
+import { isMobile } from '../utils/isMobile.js';
 import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
 
 import { IGetThumbnail } from '../types/index.js';
@@ -16,9 +17,26 @@ export const getThumbnailImage = async ({
   endpoint,
   slug,
   sharp,
+  ffmpegCommand,
+  blobUtil,
 }: IGetThumbnail) => {
   return new Promise((resolve, reject) => {
-    if (path) {
+    if (isMobile()) {
+      getThumbnailMobile({
+        path,
+        file,
+        quality,
+        oneTimeToken,
+        endpoint,
+        slug,
+        sharp,
+        ffmpegCommand,
+        blobUtil,
+        type: 'image',
+      })
+        .then(resolve)
+        .catch(reject);
+    } else if (path) {
       sharp(path)
         .resize(MAX_WIDTH, MAX_HEIGHT)
         .webp({ quality: quality * 10 })
@@ -72,7 +90,7 @@ export const getThumbnailImage = async ({
         URL.revokeObjectURL(imageURL);
         sendThumbnail({ base64Image, oneTimeToken, endpoint, file, slug }).then(
           () => {
-            resolve(base64Image);
+          resolve(base64Image);
           }
         );
       };
@@ -92,9 +110,25 @@ export const getThumbnailVideo = async ({
   slug,
   ffmpegCommand,
   sharp,
+  blobUtil,
 }: IGetThumbnail) => {
   return new Promise((resolve, reject) => {
-    if (path && ffmpegCommand) {
+    if (isMobile()) {
+      getThumbnailMobile({
+        path,
+        file,
+        quality,
+        oneTimeToken,
+        endpoint,
+        slug,
+        sharp,
+        ffmpegCommand,
+        blobUtil,
+        type: 'video',
+      })
+        .then(resolve)
+        .catch(reject);
+    } else if (path && ffmpegCommand) {
       const currentPath = process.cwd();
 
       ffmpegCommand
@@ -187,6 +221,50 @@ export const getThumbnailVideo = async ({
       };
     }
   });
+};
+
+const getThumbnailMobile = async ({
+  path,
+  file,
+  quality,
+  oneTimeToken,
+  endpoint,
+  slug,
+  ffmpegCommand,
+  blobUtil,
+  type,
+}: IGetThumbnail & { type: 'image' | 'video' }) => {
+  if (ffmpegCommand && blobUtil) {
+    const cachedUrl = `${blobUtil.fs.dirs.CacheDir}/thumb_${slug}.jpg`;
+    if (cachedUrl) {
+      try {
+        const command =
+          type === 'image'
+            ? `-i "${path}" -vf scale=${MAX_WIDTH}:${MAX_HEIGHT}:force_original_aspect_ratio=decrease -q:v ${
+                100 - quality * 10
+              } ${cachedUrl}`
+            : `-i "${path}" -ss 00:00:01 -vframes 1 -qscale:v ${100 - quality * 10} ${cachedUrl}`;
+
+        await ffmpegCommand.execute(command);
+
+        const data = await blobUtil.fs.readFile(cachedUrl, 'base64');
+        await sendThumbnail({
+          base64Image: `data:image/webp;base64,${data}`,
+          oneTimeToken,
+          endpoint,
+          file,
+          slug,
+        });
+        return data;
+      } catch (error) {
+        throw error;
+      }
+    } else {
+      throw new Error('Error in creating a cache URL');
+    }
+  } else {
+    throw new Error('Error - ffmpegCommand and blobUtil are required');
+  }
 };
 
 const sendThumbnail = async ({
