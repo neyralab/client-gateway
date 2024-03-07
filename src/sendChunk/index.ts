@@ -110,8 +110,8 @@ export const sendChunk = async ({
           `${gateway.url}/chunked/uploadChunk`,
           chunk,
           {
-          headers,
-          signal: controller.signal,
+            headers,
+            signal: controller.signal,
           }
         );
       }
