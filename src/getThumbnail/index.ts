@@ -90,7 +90,7 @@ export const getThumbnailImage = async ({
         URL.revokeObjectURL(imageURL);
         sendThumbnail({ base64Image, oneTimeToken, endpoint, file, slug }).then(
           () => {
-          resolve(base64Image);
+            resolve(base64Image);
           }
         );
       };
