@@ -7,8 +7,8 @@
     "release": "node release.js",
     "build": "npm run es6 && npm run es5",
     "postinstall": "npm run build",
-    "es5": "rimraf lib && tsc && tsc --build tsconfig.es5.json",
-    "es6": "rimraf lib && tsc && tsc --build tsconfig.json",
+    "es5": "tsc && tsc --build tsconfig.es5.json",
+    "es6": "tsc && tsc --build tsconfig.json",
     "test": "jest"
   },
   "repository": {
