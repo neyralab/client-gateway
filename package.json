@@ -6,9 +6,9 @@
   "scripts": {
     "release": "node release.js",
     "build": "npm run es6 && npm run es5",
-    "postinstall": "npm run build",
-    "es5": "tsc && tsc --build tsconfig.es5.json",
-    "es6": "tsc && tsc --build tsconfig.json",
+    "postinstall": "node -e \"try { require.resolve('react-native'); process.exit(0); } catch(e) { require('child_process').execSync('npm run build'); }\"",
+    "es5": "rimraf lib && tsc && tsc --build tsconfig.es5.json",
+    "es6": "rimraf lib && tsc && tsc --build tsconfig.json",
     "test": "jest"
   },
   "repository": {
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/Ghost-Drive/gdgateway-client#readme",
   "dependencies": {
-    "@peculiar/webcrypto": "^1.4.3",
+    "@peculiar/webcrypto": "1.4.4",
     "axios": "^1.4.0",
     "axios-mock-adapter": "^1.21.5",
     "base64-js": "^1.5.1",

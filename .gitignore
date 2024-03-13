@@ -1,4 +1,5 @@
 node_modules
 .idea
 .lib
-lib
+lib/es5
+lib/es6
