@@ -1,6 +1,6 @@
 {
   "name": "gdgateway-client",
-  "version": "1.2.12",
+  "version": "1.2.14",
   "description": "",
   "type": "module",
   "scripts": {
@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/Ghost-Drive/gdgateway-client#readme",
   "dependencies": {
+    "@ipld/car": "^5.3.0",
     "@peculiar/webcrypto": "1.4.4",
     "axios": "^1.4.0",
     "axios-mock-adapter": "^1.21.5",
