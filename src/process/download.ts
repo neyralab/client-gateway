@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { CarReader } from '@ipld/car';
 import { downloadFile } from '../downloadFile/index.js';
 import { DownloadOTT, LocalProvider, ProcessDownload } from './types.js';
@@ -19,8 +18,8 @@ export async function fileDownloadProcess(
   decryptionUrl?: string
 ): Promise<ProcessDownload> {
   const isClientsideEncrypted: boolean = fileEntry?.is_clientside_encrypted;
-  // const isPublic: boolean = fileEntry?.shares?.length
-  const signal = axios.CancelToken.source();
+  const controller = new AbortController();
+  const signal = controller.signal;
   const size = Number((fileEntry.size / ONE_MB).toFixed(1));
   let cidData;
 
@@ -90,11 +89,15 @@ export async function fileDownloadProcess(
     }).catch(handleDownloadError);
   }
 
-  const url = URL.createObjectURL(blob);
-  if (fileEntry?.extension === 'svg') {
-    return { data: await blob.text(), error: null };
+  if (blob instanceof Blob) {
+    const url = URL.createObjectURL(blob);
+    if (fileEntry?.extension === 'svg') {
+      return { data: await blob.text(), error: null };
+    }
+    return { data: url, error: null };
+  } else {
+    return blob as ProcessDownload;
   }
-  return { data: url, error: null };
 }
 
 function handleDownloadError(error) {
