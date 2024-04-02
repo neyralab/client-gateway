@@ -1,23 +1,25 @@
-export type ProcessDownload = {
-    error: string
-    data: null
-  } | {
-  error:  null
-  data: string
-}
+export type ProcessDownload =
+  | {
+      error: string;
+      data: null;
+    }
+  | {
+      error: null;
+      data: string;
+    };
 
 export type DownloadOTT = {
   data: {
     user_tokens: {
-      token: string
-    },
+      token: string;
+    };
     gateway: {
-      url: string
-      upload_chunk_size?: number
-    },
-    upload_chunk_size: number,
-  },
-}
+      url: string;
+      upload_chunk_size?: number;
+    };
+    upload_chunk_size: number;
+  };
+};
 
 export interface GetEncryptedFileDetailsEffect {
   count: number;
@@ -34,4 +36,9 @@ type GetEncryptedFileDetails = {
     is_coinbase: boolean;
   };
   encrypted_key: string;
+};
+
+export type LocalProvider = {
+  get: (slug: string) => Promise<string | undefined>;
+  set: (slug: string, value: string) => Promise<string>;
 };

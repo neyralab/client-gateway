@@ -47,6 +47,7 @@
     "jsdom": "^22.1.0",
     "node-fetch": "^3.3.2",
     "path": "^0.12.7",
+    "prettier": "^3.2.5",
     "rimraf": "^5.0.5",
     "semver": "^7.5.4",
     "ts-jest": "^29.1.1",
@@ -69,5 +70,11 @@
       "import": "./lib/es6/utils/*.js",
       "require": "./lib/es5/utils/*.js"
     }
+  },
+  "prettier": {
+    "trailingComma": "es5",
+    "tabWidth": 2,
+    "semi": true,
+    "singleQuote": true
   }
 }
