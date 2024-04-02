@@ -1,22 +1,30 @@
 import { CarReader } from '@ipld/car';
 import { downloadFile } from '../downloadFile/index.js';
-import { DownloadOTT, LocalProvider, ProcessDownload } from './types.js';
-import { getDecryptedKey, getEncryptedFileKey, getFileCids } from './api.js';
+import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types.js';
+import {
+  getDecryptedKey,
+  getDownloadOTT,
+  getEncryptedFileKey,
+  getFileCids,
+} from './api.js';
 import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 
-export async function fileDownloadProcess(
-  fileEntry: any,
-  downloadOTT: DownloadOTT,
-  onProgress: (data: {
-    id: string;
-    progress: string;
-    timeLeft: string;
-    downloadingPercent: string;
-  }) => void,
-  provider: unknown,
-  localProvider: LocalProvider,
-  decryptionUrl?: string
-): Promise<ProcessDownload> {
+export async function fileDownloadProcess(data: {
+  fileEntry: IFile;
+  xToken: string;
+  localProvider: LocalProvider;
+  provider: unknown;
+  callbacks?: Callbacks;
+  decryptionUrl?: string;
+}): Promise<ProcessDownload> {
+  const {
+    fileEntry,
+    xToken,
+    callbacks,
+    provider,
+    localProvider,
+    decryptionUrl,
+  } = data;
   const isClientsideEncrypted: boolean = fileEntry?.is_clientside_encrypted;
   const controller = new AbortController();
   const signal = controller.signal;
@@ -29,7 +37,7 @@ export async function fileDownloadProcess(
       gateway,
       upload_chunk_size,
     },
-  } = downloadOTT;
+  } = await getDownloadOTT([{ slug: fileEntry.slug }], xToken);
 
   if (fileEntry?.is_on_storage_provider && size >= ALL_FILE_DOWNLOAD_MAX_SIZE) {
     cidData = await getFileCids({ slug: fileEntry.slug });
@@ -51,12 +59,28 @@ export async function fileDownloadProcess(
       }
     }
     if (!decryptedKey) {
-      const encryptedKey = await getEncryptedFileKey(fileEntry.slug, provider);
-      decryptedKey = await getDecryptedKey({ key: encryptedKey, provider });
+      const encryptedKey = await getEncryptedFileKey(
+        fileEntry.slug,
+        xToken,
+        provider
+      );
+      try {
+        decryptedKey = await getDecryptedKey({ key: encryptedKey, provider });
+      } catch (e) {
+        try {
+          decryptedKey = await callbacks?.onPrompt();
+        } catch (e) {
+          decryptedKey = undefined;
+        }
+      }
     }
+    if (!decryptedKey) {
+      return { data: null, error: 'Tu debil. Ne Vkradesh file' };
+    }
+    await localProvider.set(fileEntry.slug, decryptedKey);
     const callback = ({ type, params }) => {
       if (type === 'onProgress') {
-        onProgress(params);
+        callbacks?.onProgress(params);
       } else {
         console.error(`Handler "${type}" isn't provided`);
       }
@@ -65,7 +89,7 @@ export async function fileDownloadProcess(
       file: fileEntry,
       oneTimeToken,
       endpoint: gateway.url,
-      isEncrypted: fileEntry?.file?.is_clientside_encrypted,
+      isEncrypted: fileEntry?.is_clientside_encrypted,
       key: decryptedKey,
       callback,
       handlers: ['onProgress'],
@@ -90,6 +114,7 @@ export async function fileDownloadProcess(
   }
 
   if (blob instanceof Blob) {
+    // return { data: blob, error: null };
     const url = URL.createObjectURL(blob);
     if (fileEntry?.extension === 'svg') {
       return { data: await blob.text(), error: null };
@@ -101,6 +126,7 @@ export async function fileDownloadProcess(
 }
 
 function handleDownloadError(error) {
+  console.log({ handleDownloadError: error });
   let message = '';
   if (
     error?.message?.includes('HTTP') ||
