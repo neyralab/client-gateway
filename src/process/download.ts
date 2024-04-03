@@ -1,12 +1,7 @@
 import { CarReader } from '@ipld/car';
 import { downloadFile } from '../downloadFile/index.js';
 import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types.js';
-import {
-  getDecryptedKey,
-  getDownloadOTT,
-  getEncryptedFileKey,
-  getFileCids,
-} from './api.js';
+import { api, getDecryptedKey, getEncryptedFileKey } from './api.js';
 import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 import { IDownloadFile } from '../types/index.js';
 
@@ -41,10 +36,10 @@ export async function fileDownloadProcess(
       gateway,
       upload_chunk_size,
     },
-  } = await getDownloadOTT([{ slug: fileEntry.slug }], xToken);
+  } = await api.getDownloadOTT([{ slug: fileEntry.slug }], xToken);
 
   if (fileEntry?.is_on_storage_provider && size >= ALL_FILE_DOWNLOAD_MAX_SIZE) {
-    cidData = await getFileCids({ slug: fileEntry.slug });
+    cidData = await api.getFileCids({ slug: fileEntry.slug });
   }
   let blob: Blob;
 

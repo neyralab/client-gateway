@@ -2,46 +2,53 @@ import * as forge from 'node-forge';
 // @ts-ignore
 const nodeForge = forge.default !== undefined ? forge.default : forge;
 
-import axios, { AxiosResponse } from 'axios';
+import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { DownloadOTT, GetEncryptedFileDetailsEffect } from './types.js';
 import { getUserRSAKeys } from '../getUserRSAKeys/index.js';
 
-const backendUrl = 'https://api.dev.ghostdrive.com/api';
-
-export const getFileCids = async ({ slug }: { slug: string }) => {
-  try {
-    const response: any = await axios.get(
-      `${backendUrl}/files/file/cid/${slug}/interim`
-    );
-    return response.data;
-  } catch (e) {
-    return [];
+class Api {
+  private instance: AxiosInstance;
+  constructor(url: string) {
+    this.instance = axios.create({
+      baseURL: url,
+    });
   }
-};
 
-export const getDownloadOTT = (
-  body: { slug: string }[],
-  xToken: string
-): Promise<DownloadOTT> => {
-  const url = `${process.env.REACT_APP_API_PATH}/download/generate/token`;
-  return axios.post(url, body, {
-    headers: {
-      'x-token': xToken,
-    },
-  });
-};
+  async getFileCids({ slug }: { slug: string }) {
+    try {
+      const response: any = await this.instance.get(
+        `/files/file/cid/${slug}/interim`
+      );
+      return response.data;
+    } catch (e) {
+      return [];
+    }
+  }
 
-export const getEncryptedFileDetailsEffect = (
-  slug: string,
-  xToken: string
-): Promise<AxiosResponse<GetEncryptedFileDetailsEffect>> => {
-  const url = `${backendUrl}/keys/get-encrypted-file-details?slug=${slug}`;
-  return axios.get(url, {
-    headers: {
-      'x-token': xToken,
-    },
-  });
-};
+  getDownloadOTT = (
+    body: { slug: string }[],
+    xToken: string
+  ): Promise<DownloadOTT> => {
+    return this.instance.post(`/download/generate/token`, body, {
+      headers: {
+        'x-token': xToken,
+      },
+    });
+  };
+
+  getEncryptedFileDetailsEffect = (
+    slug: string,
+    xToken: string
+  ): Promise<AxiosResponse<GetEncryptedFileDetailsEffect>> => {
+    return this.instance.get(`/keys/get-encrypted-file-details?slug=${slug}`, {
+      headers: {
+        'x-token': xToken,
+      },
+    });
+  };
+}
+
+export const api = new Api('https://api.dev.ghostdrive.com/api');
 
 export const getEncryptedFileKey = async (
   slug: string,
@@ -50,7 +57,7 @@ export const getEncryptedFileKey = async (
 ) => {
   const {
     data: { data: encryptedData, count },
-  } = await getEncryptedFileDetailsEffect(slug, xToken);
+  } = await api.getEncryptedFileDetailsEffect(slug, xToken);
 
   if (count) {
     const [userPublicAddress] = await provider?.listAccounts();
