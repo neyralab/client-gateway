@@ -8,15 +8,18 @@ import {
   getFileCids,
 } from './api.js';
 import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
+import { IDownloadFile } from '../types/index.js';
 
-export async function fileDownloadProcess(data: {
-  fileEntry: IFile;
-  xToken: string;
-  localProvider: LocalProvider;
-  provider: unknown;
-  callbacks?: Callbacks;
-  decryptionUrl?: string;
-}): Promise<ProcessDownload> {
+export async function fileDownloadProcess(
+  data: {
+    fileEntry: IFile;
+    xToken: string;
+    localProvider: LocalProvider;
+    provider: unknown;
+    callbacks?: Callbacks;
+    decryptionUrl?: string;
+  } & Pick<IDownloadFile, 'writeStreamMobile'>
+): Promise<ProcessDownload> {
   const {
     fileEntry,
     xToken,
@@ -24,6 +27,7 @@ export async function fileDownloadProcess(data: {
     provider,
     localProvider,
     decryptionUrl,
+    writeStreamMobile,
   } = data;
   const isClientsideEncrypted: boolean = fileEntry?.is_clientside_encrypted;
   const controller = new AbortController();
@@ -98,6 +102,7 @@ export async function fileDownloadProcess(data: {
         upload_chunk_size[fileEntry.slug] || gateway.upload_chunk_size,
       cidData,
       signal,
+      writeStreamMobile,
     }).catch(handleDownloadError);
   } else {
     blob = await downloadFile({
@@ -110,16 +115,17 @@ export async function fileDownloadProcess(data: {
         upload_chunk_size[fileEntry.slug] || gateway.upload_chunk_size,
       cidData,
       signal,
+      writeStreamMobile,
     }).catch(handleDownloadError);
   }
 
   if (blob instanceof Blob) {
-    // return { data: blob, error: null };
-    const url = URL.createObjectURL(blob);
-    if (fileEntry?.extension === 'svg') {
-      return { data: await blob.text(), error: null };
-    }
-    return { data: url, error: null };
+    return { data: blob, error: null };
+    // const url = URL.createObjectURL(blob);
+    // if (fileEntry?.extension === 'svg') {
+    //   return { data: await blob.text(), error: null };
+    // }
+    // return { data: url, error: null };
   } else {
     return blob as ProcessDownload;
   }
