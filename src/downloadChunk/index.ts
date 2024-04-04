@@ -76,13 +76,14 @@ export const downloadChunk = async ({
   }
   const prevProgress = totalProgress.number || 0;
   const progress = +prevProgress + response.data.byteLength;
+  const fileSize = file.converted_size ?? file.size;
   totalProgress.number = progress;
   const elapsedTime = Date.now() - startTime;
-  const remainingBytes = file.size - progress;
+  const remainingBytes = fileSize - progress;
   const bytesPerMillisecond = progress / elapsedTime;
   const remainingTime = remainingBytes / bytesPerMillisecond;
   const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
-  const downloadingPercent = Number((progress / file.size) * 100).toFixed();
+  const downloadingPercent = Number((progress / fileSize) * 100).toFixed();
 
   handlers?.includes('onProgress') &&
     callback({
