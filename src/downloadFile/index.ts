@@ -9,7 +9,7 @@ import { IDownloadFile } from '../types/index.js';
 import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 
 import { downloadFileFromSP } from './downloadFileFromSP.js';
-import {Readable} from "stream";
+import { Readable } from 'stream';
 
 export const downloadFile = async ({
   file,
@@ -28,11 +28,6 @@ export const downloadFile = async ({
   const startTime = Date.now();
   const chunks = [];
   const { entry_clientside_key, slug } = file;
-
-  const sha3 = !isEncrypted
-    ? null
-    : entry_clientside_key?.clientsideKeySha3Hash ||
-      entry_clientside_key?.sha3_hash;
 
   let totalProgress = { number: 0 };
   let fileStream = null;
@@ -103,7 +98,6 @@ export const downloadFile = async ({
       let chunk;
       const downloadedChunk = await downloadChunk({
         index,
-        sha3_hash: sha3,
         oneTimeToken,
         signal,
         endpoint,

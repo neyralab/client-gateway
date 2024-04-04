@@ -3,6 +3,8 @@ import * as fs from 'fs';
 
 import { isMobile } from '../utils/isMobile.js';
 import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
+import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config.js';
+import { getFibonacciNumber } from '../utils/getFibonacciNumber.js';
 
 import { IGetThumbnail } from '../types/index.js';
 
@@ -44,9 +46,7 @@ export const getThumbnailImage = async ({
           if (err) {
             reject(err);
           } else {
-            const base64Image = `data:image/webp;base64,${buffer.toString(
-              'base64'
-            )}`;
+            const base64Image = `data:image/webp;base64,${buffer.toString('base64')}`;
 
             sendThumbnail({
               base64Image,
@@ -54,9 +54,13 @@ export const getThumbnailImage = async ({
               endpoint,
               file,
               slug,
-            }).then(() => {
-              resolve(base64Image);
-            });
+            })
+              .then(() => {
+                resolve(base64Image);
+              })
+              .catch((error) => {
+                reject(error);
+              });
           }
         });
     } else {
@@ -88,11 +92,13 @@ export const getThumbnailImage = async ({
 
         const base64Image = canvas.toDataURL('image/webp', +qualityReduction);
         URL.revokeObjectURL(imageURL);
-        sendThumbnail({ base64Image, oneTimeToken, endpoint, file, slug }).then(
-          () => {
+        sendThumbnail({ base64Image, oneTimeToken, endpoint, file, slug })
+          .then(() => {
             resolve(base64Image);
-          }
-        );
+          })
+          .catch((error) => {
+            reject(error);
+          });
       };
       image.onerror = (error) => {
         reject(error);
@@ -159,9 +165,13 @@ export const getThumbnailVideo = async ({
             endpoint,
             file,
             slug,
-          }).then(() => {
-            resolve(base64Image);
-          });
+          })
+            .then(() => {
+              resolve(base64Image);
+            })
+            .catch((error) => {
+              reject(error);
+            });
         })
         .on('error', (err: any) => {
           console.error('Error generating thumbnail:', err);
@@ -196,19 +206,20 @@ export const getThumbnailVideo = async ({
 
           const qualityReduction = quality / 10;
 
-          const base64Image = canvas.toDataURL(
-            'image/webp',
-            +qualityReduction.toFixed(1)
-          );
+          const base64Image = canvas.toDataURL('image/webp', +qualityReduction.toFixed(1));
           sendThumbnail({
             base64Image,
             oneTimeToken,
             endpoint,
             file,
             slug,
-          }).then(() => {
-            resolve(base64Image);
-          });
+          })
+            .then(() => {
+              resolve(base64Image);
+            })
+            .catch((error) => {
+              reject(error);
+            });
         };
 
         video.onerror = (error) => {
@@ -267,13 +278,7 @@ const getThumbnailMobile = async ({
   }
 };
 
-const sendThumbnail = async ({
-  base64Image,
-  oneTimeToken,
-  endpoint,
-  file,
-  slug,
-}) => {
+const sendThumbnail = async ({ base64Image, oneTimeToken, endpoint, file, slug }) => {
   const fileName = convertTextToBase64(file.name);
   const instance = axios.create({
     headers: {
@@ -282,7 +287,34 @@ const sendThumbnail = async ({
       'one-time-token': oneTimeToken,
     },
   });
+  let currentTry = 1;
+
+  const uploadThumbnail: () => Promise<void> = async () => {
+    await new Promise<void>((resolve) => {
+      setTimeout(
+        () => {
+          resolve();
+        },
+        currentTry === 1 ? 0 : getFibonacciNumber(currentTry) * 1000
+      );
+    });
+
+    try {
+      await instance.post(`${endpoint}/chunked/thumb/${slug}`, base64Image);
+    } catch (error: any) {
+      const isNetworkError = error?.message?.includes('Network Error');
+      const isOtherError = ERRORS.includes(error?.response?.status);
+
+      if (currentTry >= (isOtherError ? MAX_TRIES_502 : MAX_TRIES) || (!isNetworkError && !isOtherError)) {
+        currentTry = 1;
+        throw error;
+      } else {
+        currentTry++;
+        return uploadThumbnail();
+      }
+    }
+  };
   if (base64Image) {
-    await instance.post(`${endpoint}/chunked/thumb/${slug}`, base64Image);
+    return await uploadThumbnail();
   }
 };
