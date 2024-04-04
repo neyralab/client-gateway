@@ -1,12 +1,16 @@
-import axios from "axios";
+import axios from 'axios';
 
-import { ERRORS, FILE_ACTION_TYPES, MAX_TRIES, MAX_TRIES_502 } from "../config.js";
-import { IDownloadChunk } from "../types/index.js";
-import { getFibonacciNumber } from "../utils/getFibonacciNumber.js";
+import {
+  ERRORS,
+  FILE_ACTION_TYPES,
+  MAX_TRIES,
+  MAX_TRIES_502,
+} from '../config.js';
+import { IDownloadChunk } from '../types/index.js';
+import { getFibonacciNumber } from '../utils/getFibonacciNumber.js';
 
 export const downloadChunk = async ({
   index,
-  sha3_hash,
   oneTimeToken,
   signal,
   endpoint,
@@ -19,12 +23,11 @@ export const downloadChunk = async ({
   let currentTry = 1;
   const instance = axios.create({
     headers: {
-      "x-action": FILE_ACTION_TYPES.DOWNLOAD.toString(),
-      "x-chunk-index": `${index}`,
-      "x-clientsideKeySha3Hash": sha3_hash || "",
-      "one-time-token": oneTimeToken,
+      'x-action': FILE_ACTION_TYPES.DOWNLOAD.toString(),
+      'x-chunk-index': `${index}`,
+      'one-time-token': oneTimeToken,
     },
-    responseType: "arraybuffer",
+    responseType: 'arraybuffer',
     signal,
   });
 
@@ -49,8 +52,8 @@ export const downloadChunk = async ({
       return response;
     } catch (error: any) {
       const isNetworkError =
-        error?.message?.includes("Network Error") ||
-        error?.message?.includes("Failed to fetch");
+        error?.message?.includes('Network Error') ||
+        error?.message?.includes('Failed to fetch');
       const isOtherError = ERRORS.includes(error?.response?.status);
 
       if (
@@ -81,9 +84,9 @@ export const downloadChunk = async ({
   const timeLeft = Math.abs(Math.ceil(remainingTime / 1000));
   const downloadingPercent = Number((progress / file.size) * 100).toFixed();
 
-  handlers?.includes("onProgress") &&
+  handlers?.includes('onProgress') &&
     callback({
-      type: "onProgress",
+      type: 'onProgress',
       params: {
         id: file.slug,
         progress,

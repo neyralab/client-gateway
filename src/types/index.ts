@@ -1,4 +1,8 @@
-import { LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream } from './File/index.js';
+import {
+  LocalFileStream,
+  LocalFileBuffer,
+  LocalFileReactNativeStream,
+} from './File/index.js';
 
 export type ImagePreviewEffect = (
   fileId: string,
@@ -121,7 +125,6 @@ export interface IDecryptChunk {
 
 export interface IDownloadChunk {
   index: number;
-  sha3_hash: string | null;
   oneTimeToken: string;
   signal: any;
   endpoint: string;

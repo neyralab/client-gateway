@@ -12,6 +12,7 @@ import { publicKeyToPem } from  "./publicKeyToPem/index.js";
 import { encodeExistingFile } from  "./encodeExistingFile/index.js";
 import { LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream } from  "./types/File/index.js";
 import { getThumbnailImage, getThumbnailVideo } from  "./getThumbnail/index.js";
+import { fileDownloadProcess } from './process/index.js'
 
 export {
   encryptChunk,
@@ -27,6 +28,7 @@ export {
   publicKeyToPem,
   encodeExistingFile,
   LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream,
-  getThumbnailImage, getThumbnailVideo
+  getThumbnailImage, getThumbnailVideo,
+  fileDownloadProcess
 }
 // let a = import('./lib/es6/index.js')
