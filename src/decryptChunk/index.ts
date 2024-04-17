@@ -5,6 +5,7 @@ import { getCrypto } from "../utils/getCrypto.js";
 import { MAX_DECRYPTION_TRIES } from "../config.js";
 
 import { IDecryptChunk } from "../types/index.js";
+import { convertArrayBufferToBase64 } from "../utils/convertArrayBufferToBase64.js";
 
 const crypto = getCrypto();
 
@@ -19,7 +20,11 @@ export const decryptChunk = async ({ chunk, iv, key }: IDecryptChunk) => {
     true,
     ["encrypt", "decrypt"]
   );
-
+  console.log({
+    iv,
+    chunk: convertArrayBufferToBase64(chunk),
+    key: convertArrayBufferToBase64(key),
+  })
   const ivBufferSource = convertBase64ToArrayBuffer(iv);
   const normalizedIv = new Uint8Array(ivBufferSource);
   let currentTry = 1;
