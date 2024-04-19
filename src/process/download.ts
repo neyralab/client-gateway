@@ -1,9 +1,9 @@
 import { CarReader } from '@ipld/car';
-import { downloadFile } from '../downloadFile/index.js';
-import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types.js';
-import { api, getDecryptedKey, getEncryptedFileKey } from './api.js';
-import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
-import { IDownloadFile } from '../types/index.js';
+import { downloadFile } from '../downloadFile';
+import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types';
+import { api, getDecryptedKey, getEncryptedFileKey } from './api';
+import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config';
+import { IDownloadFile } from '../types';
 
 export async function fileDownloadProcess(
   data: {
@@ -13,6 +13,7 @@ export async function fileDownloadProcess(
     provider: unknown;
     callbacks?: Callbacks;
     decryptionUrl?: string;
+    keys?: { privateKeyPem: string };
   } & Pick<IDownloadFile, 'writeStreamMobile'>
 ): Promise<ProcessDownload> {
   const {
@@ -23,8 +24,9 @@ export async function fileDownloadProcess(
     localProvider,
     decryptionUrl,
     writeStreamMobile,
+    keys,
   } = data;
-  const isClientsideEncrypted: boolean = fileEntry?.is_clientside_encrypted;
+  const isClientsideEncrypted: boolean = !!fileEntry?.is_clientside_encrypted;
   const controller = new AbortController();
   const signal = controller.signal;
   const size = Number((fileEntry.size / ONE_MB).toFixed(1));
@@ -44,7 +46,10 @@ export async function fileDownloadProcess(
   let blob: Blob;
 
   if (isClientsideEncrypted) {
-    let decryptedKey: string;
+    let decryptedKey: string | undefined;
+    const [userPublicAddress] = await provider?.provider?.request({
+      method: 'eth_requestAccounts',
+    });
 
     if (decryptionUrl) {
       const parsedUrl = decryptionUrl.split('#');
@@ -53,22 +58,31 @@ export async function fileDownloadProcess(
 
     if (!decryptedKey) {
       const localDecryptedKey = await localProvider.get(fileEntry.slug);
+      console.log({ localDecryptedKey });
       if (localDecryptedKey) {
         decryptedKey = localDecryptedKey;
       }
     }
+    console.log({ decryptedKey });
     if (!decryptedKey) {
       const encryptedKey = await getEncryptedFileKey(
         fileEntry.slug,
         xToken,
-        provider
+        userPublicAddress
       );
+      console.log({ encryptedKey });
       try {
-        decryptedKey = await getDecryptedKey({ key: encryptedKey, provider });
+        decryptedKey = await getDecryptedKey({
+          key: encryptedKey!,
+          publicAddress: userPublicAddress,
+          provider,
+          keys,
+        });
       } catch (e) {
+        console.log('before prompt', { e });
         try {
           decryptedKey = await callbacks?.onPrompt();
-        } catch (e) {
+        } catch (err) {
           decryptedKey = undefined;
         }
       }
@@ -84,11 +98,12 @@ export async function fileDownloadProcess(
         console.error(`Handler "${type}" isn't provided`);
       }
     };
+    console.log('before downloadFile() run');
     blob = await downloadFile({
       file: fileEntry,
       oneTimeToken,
       endpoint: gateway.url,
-      isEncrypted: fileEntry?.is_clientside_encrypted,
+      isEncrypted: isClientsideEncrypted,
       key: decryptedKey,
       callback,
       handlers: ['onProgress'],
@@ -99,6 +114,7 @@ export async function fileDownloadProcess(
       signal,
       writeStreamMobile,
     }).catch(handleDownloadError);
+    console.log('after downloadFile() run');
   } else {
     blob = await downloadFile({
       file: fileEntry,
@@ -127,7 +143,8 @@ export async function fileDownloadProcess(
 }
 
 function handleDownloadError(error) {
-  console.log({ handleDownloadError: error });
+  console.log({ handleDownloadError: error.message, a: error.stack });
+
   let message = '';
   if (
     error?.message?.includes('HTTP') ||
@@ -135,7 +152,7 @@ function handleDownloadError(error) {
   ) {
     message = 'notification.failedToFetch';
   } else if (
-    error instanceof DOMException ||
+    // error instanceof DOMException ||
     error?.message === 'AES key data must be 128 or 256 bits' ||
     error?.message ===
       "Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded."

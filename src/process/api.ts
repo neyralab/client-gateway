@@ -53,32 +53,46 @@ export const api = new Api('https://api.dev.ghostdrive.com/api');
 export const getEncryptedFileKey = async (
   slug: string,
   xToken: string,
-  provider: any
+  userPublicAddress: string
 ) => {
   const {
     data: { data: encryptedData, count },
   } = await api.getEncryptedFileDetailsEffect(slug, xToken);
 
   if (count) {
-    const [userPublicAddress] = await provider?.listAccounts();
     const userKey = encryptedData.find(
       (el) =>
         el.user_public_address.public_address.toLowerCase() ===
         userPublicAddress?.toLowerCase()
     );
     return userKey?.encrypted_key;
-  } else return null;
+  } else {
+    return null;
+  }
 };
 
 export const getDecryptedKey = async ({
   key,
   provider,
+  publicAddress,
+  keys,
 }: {
   key: string;
+  publicAddress: string;
   provider: any;
+  keys?: { privateKeyPem: string };
 }) => {
-  const signer = provider.getSigner();
-  const keypair = await getUserRSAKeys({ signer });
+  const signer = provider.getSigner(publicAddress);
+  console.log({ signer, keys });
+  let privateKeyFromPem = null;
+  if (keys?.privateKeyPem) {
+    privateKeyFromPem = nodeForge.pki.privateKeyFromPem(keys.privateKeyPem);
+  } else {
+    const keypair = await getUserRSAKeys({ signer });
+    privateKeyFromPem = keypair.privateKey;
+  }
+
   const bytesKey = nodeForge.util.hexToBytes(key);
-  return keypair.privateKey.decrypt(bytesKey);
+  console.log({ privateKeyFromPem, bytesKey });
+  return privateKeyFromPem.decrypt(bytesKey);
 };

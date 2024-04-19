@@ -11,6 +11,7 @@ import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 import { downloadFileFromSP } from './downloadFileFromSP.js';
 import { Readable } from 'stream';
 
+console.log('before downloadFile() run1');
 export const downloadFile = async ({
   file,
   oneTimeToken,
@@ -46,7 +47,11 @@ export const downloadFile = async ({
         file,
         level: 'root',
       });
-      return fileBlob;
+      if (!isMobile()) {
+        return fileBlob;
+      } else {
+        await writeStreamMobile?.(fileBlob);
+      }
     }
 
     if (size >= ALL_FILE_DOWNLOAD_MAX_SIZE) {
@@ -66,10 +71,16 @@ export const downloadFile = async ({
         });
 
         // @ts-ignore
-        const chunk = await fileBlob.arrayBuffer();
-        chunks.push(chunk);
+        if (isMobile()) {
+          await writeStreamMobile?.(fileBlob as unknown as Uint8Array);
+        } else {
+          const chunk = await fileBlob.arrayBuffer();
+          chunks.push(chunk);
+        }
       }
-      return joinChunks(chunks);
+      if (!isMobile()) {
+        return joinChunks(chunks);
+      }
     }
   } else {
     const chunkCountResponse = await countChunks({

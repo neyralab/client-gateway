@@ -1,4 +1,4 @@
-import { recursive as exporter } from 'ipfs-unixfs-exporter';
+import * as lib from 'ipfs-unixfs-exporter';
 
 import { decryptChunk } from '../decryptChunk/index.js';
 
@@ -27,7 +27,7 @@ export async function downloadFileFromSP({
     .then(async (reader) => {
       const roots = await reader.getRoots();
 
-      const entries = exporter(roots[0], {
+      const entries = lib.recursive(roots[0], {
         async get(cid) {
           const block = await reader.get(cid);
           return block.bytes;
@@ -59,7 +59,9 @@ export async function downloadFileFromSP({
       }
       return fileBlob;
     })
-    .catch(console.log);
+    .catch((err) => {
+      console.log({ dfsp: err.message, st: err.stack });
+    });
 }
 
 async function saveFileFromGenerator({
@@ -74,13 +76,14 @@ async function saveFileFromGenerator({
   let prev = [];
 
   for await (const chunk of generator) {
-    prev = [...prev, chunk];
+    prev.push(...chunk);
   }
 
-  const blob = new Blob(prev, { type });
+  const uin8 = new Uint8Array(prev);
+  const arrayBuffer = uin8.buffer;
 
   if (!isEncrypted) {
-    return blob;
+    return arrayBuffer;
   }
 
   if (isEncrypted && (level === 'root' || level === 'interim')) {
@@ -89,12 +92,13 @@ async function saveFileFromGenerator({
 
     for await (const chunk of chunkFile({
       file: {
-        size: (await blob.arrayBuffer()).byteLength,
-        arrayBuffer: async () => blob.arrayBuffer(),
+        size: arrayBuffer.byteLength,
+        arrayBuffer: async () => arrayBuffer,
       },
       uploadChunkSize: uploadChunkSize + 16, // test if we need +16 bytes
     })) {
-      const chunkArrayBuffer = typeof chunk === 'string' ? Buffer.from(chunk).buffer : chunk;
+      const chunkArrayBuffer =
+        typeof chunk === 'string' ? Buffer.from(chunk).buffer : chunk;
       const decryptedChunk = await decryptChunk({
         chunk: chunkArrayBuffer,
         iv,
@@ -110,7 +114,7 @@ async function saveFileFromGenerator({
     const bufferKey = convertBase64ToArrayBuffer(key);
 
     const decryptedChunk = await decryptChunk({
-      chunk: await blob.arrayBuffer(),
+      chunk: arrayBuffer,
       iv,
       key: bufferKey,
     });
