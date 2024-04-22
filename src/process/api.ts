@@ -8,9 +8,12 @@ import { getUserRSAKeys } from '../getUserRSAKeys/index.js';
 
 export class Api {
   private instance: AxiosInstance;
-  constructor(url: string) {
+  constructor(url: string, xToken: string) {
     this.instance = axios.create({
       baseURL: url,
+      headers: {
+        'x-token': xToken,
+      },
     });
   }
 
@@ -25,36 +28,20 @@ export class Api {
     }
   }
 
-  getDownloadOTT = (
-    body: { slug: string }[],
-    xToken: string
-  ): Promise<DownloadOTT> => {
-    return this.instance.post(`/download/generate/token`, body, {
-      headers: {
-        'x-token': xToken,
-      },
-    });
+  getDownloadOTT = (body: { slug: string }[]): Promise<DownloadOTT> => {
+    return this.instance.post(`/download/generate/token`, body);
   };
 
   getEncryptedFileDetailsEffect = (
-    slug: string,
-    xToken: string
+    slug: string
   ): Promise<AxiosResponse<GetEncryptedFileDetailsEffect>> => {
-    return this.instance.get(`/keys/get-encrypted-file-details?slug=${slug}`, {
-      headers: {
-        'x-token': xToken,
-      },
-    });
+    return this.instance.get(`/keys/get-encrypted-file-details?slug=${slug}`);
   };
 
-  async getEncryptedFileKey(
-    slug: string,
-    xToken: string,
-    userPublicAddress: string
-  ) {
+  async getEncryptedFileKey(slug: string, userPublicAddress: string) {
     const {
       data: { data: encryptedData, count },
-    } = await this.getEncryptedFileDetailsEffect(slug, xToken);
+    } = await this.getEncryptedFileDetailsEffect(slug);
 
     if (count) {
       const userKey = encryptedData.find(

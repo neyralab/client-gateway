@@ -28,7 +28,7 @@ export async function fileDownloadProcess(
     keys,
     serverUrl,
   } = data;
-  const api = new Api(serverUrl);
+  const api = new Api(serverUrl, xToken);
   const isClientsideEncrypted: boolean = !!fileEntry?.is_clientside_encrypted;
   const controller = new AbortController();
   const signal = controller.signal;
@@ -41,7 +41,7 @@ export async function fileDownloadProcess(
       gateway,
       upload_chunk_size,
     },
-  } = await api.getDownloadOTT([{ slug: fileEntry.slug }], xToken);
+  } = await api.getDownloadOTT([{ slug: fileEntry.slug }]);
 
   if (fileEntry?.is_on_storage_provider && size >= ALL_FILE_DOWNLOAD_MAX_SIZE) {
     cidData = await api.getFileCids({ slug: fileEntry.slug });
@@ -69,7 +69,6 @@ export async function fileDownloadProcess(
     if (!decryptedKey) {
       const encryptedKey = await api.getEncryptedFileKey(
         fileEntry.slug,
-        xToken,
         userPublicAddress
       );
 
