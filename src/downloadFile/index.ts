@@ -50,7 +50,7 @@ export const downloadFile = async ({
       if (!isMobile()) {
         return fileBlob;
       } else {
-        await writeStreamMobile?.(fileBlob);
+        fileBlob && (await writeStreamMobile?.(fileBlob));
       }
     }
 
@@ -73,8 +73,7 @@ export const downloadFile = async ({
         if (isMobile()) {
           fileBlob && (await writeStreamMobile?.(fileBlob));
         } else {
-          const chunk = fileBlob?.buffer;
-          chunks.push(chunk);
+          fileBlob && chunks.push(fileBlob?.buffer);
         }
       }
       if (!isMobile()) {
