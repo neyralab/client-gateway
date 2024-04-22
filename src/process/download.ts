@@ -1,7 +1,7 @@
 import { CarReader } from '@ipld/car';
 import { downloadFile } from '../downloadFile/index.js';
 import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types.js';
-import { api, getDecryptedKey, getEncryptedFileKey } from './api.js';
+import { Api, getDecryptedKey, getEncryptedFileKey } from './api.js';
 import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 import { IDownloadFile } from '../types/index.js';
 
@@ -9,6 +9,7 @@ export async function fileDownloadProcess(
   data: {
     fileEntry: IFile;
     xToken: string;
+    serverUrl: string;
     localProvider: LocalProvider;
     provider: unknown;
     callbacks?: Callbacks;
@@ -25,7 +26,9 @@ export async function fileDownloadProcess(
     decryptionUrl,
     writeStreamMobile,
     keys,
+    serverUrl,
   } = data;
+  const api = new Api(serverUrl);
   const isClientsideEncrypted: boolean = !!fileEntry?.is_clientside_encrypted;
   const controller = new AbortController();
   const signal = controller.signal;

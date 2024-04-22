@@ -6,7 +6,7 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { DownloadOTT, GetEncryptedFileDetailsEffect } from './types.js';
 import { getUserRSAKeys } from '../getUserRSAKeys/index.js';
 
-class Api {
+export class Api {
   private instance: AxiosInstance;
   constructor(url: string) {
     this.instance = axios.create({
@@ -46,30 +46,28 @@ class Api {
       },
     });
   };
-}
 
-export const api = new Api('https://api.dev.ghostdrive.com/api');
+  async getEncryptedFileKey(
+    slug: string,
+    xToken: string,
+    userPublicAddress: string
+  ) {
+    const {
+      data: { data: encryptedData, count },
+    } = await this.getEncryptedFileDetailsEffect(slug, xToken);
 
-export const getEncryptedFileKey = async (
-  slug: string,
-  xToken: string,
-  userPublicAddress: string
-) => {
-  const {
-    data: { data: encryptedData, count },
-  } = await api.getEncryptedFileDetailsEffect(slug, xToken);
-
-  if (count) {
-    const userKey = encryptedData.find(
-      (el) =>
-        el.user_public_address.public_address.toLowerCase() ===
-        userPublicAddress?.toLowerCase()
-    );
-    return userKey?.encrypted_key;
-  } else {
-    return null;
+    if (count) {
+      const userKey = encryptedData.find(
+        (el) =>
+          el.user_public_address.public_address.toLowerCase() ===
+          userPublicAddress?.toLowerCase()
+      );
+      return userKey?.encrypted_key;
+    } else {
+      return null;
+    }
   }
-};
+}
 
 export const getDecryptedKey = async ({
   key,
