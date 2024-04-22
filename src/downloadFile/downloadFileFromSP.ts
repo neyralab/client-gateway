@@ -21,8 +21,7 @@ export async function downloadFileFromSP({
     .then(async (data) => await data.arrayBuffer())
     .then((blob) => {
       const uint8 = new Uint8Array(blob);
-      const reader = carReader.fromBytes(uint8);
-      return reader;
+      return carReader.fromBytes(uint8);
     })
     .then(async (reader) => {
       const roots = await reader.getRoots();
@@ -34,7 +33,7 @@ export async function downloadFileFromSP({
         },
       });
       let typesEntries = { count: {}, length: {} };
-      let fileBlob: Blob;
+      let fileBlob: Uint8Array | null = null;
       for await (const entry of entries) {
         if (entry.type === 'file' || entry.type === 'raw') {
           const cont = entry.content();
@@ -72,19 +71,25 @@ async function saveFileFromGenerator({
   key,
   iv,
   level,
-}: ISaveFileFromGenerator) {
-  let prev = [];
+}: ISaveFileFromGenerator): Promise<Uint8Array | null> {
+  let concatenatedBuffer = new Uint8Array(0);
 
-  for await (const chunk of generator) {
-    prev.push(...chunk);
+  for await (const buffer of generator) {
+    const tmpArray = new Uint8Array(buffer);
+    const newBuffer = new Uint8Array(
+      concatenatedBuffer.length + tmpArray.length
+    );
+    newBuffer.set(concatenatedBuffer);
+    newBuffer.set(tmpArray, concatenatedBuffer.length);
+    concatenatedBuffer = newBuffer;
   }
-
-  const uin8 = new Uint8Array(prev);
-  const arrayBuffer = uin8.buffer;
 
   if (!isEncrypted) {
-    return arrayBuffer;
+    return concatenatedBuffer;
   }
+
+  const arr = concatenatedBuffer.buffer;
+  const bufferKey = convertBase64ToArrayBuffer(key);
 
   if (isEncrypted && (level === 'root' || level === 'interim')) {
     const bufferKey = convertBase64ToArrayBuffer(key);
@@ -92,8 +97,8 @@ async function saveFileFromGenerator({
 
     for await (const chunk of chunkFile({
       file: {
-        size: arrayBuffer.byteLength,
-        arrayBuffer: async () => arrayBuffer,
+        size: arr.byteLength,
+        arrayBuffer: async () => arr,
       },
       uploadChunkSize: uploadChunkSize + 16, // test if we need +16 bytes
     })) {
@@ -111,10 +116,8 @@ async function saveFileFromGenerator({
   }
 
   if (isEncrypted && level === 'upload') {
-    const bufferKey = convertBase64ToArrayBuffer(key);
-
     const decryptedChunk = await decryptChunk({
-      chunk: arrayBuffer,
+      chunk: arr,
       iv,
       key: bufferKey,
     });

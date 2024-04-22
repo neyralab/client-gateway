@@ -1,4 +1,4 @@
-import { downloadChunk, countChunks, decryptChunk } from '../index.js';
+import { countChunks, decryptChunk, downloadChunk } from '../index.js';
 
 import { isMobile } from '../utils/isMobile.js';
 import { isBrowser } from '../utils/isBrowser.js';
@@ -70,11 +70,10 @@ export const downloadFile = async ({
           level: cidData.level,
         });
 
-        // @ts-ignore
         if (isMobile()) {
-          await writeStreamMobile?.(fileBlob as unknown as Uint8Array);
+          fileBlob && (await writeStreamMobile?.(fileBlob));
         } else {
-          const chunk = await fileBlob.arrayBuffer();
+          const chunk = fileBlob?.buffer;
           chunks.push(chunk);
         }
       }
@@ -134,7 +133,7 @@ export const downloadFile = async ({
         }
         if (index === 0 && chunk) {
           handlers?.includes('onSuccess') &&
-            callback({
+            callback?.({
               type: 'onSuccess',
               params: {},
             });
@@ -155,8 +154,7 @@ export const downloadFile = async ({
     } else if (isMobile()) {
       return { failed: false };
     } else {
-      const file = joinChunks(chunks);
-      return file;
+      return joinChunks(chunks);
     }
   }
 };

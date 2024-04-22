@@ -1,9 +1,9 @@
 import { CarReader } from '@ipld/car';
-import { downloadFile } from '../downloadFile';
-import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types';
-import { api, getDecryptedKey, getEncryptedFileKey } from './api';
-import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config';
-import { IDownloadFile } from '../types';
+import { downloadFile } from '../downloadFile/index.js';
+import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types.js';
+import { api, getDecryptedKey, getEncryptedFileKey } from './api.js';
+import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
+import { IDownloadFile } from '../types/index.js';
 
 export async function fileDownloadProcess(
   data: {
@@ -58,19 +58,18 @@ export async function fileDownloadProcess(
 
     if (!decryptedKey) {
       const localDecryptedKey = await localProvider.get(fileEntry.slug);
-      console.log({ localDecryptedKey });
       if (localDecryptedKey) {
         decryptedKey = localDecryptedKey;
       }
     }
-    console.log({ decryptedKey });
+
     if (!decryptedKey) {
       const encryptedKey = await getEncryptedFileKey(
         fileEntry.slug,
         xToken,
         userPublicAddress
       );
-      console.log({ encryptedKey });
+
       try {
         decryptedKey = await getDecryptedKey({
           key: encryptedKey!,

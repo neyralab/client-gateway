@@ -3,7 +3,7 @@ import { isBrowser } from './isBrowser.js';
 export const joinChunks = (chunks: ArrayBuffer[]) => {
   if (isBrowser() && window.Blob) {
     return new Uint8Array(
-      chunks.reduce((acc, buffer) => {
+      chunks.reduce((acc: Uint8Array, buffer) => {
         const tmpArray = new Uint8Array(buffer);
         const newBuffer = new Uint8Array(acc.length + tmpArray.length);
         newBuffer.set(acc);
@@ -16,7 +16,7 @@ export const joinChunks = (chunks: ArrayBuffer[]) => {
     process.release.name === 'node'
   ) {
     const { Readable } = require('stream');
-    const readableStream = new Readable({
+    return new Readable({
       read() {
         for (const chunk of chunks) {
           this.push(chunk);
@@ -24,8 +24,6 @@ export const joinChunks = (chunks: ArrayBuffer[]) => {
         this.push(null);
       },
     });
-
-    return readableStream;
   } else {
     console.error('Environment not supported for creating data objects');
     return null;
