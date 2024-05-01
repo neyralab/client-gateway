@@ -48,6 +48,14 @@ export async function fileDownloadProcess(
   }
   let blob: Blob;
 
+  const callback = ({ type, params }) => {
+    if (type === 'onProgress') {
+      callbacks?.onProgress(params);
+    } else {
+      console.error(`Handler "${type}" isn't provided`);
+    }
+  };
+
   if (isClientsideEncrypted) {
     let decryptedKey: string | undefined;
     const [userPublicAddress] = await provider?.provider?.request({
@@ -92,13 +100,6 @@ export async function fileDownloadProcess(
       return { data: null, error: 'Tu debil. Ne Vkradesh file' };
     }
     await localProvider.set(fileEntry.slug, decryptedKey);
-    const callback = ({ type, params }) => {
-      if (type === 'onProgress') {
-        callbacks?.onProgress(params);
-      } else {
-        console.error(`Handler "${type}" isn't provided`);
-      }
-    };
     console.log('before downloadFile() run');
     blob = await downloadFile({
       file: fileEntry,
@@ -122,6 +123,8 @@ export async function fileDownloadProcess(
       oneTimeToken,
       endpoint: gateway.url,
       isEncrypted: false,
+      callback,
+      handlers: ['onProgress'],
       carReader: CarReader,
       uploadChunkSize:
         upload_chunk_size[fileEntry.slug] || gateway.upload_chunk_size,
