@@ -90,14 +90,21 @@ export async function fileDownloadProcess(
       } catch (e) {
         console.log('before prompt', { e });
         try {
-          decryptedKey = await callbacks?.onPrompt();
+          const unEncryptedFileKey = await api.getUnEncryptedFileKey(
+            fileEntry.slug
+          );
+          if (unEncryptedFileKey) {
+            decryptedKey = unEncryptedFileKey;
+          } else {
+            decryptedKey = await callbacks?.onPrompt();
+          }
         } catch (err) {
           decryptedKey = undefined;
         }
       }
     }
     if (!decryptedKey) {
-      return { data: null, error: 'Tu debil. Ne Vkradesh file' };
+      return { data: null, error: 'All of the decrypted keys are wrong' };
     }
     await localProvider.set(fileEntry.slug, decryptedKey);
     console.log('before downloadFile() run');

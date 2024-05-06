@@ -54,6 +54,13 @@ export class Api {
       return null;
     }
   }
+
+  async getUnEncryptedFileKey(slug: string) {
+    const { data } = await this.instance.get<{ encryption_key?: string }>(
+      `/keys/get_unencrypted_key?slug=${slug}`
+    );
+    return data?.encryption_key;
+  }
 }
 
 export const getDecryptedKey = async ({
