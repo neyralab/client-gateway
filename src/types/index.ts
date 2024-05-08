@@ -1,8 +1,4 @@
-import {
-  LocalFileStream,
-  LocalFileBuffer,
-  LocalFileReactNativeStream,
-} from './File/index.js';
+import { LocalFileBuffer, LocalFileReactNativeStream } from './File/index.js';
 
 export type ImagePreviewEffect = (
   fileId: string,
@@ -70,7 +66,7 @@ export interface IEncodeExistingFile {
 export interface ISendChunk {
   chunk: ArrayBuffer | string;
   index: number;
-  file: LocalFileStream | LocalFileBuffer | LocalFileReactNativeStream;
+  file: LocalFileBuffer | LocalFileReactNativeStream;
   startTime: any;
   oneTimeToken: string;
   gateway: GatewayType;
@@ -85,7 +81,7 @@ export interface ISendChunk {
 }
 
 export interface IUploadFile {
-  file: LocalFileStream | LocalFileBuffer | LocalFileReactNativeStream;
+  file: LocalFileBuffer | LocalFileReactNativeStream;
   oneTimeToken: string;
   gateway: GatewayType;
   callback: Callback;

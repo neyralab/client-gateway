@@ -1,4 +1,4 @@
-import * as fs from "fs";
+// import * as fs from "fs";
 import * as path from "path";
 
 class LocalFile {
@@ -23,21 +23,21 @@ class LocalFile {
   }
 }
 
-export class LocalFileStream extends LocalFile {
-  public stream: () => fs.ReadStream;
+// export class LocalFileStream extends LocalFile {
+//   public stream: () => fs.ReadStream;
 
-  constructor(
-    size: number,
-    filename: string,
-    mimeType: string,
-    fileFolderId: string,
-    uploadId: string
-  ) {
-    super(size, filename, mimeType, fileFolderId, uploadId);
-    this.stream = () => fs.createReadStream(filename);
-    this.name = path.basename(filename);
-  }
-}
+//   constructor(
+//     size: number,
+//     filename: string,
+//     mimeType: string,
+//     fileFolderId: string,
+//     uploadId: string
+//   ) {
+//     super(size, filename, mimeType, fileFolderId, uploadId);
+//     this.stream = () => fs.createReadStream(filename);
+//     this.name = path.basename(filename);
+//   }
+// }
 
 export class LocalFileBuffer extends LocalFile {
   public arrayBuffer?: () => Promise<ArrayBuffer>;

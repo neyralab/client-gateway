@@ -1,5 +1,5 @@
 import axios from 'axios';
-import * as fs from 'fs';
+// import * as fs from 'fs';
 
 import { isMobile } from '../utils/isMobile.js';
 import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
@@ -134,49 +134,49 @@ export const getThumbnailVideo = async ({
       })
         .then(resolve)
         .catch(reject);
-    } else if (path && ffmpegCommand) {
-      const currentPath = process.cwd();
+    // } else if (path && ffmpegCommand) {
+    //   const currentPath = process.cwd();
 
-      ffmpegCommand
-        .screenshot({
-          count: 1,
-          folder: `${currentPath}/src/`,
-          filename: 'video-thumbnail.jpeg',
-          size: `${MAX_WIDTH}x${MAX_HEIGHT}`,
-          timemarks: ['0.1'],
-        })
-        .on('end', async () => {
-          const thumbnailPath = './src/video-thumbnail.jpeg';
-          const base64Image = await getThumbnailImage({
-            file,
-            path: thumbnailPath,
-            quality,
-            oneTimeToken,
-            endpoint,
-            slug,
-            sharp,
-          });
-          fs.unlink(thumbnailPath, (err) => {
-            err && console.error('Error deleting file:', err);
-          });
-          sendThumbnail({
-            base64Image,
-            oneTimeToken,
-            endpoint,
-            file,
-            slug,
-          })
-            .then(() => {
-              resolve(base64Image);
-            })
-            .catch((error) => {
-              reject(error);
-            });
-        })
-        .on('error', (err: any) => {
-          console.error('Error generating thumbnail:', err);
-          reject(`Error generating thumbnail: ${err}`);
-        });
+    //   ffmpegCommand
+    //     .screenshot({
+    //       count: 1,
+    //       folder: `${currentPath}/src/`,
+    //       filename: 'video-thumbnail.jpeg',
+    //       size: `${MAX_WIDTH}x${MAX_HEIGHT}`,
+    //       timemarks: ['0.1'],
+    //     })
+    //     .on('end', async () => {
+    //       const thumbnailPath = './src/video-thumbnail.jpeg';
+    //       const base64Image = await getThumbnailImage({
+    //         file,
+    //         path: thumbnailPath,
+    //         quality,
+    //         oneTimeToken,
+    //         endpoint,
+    //         slug,
+    //         sharp,
+    //       });
+    //       fs.unlink(thumbnailPath, (err) => {
+    //         err && console.error('Error deleting file:', err);
+    //       });
+    //       sendThumbnail({
+    //         base64Image,
+    //         oneTimeToken,
+    //         endpoint,
+    //         file,
+    //         slug,
+    //       })
+    //         .then(() => {
+    //           resolve(base64Image);
+    //         })
+    //         .catch((error) => {
+    //           reject(error);
+    //         });
+    //     })
+    //     .on('error', (err: any) => {
+    //       console.error('Error generating thumbnail:', err);
+    //       reject(`Error generating thumbnail: ${err}`);
+    //     });
     } else {
       const video = document.createElement('video');
       video.src = URL.createObjectURL(file);

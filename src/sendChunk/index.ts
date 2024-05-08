@@ -30,7 +30,8 @@ export const sendChunk = async ({
   totalSize,
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
-  const xHash = isMobile() ? 'null' : createSHA256Hash(chunk as ArrayBuffer);
+  const xHash = 'null';
+  // const xHash = isMobile() ? 'null' : createSHA256Hash(chunk as ArrayBuffer);
   const fileName = convertTextToBase64(file.name);
   const fileSize = file instanceof LocalFileReactNativeStream ? file.convertedSize || file.size : file.size;
   const chunksLength = Math.ceil(fileSize / gateway.upload_chunk_size);
