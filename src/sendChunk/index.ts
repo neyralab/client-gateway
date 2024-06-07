@@ -28,6 +28,7 @@ export const sendChunk = async ({
   handlers,
   controller,
   totalSize,
+  is_telegram,
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const xHash = 'null';
@@ -96,7 +97,7 @@ export const sendChunk = async ({
           })
           .then(() => {
             return postWithCookies(
-              `${gateway.url}/chunked/uploadChunk`,
+              `${gateway.url}/chunked/uploadChunk${is_telegram ? '?is_telegram=true' : ''}`,
               headers,
               cookieJar,
               controller ? controller.signal : undefined,
@@ -108,7 +109,7 @@ export const sendChunk = async ({
           });
       } else {
         response = await axios.post(
-          `${gateway.url}/chunked/uploadChunk`,
+          `${gateway.url}/chunked/uploadChunk${is_telegram ? '?is_telegram=true' : ''}`,
           chunk,
           {
             headers,

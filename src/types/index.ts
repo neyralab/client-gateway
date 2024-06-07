@@ -78,6 +78,7 @@ export interface ISendChunk {
   listUploadIdsOfCancelledFiles?: Set<string>;
   controller?: AbortController;
   totalSize?: number;
+  is_telegram?: boolean;
 }
 
 export interface IUploadFile {
@@ -90,6 +91,7 @@ export interface IUploadFile {
   progress?: number;
   totalSize?: number;
   startedAt?: any;
+  is_telegram?: boolean;
 }
 
 export interface ISwapChunk {
