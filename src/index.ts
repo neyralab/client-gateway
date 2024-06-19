@@ -13,6 +13,7 @@ import { encodeExistingFile } from  "./encodeExistingFile/index.js";
 import { LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream } from  "./types/File/index.js";
 import { getThumbnailImage, getThumbnailVideo } from  "./getThumbnail/index.js";
 import { fileDownloadProcess } from './process/index.js'
+import { downloadFileFromSP } from "./downloadFile/downloadFileFromSP.js";
 
 export {
   encryptChunk,
@@ -29,6 +30,7 @@ export {
   encodeExistingFile,
   LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream,
   getThumbnailImage, getThumbnailVideo,
-  fileDownloadProcess
+  fileDownloadProcess,
+  downloadFileFromSP
 }
 // let a = import('./lib/es6/index.js')
