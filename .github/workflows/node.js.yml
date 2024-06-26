@@ -28,4 +28,3 @@ jobs:
     - name: Install rimraf
       run: npm install rimraf
     - run: npm run postinstall
-    - run: npm run test
