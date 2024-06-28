@@ -38,4 +38,9 @@ export class UUIDBase64Converter {
             window.location.replace(newUrl);
         }
     }
+
+    generateShortenerURL(uuid): string {
+        const base64String = this.uuidToBase64(uuid);
+        return `${this.shortenerURL}${base64String}`;
+    }
 }
