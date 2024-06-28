@@ -34,7 +34,7 @@ export class UUIDBase64Converter {
         if (currentURL.startsWith(this.shortenerURL)) {
             const base64String = currentURL.slice(this.shortenerURL.length);
             const uuid = this.base64ToUuid(base64String);
-            const newUrl = `${this.ghostdriveURL}/file/${uuid}`;
+            const newUrl = `${this.ghostdriveURL}/f/${uuid}`;
             window.location.replace(newUrl);
         }
     }
