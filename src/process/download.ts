@@ -1,7 +1,7 @@
 import { CarReader } from '@ipld/car';
 import { downloadFile } from '../downloadFile/index.js';
 import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types.js';
-import { api, getDecryptedKey, getEncryptedFileKey } from './api.js';
+import { Api, getDecryptedKey } from './api.js';
 import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 import { IDownloadFile } from '../types/index.js';
 
@@ -9,10 +9,12 @@ export async function fileDownloadProcess(
   data: {
     fileEntry: IFile;
     xToken: string;
+    serverUrl: string;
     localProvider: LocalProvider;
-    provider: unknown;
+    provider: any;
     callbacks?: Callbacks;
     decryptionUrl?: string;
+    keys?: { privateKeyPem: string };
   } & Pick<IDownloadFile, 'writeStreamMobile'>
 ): Promise<ProcessDownload> {
   const {
@@ -23,8 +25,11 @@ export async function fileDownloadProcess(
     localProvider,
     decryptionUrl,
     writeStreamMobile,
+    keys,
+    serverUrl,
   } = data;
-  const isClientsideEncrypted: boolean = fileEntry?.is_clientside_encrypted;
+  const api = new Api(serverUrl, xToken);
+  const isClientsideEncrypted: boolean = !!fileEntry?.is_clientside_encrypted;
   const controller = new AbortController();
   const signal = controller.signal;
   const size = Number((fileEntry.size / ONE_MB).toFixed(1));
@@ -36,15 +41,26 @@ export async function fileDownloadProcess(
       gateway,
       upload_chunk_size,
     },
-  } = await api.getDownloadOTT([{ slug: fileEntry.slug }], xToken);
+  } = await api.getDownloadOTT([{ slug: fileEntry.slug }]);
 
   if (fileEntry?.is_on_storage_provider && size >= ALL_FILE_DOWNLOAD_MAX_SIZE) {
     cidData = await api.getFileCids({ slug: fileEntry.slug });
   }
   let blob: Blob;
 
+  const callback = ({ type, params }) => {
+    if (type === 'onProgress') {
+      callbacks?.onProgress(params);
+    } else {
+      console.error(`Handler "${type}" isn't provided`);
+    }
+  };
+
   if (isClientsideEncrypted) {
-    let decryptedKey: string;
+    let decryptedKey: string | undefined;
+    const [userPublicAddress] = await provider?.provider?.request({
+      method: 'eth_requestAccounts',
+    });
 
     if (decryptionUrl) {
       const parsedUrl = decryptionUrl.split('#');
@@ -57,38 +73,46 @@ export async function fileDownloadProcess(
         decryptedKey = localDecryptedKey;
       }
     }
+
     if (!decryptedKey) {
-      const encryptedKey = await getEncryptedFileKey(
+      const encryptedKey = await api.getEncryptedFileKey(
         fileEntry.slug,
-        xToken,
-        provider
+        userPublicAddress
       );
+
       try {
-        decryptedKey = await getDecryptedKey({ key: encryptedKey, provider });
+        decryptedKey = await getDecryptedKey({
+          key: encryptedKey!,
+          publicAddress: userPublicAddress,
+          provider,
+          keys,
+        });
       } catch (e) {
+        console.log('before prompt', { e });
         try {
-          decryptedKey = await callbacks?.onPrompt();
-        } catch (e) {
+          const unEncryptedFileKey = await api.getUnEncryptedFileKey(
+            fileEntry.slug
+          );
+          if (unEncryptedFileKey) {
+            decryptedKey = unEncryptedFileKey;
+          } else {
+            decryptedKey = await callbacks?.onPrompt();
+          }
+        } catch (err) {
           decryptedKey = undefined;
         }
       }
     }
     if (!decryptedKey) {
-      return { data: null, error: 'Tu debil. Ne Vkradesh file' };
+      return { data: null, error: 'All of the decrypted keys are wrong' };
     }
     await localProvider.set(fileEntry.slug, decryptedKey);
-    const callback = ({ type, params }) => {
-      if (type === 'onProgress') {
-        callbacks?.onProgress(params);
-      } else {
-        console.error(`Handler "${type}" isn't provided`);
-      }
-    };
+    console.log('before downloadFile() run');
     blob = await downloadFile({
       file: fileEntry,
       oneTimeToken,
       endpoint: gateway.url,
-      isEncrypted: fileEntry?.is_clientside_encrypted,
+      isEncrypted: isClientsideEncrypted,
       key: decryptedKey,
       callback,
       handlers: ['onProgress'],
@@ -99,12 +123,15 @@ export async function fileDownloadProcess(
       signal,
       writeStreamMobile,
     }).catch(handleDownloadError);
+    console.log('after downloadFile() run');
   } else {
     blob = await downloadFile({
       file: fileEntry,
       oneTimeToken,
       endpoint: gateway.url,
       isEncrypted: false,
+      callback,
+      handlers: ['onProgress'],
       carReader: CarReader,
       uploadChunkSize:
         upload_chunk_size[fileEntry.slug] || gateway.upload_chunk_size,
@@ -127,7 +154,8 @@ export async function fileDownloadProcess(
 }
 
 function handleDownloadError(error) {
-  console.log({ handleDownloadError: error });
+  console.log({ handleDownloadError: error.message, a: error.stack });
+
   let message = '';
   if (
     error?.message?.includes('HTTP') ||
@@ -135,7 +163,7 @@ function handleDownloadError(error) {
   ) {
     message = 'notification.failedToFetch';
   } else if (
-    error instanceof DOMException ||
+    // error instanceof DOMException ||
     error?.message === 'AES key data must be 128 or 256 bits' ||
     error?.message ===
       "Failed to execute 'atob' on 'Window': The string to be decoded is not correctly encoded."

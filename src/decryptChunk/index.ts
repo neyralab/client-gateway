@@ -1,30 +1,25 @@
-import { convertBase64ToArrayBuffer } from "../utils/convertBase64ToArrayBuffer.js";
-import { getFibonacciNumber } from "../utils/getFibonacciNumber.js";
-import { getCrypto } from "../utils/getCrypto.js";
+import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer.js';
+import { getFibonacciNumber } from '../utils/getFibonacciNumber.js';
+import { getCrypto } from '../utils/getCrypto.js';
 
-import { MAX_DECRYPTION_TRIES } from "../config.js";
+import { MAX_DECRYPTION_TRIES } from '../config.js';
 
-import { IDecryptChunk } from "../types/index.js";
-import { convertArrayBufferToBase64 } from "../utils/convertArrayBufferToBase64.js";
+import { IDecryptChunk } from '../types/index.js';
 
 const crypto = getCrypto();
 
 export const decryptChunk = async ({ chunk, iv, key }: IDecryptChunk) => {
   const activationKey = await crypto.subtle.importKey(
-    "raw",
+    'raw',
     key,
     {
-      name: "AES-GCM",
+      name: 'AES-GCM',
       length: 256,
     },
     true,
-    ["encrypt", "decrypt"]
+    ['encrypt', 'decrypt']
   );
-  console.log({
-    iv,
-    chunk: convertArrayBufferToBase64(chunk),
-    key: convertArrayBufferToBase64(key),
-  })
+
   const ivBufferSource = convertBase64ToArrayBuffer(iv);
   const normalizedIv = new Uint8Array(ivBufferSource);
   let currentTry = 1;
@@ -40,9 +35,9 @@ export const decryptChunk = async ({ chunk, iv, key }: IDecryptChunk) => {
     });
 
     try {
-      const response = await crypto.subtle.decrypt(
+      const response: ArrayBuffer = await crypto.subtle.decrypt(
         {
-          name: "AES-GCM",
+          name: 'AES-GCM',
           iv: normalizedIv,
         },
         activationKey,

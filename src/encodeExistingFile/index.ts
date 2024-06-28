@@ -37,15 +37,13 @@ export const encodeExistingFile = async ({
   let result: any;
   let currentIndex = 1;
 
-  const fileBlob: Blob = await downloadFile({
+  const arrayBuffer: ArrayBuffer = await downloadFile({
     file,
     oneTimeToken: downloadToken,
     signal,
     endpoint: downloadEndpoint,
     isEncrypted: false,
   });
-
-  const arrayBuffer = await fileBlob.arrayBuffer();
 
   handlers.includes('onStart') &&
     callback({

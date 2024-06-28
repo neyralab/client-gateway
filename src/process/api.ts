@@ -6,11 +6,14 @@ import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { DownloadOTT, GetEncryptedFileDetailsEffect } from './types.js';
 import { getUserRSAKeys } from '../getUserRSAKeys/index.js';
 
-class Api {
+export class Api {
   private instance: AxiosInstance;
-  constructor(url: string) {
+  constructor(url: string, xToken: string) {
     this.instance = axios.create({
       baseURL: url,
+      headers: {
+        'x-token': xToken,
+      },
     });
   }
 
@@ -25,60 +28,63 @@ class Api {
     }
   }
 
-  getDownloadOTT = (
-    body: { slug: string }[],
-    xToken: string
-  ): Promise<DownloadOTT> => {
-    return this.instance.post(`/download/generate/token`, body, {
-      headers: {
-        'x-token': xToken,
-      },
-    });
+  getDownloadOTT = (body: { slug: string }[]): Promise<DownloadOTT> => {
+    return this.instance.post(`/download/generate/token`, body);
   };
 
   getEncryptedFileDetailsEffect = (
-    slug: string,
-    xToken: string
+    slug: string
   ): Promise<AxiosResponse<GetEncryptedFileDetailsEffect>> => {
-    return this.instance.get(`/keys/get-encrypted-file-details?slug=${slug}`, {
-      headers: {
-        'x-token': xToken,
-      },
-    });
+    return this.instance.get(`/keys/get-encrypted-file-details?slug=${slug}`);
   };
-}
 
-export const api = new Api('https://api.dev.ghostdrive.com/api');
+  async getEncryptedFileKey(slug: string, userPublicAddress: string) {
+    const {
+      data: { data: encryptedData, count },
+    } = await this.getEncryptedFileDetailsEffect(slug);
 
-export const getEncryptedFileKey = async (
-  slug: string,
-  xToken: string,
-  provider: any
-) => {
-  const {
-    data: { data: encryptedData, count },
-  } = await api.getEncryptedFileDetailsEffect(slug, xToken);
+    if (count) {
+      const userKey = encryptedData.find(
+        (el) =>
+          el.user_public_address.public_address.toLowerCase() ===
+          userPublicAddress?.toLowerCase()
+      );
+      return userKey?.encrypted_key;
+    } else {
+      return null;
+    }
+  }
 
-  if (count) {
-    const [userPublicAddress] = await provider?.listAccounts();
-    const userKey = encryptedData.find(
-      (el) =>
-        el.user_public_address.public_address.toLowerCase() ===
-        userPublicAddress?.toLowerCase()
+  async getUnEncryptedFileKey(slug: string) {
+    const { data } = await this.instance.get<{ encryption_key?: string }>(
+      `/keys/get_unencrypted_key?slug=${slug}`
     );
-    return userKey?.encrypted_key;
-  } else return null;
-};
+    return data?.encryption_key;
+  }
+}
 
 export const getDecryptedKey = async ({
   key,
   provider,
+  publicAddress,
+  keys,
 }: {
   key: string;
+  publicAddress: string;
   provider: any;
+  keys?: { privateKeyPem: string };
 }) => {
-  const signer = provider.getSigner();
-  const keypair = await getUserRSAKeys({ signer });
+  const signer = provider.getSigner(publicAddress);
+  console.log({ signer, keys });
+  let privateKeyFromPem = null;
+  if (keys?.privateKeyPem) {
+    privateKeyFromPem = nodeForge.pki.privateKeyFromPem(keys.privateKeyPem);
+  } else {
+    const keypair = await getUserRSAKeys({ signer });
+    privateKeyFromPem = keypair.privateKey;
+  }
+
   const bytesKey = nodeForge.util.hexToBytes(key);
-  return keypair.privateKey.decrypt(bytesKey);
+  console.log({ privateKeyFromPem, bytesKey });
+  return privateKeyFromPem.decrypt(bytesKey);
 };

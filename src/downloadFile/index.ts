@@ -1,4 +1,4 @@
-import { downloadChunk, countChunks, decryptChunk } from '../index.js';
+import { countChunks, decryptChunk, downloadChunk } from '../index.js';
 
 import { isMobile } from '../utils/isMobile.js';
 import { isBrowser } from '../utils/isBrowser.js';
@@ -11,6 +11,7 @@ import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 import { downloadFileFromSP } from './downloadFileFromSP.js';
 import { Readable } from 'stream';
 
+console.log('before downloadFile() run1');
 export const downloadFile = async ({
   file,
   oneTimeToken,
@@ -46,7 +47,11 @@ export const downloadFile = async ({
         file,
         level: 'root',
       });
-      return fileBlob;
+      if (!isMobile()) {
+        return fileBlob;
+      } else {
+        fileBlob && (await writeStreamMobile?.(fileBlob));
+      }
     }
 
     if (size >= ALL_FILE_DOWNLOAD_MAX_SIZE) {
@@ -65,11 +70,15 @@ export const downloadFile = async ({
           level: cidData.level,
         });
 
-        // @ts-ignore
-        const chunk = await fileBlob.arrayBuffer();
-        chunks.push(chunk);
+        if (isMobile()) {
+          fileBlob && (await writeStreamMobile?.(fileBlob));
+        } else {
+          fileBlob && chunks.push(fileBlob?.buffer);
+        }
       }
-      return joinChunks(chunks);
+      if (!isMobile()) {
+        return joinChunks(chunks);
+      }
     }
   } else {
     const chunkCountResponse = await countChunks({
@@ -123,7 +132,7 @@ export const downloadFile = async ({
         }
         if (index === 0 && chunk) {
           handlers?.includes('onSuccess') &&
-            callback({
+            callback?.({
               type: 'onSuccess',
               params: {},
             });
@@ -144,8 +153,7 @@ export const downloadFile = async ({
     } else if (isMobile()) {
       return { failed: false };
     } else {
-      const file = joinChunks(chunks);
-      return file;
+      return joinChunks(chunks);
     }
   }
 };

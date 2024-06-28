@@ -1,4 +1,4 @@
-import { recursive as exporter } from 'ipfs-unixfs-exporter';
+import * as lib from 'ipfs-unixfs-exporter';
 
 import { decryptChunk } from '../decryptChunk/index.js';
 
@@ -21,20 +21,19 @@ export async function downloadFileFromSP({
     .then(async (data) => await data.arrayBuffer())
     .then((blob) => {
       const uint8 = new Uint8Array(blob);
-      const reader = carReader.fromBytes(uint8);
-      return reader;
+      return carReader.fromBytes(uint8);
     })
     .then(async (reader) => {
       const roots = await reader.getRoots();
 
-      const entries = exporter(roots[0], {
+      const entries = lib.recursive(roots[0], {
         async get(cid) {
           const block = await reader.get(cid);
           return block.bytes;
         },
       });
       let typesEntries = { count: {}, length: {} };
-      let fileBlob: Blob;
+      let fileBlob: Uint8Array | null = null;
       for await (const entry of entries) {
         if (entry.type === 'file' || entry.type === 'raw') {
           const cont = entry.content();
@@ -59,7 +58,9 @@ export async function downloadFileFromSP({
       }
       return fileBlob;
     })
-    .catch(console.log);
+    .catch((err) => {
+      console.log({ dfsp: err.message, st: err.stack });
+    });
 }
 
 async function saveFileFromGenerator({
@@ -70,18 +71,25 @@ async function saveFileFromGenerator({
   key,
   iv,
   level,
-}: ISaveFileFromGenerator) {
-  let prev = [];
+}: ISaveFileFromGenerator): Promise<Uint8Array | null> {
+  let concatenatedBuffer = new Uint8Array(0);
 
-  for await (const chunk of generator) {
-    prev = [...prev, chunk];
+  for await (const buffer of generator) {
+    const tmpArray = new Uint8Array(buffer);
+    const newBuffer = new Uint8Array(
+      concatenatedBuffer.length + tmpArray.length
+    );
+    newBuffer.set(concatenatedBuffer);
+    newBuffer.set(tmpArray, concatenatedBuffer.length);
+    concatenatedBuffer = newBuffer;
   }
-
-  const blob = new Blob(prev, { type });
 
   if (!isEncrypted) {
-    return blob;
+    return concatenatedBuffer;
   }
+
+  const arr = concatenatedBuffer.buffer;
+  const bufferKey = convertBase64ToArrayBuffer(key);
 
   if (isEncrypted && (level === 'root' || level === 'interim')) {
     const bufferKey = convertBase64ToArrayBuffer(key);
@@ -89,12 +97,13 @@ async function saveFileFromGenerator({
 
     for await (const chunk of chunkFile({
       file: {
-        size: (await blob.arrayBuffer()).byteLength,
-        arrayBuffer: async () => blob.arrayBuffer(),
+        size: arr.byteLength,
+        arrayBuffer: async () => arr,
       },
       uploadChunkSize: uploadChunkSize + 16, // test if we need +16 bytes
     })) {
-      const chunkArrayBuffer = typeof chunk === 'string' ? Buffer.from(chunk).buffer : chunk;
+      const chunkArrayBuffer =
+        typeof chunk === 'string' ? Buffer.from(chunk).buffer : chunk;
       const decryptedChunk = await decryptChunk({
         chunk: chunkArrayBuffer,
         iv,
@@ -107,10 +116,8 @@ async function saveFileFromGenerator({
   }
 
   if (isEncrypted && level === 'upload') {
-    const bufferKey = convertBase64ToArrayBuffer(key);
-
     const decryptedChunk = await decryptChunk({
-      chunk: await blob.arrayBuffer(),
+      chunk: arr,
       iv,
       key: bufferKey,
     });
