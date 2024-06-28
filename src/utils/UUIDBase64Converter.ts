@@ -1,10 +1,10 @@
 export class UUIDBase64Converter {
-    private prefix: string;
-    private baseUrl: string;
+    private shortenerURL: string;
+    private ghostdriveURL: string;
 
-    constructor(prefix: string, baseUrl: string) {
-        this.prefix = prefix;
-        this.baseUrl = baseUrl;
+    constructor(shortenerURL: string, ghostdriveURL: string) {
+        this.shortenerURL = shortenerURL;
+        this.ghostdriveURL = ghostdriveURL;
     }
 
     uuidToBase64(uuid: string): string {
@@ -30,11 +30,11 @@ export class UUIDBase64Converter {
     }
 
     checkAndRedirect(): void {
-        const currentPath = window.location.pathname;
-        if (currentPath.startsWith(this.prefix)) {
-            const base64String = currentPath.slice(this.prefix.length);
+        const currentURL = window.location.href;
+        if (currentURL.startsWith(this.shortenerURL)) {
+            const base64String = currentURL.slice(this.shortenerURL.length);
             const uuid = this.base64ToUuid(base64String);
-            const newUrl = `${this.baseUrl}/file/${uuid}`;
+            const newUrl = `${this.ghostdriveURL}/file/${uuid}`;
             window.location.replace(newUrl);
         }
     }
