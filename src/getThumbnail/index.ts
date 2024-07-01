@@ -6,7 +6,7 @@ import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
 import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config.js';
 import { getFibonacciNumber } from '../utils/getFibonacciNumber.js';
 
-import { IGetThumbnail } from '../types/index.js';
+import { IGetThumbnail, IGetThumbnailDocument } from '../types/index.js';
 
 const MAX_WIDTH = 480;
 const MAX_HEIGHT = 480;
@@ -317,4 +317,156 @@ const sendThumbnail = async ({ base64Image, oneTimeToken, endpoint, file, slug }
   if (base64Image) {
     return await uploadThumbnail();
   }
+};
+
+export const getThumbnailDocument = async ({
+  file,
+  quality,
+  oneTimeToken,
+  endpoint,
+  slug,
+  pdfjsLib,
+  renderAsync,
+  html2canvas,
+}: IGetThumbnailDocument) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (
+        file.type ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ) {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const arrayBuffer = e.target.result as ArrayBuffer;
+            const img = await getPreviewFromDocx({
+              arrayBuffer,
+              renderAsync,
+              html2canvas,
+            });
+
+            await sendThumbnail({
+              base64Image: img,
+              oneTimeToken,
+              endpoint,
+              file,
+              slug,
+            });
+            resolve(img);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.readAsArrayBuffer(file);
+      } else if (file.type === 'application/pdf') {
+        const img = await getPreviewFromPdf({ file, pdfjsLib, quality });
+        await sendThumbnail({
+          base64Image: img,
+          oneTimeToken,
+          endpoint,
+          file,
+          slug,
+        });
+        resolve(img);
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+
+export const getPreviewFromPdf = async ({
+  file,
+  pdfjsLib,
+  quality,
+}: {
+  file: File;
+  pdfjsLib: any;
+  quality: number;
+}) => {
+  try {
+    const uri = URL.createObjectURL(file);
+    const pdf = await pdfjsLib.getDocument({ url: uri }).promise;
+    const page = await pdf.getPage(1);
+    const viewport = page.getViewport({ scale: 1 });
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.height = viewport.height;
+    canvas.width = viewport.width;
+
+    const renderContext = {
+      canvasContext: context,
+      viewport: viewport,
+      enableWebGL: false,
+    };
+
+    await page.render(renderContext).promise;
+    const img = canvas.toDataURL('image/webp', quality / 10);
+
+    return img;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getPreviewFromDocx = async ({
+  arrayBuffer,
+  renderAsync,
+  html2canvas,
+}: {
+  arrayBuffer: ArrayBuffer;
+  renderAsync: any;
+  html2canvas: (
+    element: HTMLElement,
+    options?: object
+  ) => Promise<HTMLCanvasElement>;
+}) => {
+  const viewer = document.createElement('div');
+  viewer.style.position = 'absolute';
+  viewer.style.top = '-9999px';
+  await renderAsync(arrayBuffer, viewer);
+  document.body.appendChild(viewer);
+
+  const wrapper = viewer.querySelector('.docx-wrapper') as HTMLElement;
+  let targetElement = wrapper;
+  if (wrapper) {
+    wrapper.style.background = 'white';
+    wrapper.style.padding = '0';
+    const section = wrapper.querySelector('section');
+    if (section) {
+      section.style.padding = '96.4pt 56.7pt';
+      section.style.marginBottom = '0';
+      targetElement = section;
+    }
+  }
+
+  const canvas = await html2canvas(targetElement, {
+    backgroundColor: null,
+    scale: 2,
+  });
+  let screenshotHeight = canvas.height;
+  if (canvas.height > canvas.width * 1.3) {
+    screenshotHeight = canvas.width * 1.3;
+  }
+  document.body.removeChild(viewer);
+  const croppedCanvas = document.createElement('canvas');
+  croppedCanvas.width = canvas.width;
+  croppedCanvas.height = screenshotHeight;
+  const ctx = croppedCanvas.getContext('2d');
+
+  ctx.drawImage(
+    canvas,
+    0,
+    0,
+    canvas.width,
+    screenshotHeight,
+    0,
+    0,
+    canvas.width,
+    screenshotHeight
+  );
+
+  const img = croppedCanvas.toDataURL('image/webp', 0.1);
+
+  return img;
 };

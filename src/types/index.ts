@@ -154,6 +154,20 @@ export interface IGetThumbnail {
   blobUtil?: any;
 }
 
+export interface IGetThumbnailDocument {
+  file: File | any;
+  quality: number;
+  oneTimeToken: string;
+  endpoint: string;
+  slug: string;
+  pdfjsLib: any;
+  renderAsync: any;
+  html2canvas: (
+    element: HTMLElement,
+    options?: object
+  ) => Promise<HTMLCanvasElement>;
+}
+
 export interface IDownloadFileFromSP {
   carReader: any;
   url: string;

@@ -11,7 +11,7 @@ import { getUserRSAKeys } from  "./getUserRSAKeys/index.js";
 import { publicKeyToPem } from  "./publicKeyToPem/index.js";
 import { encodeExistingFile } from  "./encodeExistingFile/index.js";
 import { LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream } from  "./types/File/index.js";
-import { getThumbnailImage, getThumbnailVideo } from  "./getThumbnail/index.js";
+import { getThumbnailImage, getThumbnailVideo, getThumbnailDocument } from  "./getThumbnail/index.js";
 import { fileDownloadProcess } from './process/index.js'
 import { downloadFileFromSP } from "./downloadFile/downloadFileFromSP.js";
 
@@ -29,7 +29,7 @@ export {
   publicKeyToPem,
   encodeExistingFile,
   LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream,
-  getThumbnailImage, getThumbnailVideo,
+  getThumbnailImage, getThumbnailVideo, getThumbnailDocument,
   fileDownloadProcess,
   downloadFileFromSP
 }
