@@ -12,6 +12,7 @@ import { publicKeyToPem } from  "./publicKeyToPem/index.js";
 import { encodeExistingFile } from  "./encodeExistingFile/index.js";
 import { LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream } from  "./types/File/index.js";
 import { getThumbnailImage, getThumbnailVideo, getThumbnailDocument } from  "./getThumbnail/index.js";
+import { getMusicInfo } from "./getMusicInfo/index.js";
 import { fileDownloadProcess } from './process/index.js'
 import { downloadFileFromSP } from "./downloadFile/downloadFileFromSP.js";
 
@@ -30,6 +31,7 @@ export {
   encodeExistingFile,
   LocalFileStream, LocalFileBuffer, LocalFileReactNativeStream,
   getThumbnailImage, getThumbnailVideo, getThumbnailDocument,
+  getMusicInfo,
   fileDownloadProcess,
   downloadFileFromSP
 }

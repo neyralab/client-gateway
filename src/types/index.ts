@@ -188,3 +188,12 @@ export interface ISaveFileFromGenerator {
   iv: string;
   level: CidLevelType;
 }
+
+export interface IMusicInfo {
+  title: string | null;
+  album: string | null;
+  artist: string | null;
+  year: number | null;
+  duration: number;
+  picture: string | null;
+}
