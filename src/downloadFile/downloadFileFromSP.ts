@@ -16,8 +16,11 @@ export async function downloadFileFromSP({
   iv,
   file,
   level,
+  headers = {},
 }: IDownloadFileFromSP) {
-  return fetch(url)
+  return fetch(url, {
+    headers: new Headers(headers),
+  })
     .then(async (data) => await data.arrayBuffer())
     .then((blob) => {
       const uint8 = new Uint8Array(blob);

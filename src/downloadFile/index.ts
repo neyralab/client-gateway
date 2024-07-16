@@ -25,6 +25,7 @@ export const downloadFile = async ({
   uploadChunkSize,
   cidData,
   writeStreamMobile,
+  headers
 }: IDownloadFile) => {
   const startTime = Date.now();
   const chunks = [];
@@ -46,6 +47,7 @@ export const downloadFile = async ({
         iv: entry_clientside_key?.iv,
         file,
         level: 'root',
+        headers
       });
       if (!isMobile()) {
         return fileBlob;
@@ -68,6 +70,7 @@ export const downloadFile = async ({
           iv: entry_clientside_key?.iv,
           file,
           level: cidData.level,
+          headers
         });
 
         if (isMobile()) {

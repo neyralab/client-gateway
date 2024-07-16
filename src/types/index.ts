@@ -56,6 +56,7 @@ export interface IDownloadFile {
     upload_chunk_size: number;
   };
   writeStreamMobile?: (chunk: Uint8Array) => Promise<void>;
+  headers?: { [key: string]: string };
 }
 export interface IEncodeExistingFile {
   file: File | any;
@@ -177,6 +178,7 @@ export interface IDownloadFileFromSP {
   iv: string;
   file: any;
   level: CidLevelType;
+  headers?: { [key: string]: string };
 }
 
 export interface ISaveFileFromGenerator {
