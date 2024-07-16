@@ -15,7 +15,7 @@ export async function fileDownloadProcess(
     callbacks?: Callbacks;
     decryptionUrl?: string;
     keys?: { privateKeyPem: string };
-  } & Pick<IDownloadFile, 'writeStreamMobile'>
+  } & Pick<IDownloadFile, 'writeStreamMobile' | 'headers'>
 ): Promise<ProcessDownload> {
   const {
     fileEntry,
@@ -27,6 +27,7 @@ export async function fileDownloadProcess(
     writeStreamMobile,
     keys,
     serverUrl,
+    headers,
   } = data;
   const api = new Api(serverUrl, xToken);
   const isClientsideEncrypted: boolean = !!fileEntry?.is_clientside_encrypted;
@@ -122,6 +123,7 @@ export async function fileDownloadProcess(
       cidData,
       signal,
       writeStreamMobile,
+      headers,
     }).catch(handleDownloadError);
     console.log('after downloadFile() run');
   } else {
@@ -138,6 +140,7 @@ export async function fileDownloadProcess(
       cidData,
       signal,
       writeStreamMobile,
+      headers,
     }).catch(handleDownloadError);
   }
 
