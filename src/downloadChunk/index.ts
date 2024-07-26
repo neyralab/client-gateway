@@ -24,7 +24,6 @@ export const downloadChunk = async ({
   const instance = axios.create({
     headers: {
       'x-action': FILE_ACTION_TYPES.DOWNLOAD.toString(),
-      'x-chunk-index': `${index}`,
       'one-time-token': oneTimeToken,
     },
     responseType: 'arraybuffer',
@@ -43,7 +42,7 @@ export const downloadChunk = async ({
 
     try {
       const response = await instance.get(
-        endpoint + `/chunked/downloadChunk/${file?.slug}`
+        `${endpoint}/chunked/downloadChunk/${file?.slug}/${index}`
       );
 
       if (currentTry > 1) {

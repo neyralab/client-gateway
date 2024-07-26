@@ -42,7 +42,6 @@ export const sendChunk = async ({
     'one-time-token': oneTimeToken,
     'x-file-name': fileName,
     'x-last': `${index}/${chunksLength}`,
-    'x-chunk-index': `${index}`,
     'X-folder': file.folderId || '',
     'x-mime': file?.type,
     'X-Ai-Generated': false,
@@ -95,7 +94,7 @@ export const sendChunk = async ({
           })
           .then(() => {
             return postWithCookies(
-              `${gateway.url}/chunked/uploadChunk`,
+              `${gateway.url}/chunked/uploadChunk/${index}`,
               headers,
               cookieJar,
               controller ? controller.signal : undefined,
@@ -107,7 +106,7 @@ export const sendChunk = async ({
           });
       } else {
         response = await axios.post(
-          `${gateway.url}/chunked/uploadChunk`,
+          `${gateway.url}/chunked/uploadChunk/${index}`,
           chunk,
           {
             headers,
