@@ -1,8 +1,9 @@
-import { countChunks, decryptChunk, downloadChunk } from '../index.js';
+import { decryptChunk, downloadChunk } from '../index.js';
 
 import { isMobile } from '../utils/isMobile.js';
 import { isBrowser } from '../utils/isBrowser.js';
 import { joinChunks } from '../utils/joinChunks.js';
+import { getCountChunk } from '../utils/getCountChunks.js';
 import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer.js';
 
 import { IDownloadFile } from '../types/index.js';
@@ -25,7 +26,7 @@ export const downloadFile = async ({
   uploadChunkSize,
   cidData,
   writeStreamMobile,
-  headers
+  headers,
 }: IDownloadFile) => {
   const startTime = Date.now();
   const chunks = [];
@@ -47,7 +48,7 @@ export const downloadFile = async ({
         iv: entry_clientside_key?.iv,
         file,
         level: 'root',
-        headers
+        headers,
       });
       if (!isMobile()) {
         return fileBlob;
@@ -70,7 +71,7 @@ export const downloadFile = async ({
           iv: entry_clientside_key?.iv,
           file,
           level: cidData.level,
-          headers
+          headers,
         });
 
         if (isMobile()) {
@@ -84,20 +85,7 @@ export const downloadFile = async ({
       }
     }
   } else {
-    const chunkCountResponse = await countChunks({
-      endpoint,
-      oneTimeToken,
-      slug,
-      signal,
-    });
-
-    if (chunkCountResponse.status !== 200) {
-      throw new Error(`HTTP error! status:${chunkCountResponse.status}`);
-    }
-
-    const {
-      data: { count },
-    } = chunkCountResponse;
+    const { count } = getCountChunk(file.size, uploadChunkSize);
 
     if (!isBrowser() && !isMobile()) {
       // const { Readable } = require('stream');
