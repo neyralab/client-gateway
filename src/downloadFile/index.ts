@@ -27,10 +27,11 @@ export const downloadFile = async ({
   cidData,
   writeStreamMobile,
   headers,
+  jwtOneTimeToken,
 }: IDownloadFile) => {
   const startTime = Date.now();
   const chunks = [];
-  const { entry_clientside_key, slug } = file;
+  const { entry_clientside_key } = file;
 
   let totalProgress = { number: 0 };
   let fileStream = null;
@@ -106,6 +107,7 @@ export const downloadFile = async ({
         totalProgress,
         callback,
         handlers,
+        jwtOneTimeToken,
       });
 
       if (!isEncrypted) {

@@ -19,6 +19,8 @@ md.update(fileKey);
 export const encodeExistingFile = async ({
   file,
   oneTimeToken,
+  jwtOneTimeToken,
+  downloadJwtOTT,
   gateway,
   downloadToken,
   downloadEndpoint,
@@ -40,9 +42,11 @@ export const encodeExistingFile = async ({
   const arrayBuffer: ArrayBuffer = await downloadFile({
     file,
     oneTimeToken: downloadToken,
+    jwtOneTimeToken: downloadJwtOTT,
     signal,
     endpoint: downloadEndpoint,
     isEncrypted: false,
+    uploadChunkSize: gateway.upload_chunk_size
   });
 
   handlers.includes('onStart') &&
@@ -65,6 +69,7 @@ export const encodeExistingFile = async ({
         clientsideKeySha3Hash,
         index: currentIndex,
         oneTimeToken,
+        jwtOneTimeToken,
         encryptedChunk,
         fileSize: arrayBuffer.byteLength,
         startTime,
