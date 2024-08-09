@@ -9,11 +9,13 @@ export const countChunks = async ({
   oneTimeToken,
   slug,
   signal,
+  jwtOneTimeToken,
 }: ICountChunks) => {
   let currentTry = 1;
   const instance = axios.create({
     headers: {
       "one-time-token": oneTimeToken,
+      "X-Download-OTT-JWT": jwtOneTimeToken,
       "X-Slug": slug,
     },
     signal,

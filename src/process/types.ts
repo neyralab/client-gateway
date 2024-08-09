@@ -10,6 +10,7 @@ export type ProcessDownload =
 
 export type DownloadOTT = {
   data: {
+    jwt_ott: string;
     user_tokens: {
       token: string;
     };

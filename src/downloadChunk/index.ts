@@ -12,6 +12,7 @@ import { getFibonacciNumber } from '../utils/getFibonacciNumber.js';
 export const downloadChunk = async ({
   index,
   oneTimeToken,
+  jwtOneTimeToken,
   signal,
   endpoint,
   file,
@@ -25,6 +26,7 @@ export const downloadChunk = async ({
     headers: {
       'x-action': FILE_ACTION_TYPES.DOWNLOAD.toString(),
       'one-time-token': oneTimeToken,
+      'X-Download-OTT-JWT': jwtOneTimeToken,
     },
     responseType: 'arraybuffer',
     signal,

@@ -16,6 +16,7 @@ export const getThumbnailImage = async ({
   file,
   quality,
   oneTimeToken,
+  jwtOneTimeToken,
   endpoint,
   slug,
   sharp,
@@ -35,6 +36,7 @@ export const getThumbnailImage = async ({
         ffmpegCommand,
         blobUtil,
         type: 'image',
+        jwtOneTimeToken,
       })
         .then(resolve)
         .catch(reject);
@@ -54,6 +56,7 @@ export const getThumbnailImage = async ({
               endpoint,
               file,
               slug,
+              jwtOneTimeToken,
             })
               .then(() => {
                 resolve(base64Image);
@@ -92,7 +95,7 @@ export const getThumbnailImage = async ({
 
         const base64Image = canvas.toDataURL('image/webp', +qualityReduction);
         URL.revokeObjectURL(imageURL);
-        sendThumbnail({ base64Image, oneTimeToken, endpoint, file, slug })
+        sendThumbnail({ base64Image, oneTimeToken, endpoint, file, slug, jwtOneTimeToken })
           .then(() => {
             resolve(base64Image);
           })
@@ -112,6 +115,7 @@ export const getThumbnailVideo = async ({
   file,
   quality,
   oneTimeToken,
+  jwtOneTimeToken,
   endpoint,
   slug,
   ffmpegCommand,
@@ -131,6 +135,7 @@ export const getThumbnailVideo = async ({
         ffmpegCommand,
         blobUtil,
         type: 'video',
+        jwtOneTimeToken,
       })
         .then(resolve)
         .catch(reject);
@@ -213,6 +218,7 @@ export const getThumbnailVideo = async ({
             endpoint,
             file,
             slug,
+            jwtOneTimeToken,
           })
             .then(() => {
               resolve(base64Image);
@@ -239,6 +245,7 @@ const getThumbnailMobile = async ({
   file,
   quality,
   oneTimeToken,
+  jwtOneTimeToken,
   endpoint,
   slug,
   ffmpegCommand,
@@ -265,6 +272,7 @@ const getThumbnailMobile = async ({
           endpoint,
           file,
           slug,
+          jwtOneTimeToken,
         });
         return data;
       } catch (error) {
@@ -278,13 +286,14 @@ const getThumbnailMobile = async ({
   }
 };
 
-const sendThumbnail = async ({ base64Image, oneTimeToken, endpoint, file, slug }) => {
+const sendThumbnail = async ({ base64Image, oneTimeToken, endpoint, file, slug, jwtOneTimeToken }) => {
   const fileName = convertTextToBase64(file.name);
   const instance = axios.create({
     headers: {
       'x-file-name': fileName,
       'Content-Type': 'application/octet-stream',
       'one-time-token': oneTimeToken,
+      'X-Upload-OTT-JWT': jwtOneTimeToken,
     },
   });
   let currentTry = 1;

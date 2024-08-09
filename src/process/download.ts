@@ -37,6 +37,7 @@ export async function fileDownloadProcess(
 
   const {
     data: {
+      jwt_ott,
       user_tokens: { token: oneTimeToken },
       gateway,
       upload_chunk_size,
@@ -111,6 +112,7 @@ export async function fileDownloadProcess(
     blob = await downloadFile({
       file: fileEntry,
       oneTimeToken,
+      jwtOneTimeToken: jwt_ott,
       endpoint: gateway.url,
       isEncrypted: isClientsideEncrypted,
       key: decryptedKey,
@@ -128,6 +130,7 @@ export async function fileDownloadProcess(
     blob = await downloadFile({
       file: fileEntry,
       oneTimeToken,
+      jwtOneTimeToken: jwt_ott,
       endpoint: gateway.url,
       isEncrypted: false,
       callback,

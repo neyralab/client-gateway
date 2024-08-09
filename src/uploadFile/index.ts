@@ -20,6 +20,7 @@ const crypto = getCrypto();
 export const uploadFile = async ({
   file,
   oneTimeToken,
+  jwtOneTimeToken,
   gateway,
   callback,
   handlers,
@@ -80,6 +81,7 @@ export const uploadFile = async ({
       file,
       startTime,
       oneTimeToken,
+      jwtOneTimeToken,
       gateway,
       iv,
       clientsideKeySha3Hash,

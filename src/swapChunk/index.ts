@@ -9,6 +9,7 @@ export const swapChunk = async ({
   clientsideKeySha3Hash,
   index,
   oneTimeToken,
+  jwtOneTimeToken,
   encryptedChunk,
   fileSize,
   startTime,
@@ -25,6 +26,7 @@ export const swapChunk = async ({
       'x-last': `${index}/${chunksLength}`,
       'Content-Type': 'application/octet-stream',
       'one-time-token': oneTimeToken,
+      'X-Upload-OTT-JWT': jwtOneTimeToken,
     },
     onUploadProgress: (event) => {
       if (event.loaded === encryptedChunk.byteLength) {

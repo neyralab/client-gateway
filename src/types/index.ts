@@ -37,6 +37,7 @@ export type GatewayType = {
 export interface IDownloadFile {
   file: File | any;
   oneTimeToken: string;
+  jwtOneTimeToken: string;
   signal: any;
   endpoint: string;
   isEncrypted: boolean;
@@ -56,6 +57,8 @@ export interface IDownloadFile {
 export interface IEncodeExistingFile {
   file: File | any;
   oneTimeToken: string;
+  jwtOneTimeToken: string;
+  downloadJwtOTT: string;
   gateway: GatewayType;
   downloadToken: string;
   downloadEndpoint: string;
@@ -69,6 +72,7 @@ export interface ISendChunk {
   file: LocalFileBuffer | LocalFileReactNativeStream;
   startTime: any;
   oneTimeToken: string;
+  jwtOneTimeToken: string;
   gateway: GatewayType;
   iv?: Uint8Array | null;
   clientsideKeySha3Hash?: string | null;
@@ -84,6 +88,7 @@ export interface ISendChunk {
 export interface IUploadFile {
   file: LocalFileBuffer | LocalFileReactNativeStream;
   oneTimeToken: string;
+  jwtOneTimeToken: string;
   gateway: GatewayType;
   callback: Callback;
   handlers: any[];
@@ -101,6 +106,7 @@ export interface ISwapChunk {
   clientsideKeySha3Hash: string;
   index: number;
   oneTimeToken: string;
+  jwtOneTimeToken: string;
   encryptedChunk: ArrayBuffer;
   fileSize: number;
   startTime: any;
@@ -124,6 +130,7 @@ export interface IDecryptChunk {
 export interface IDownloadChunk {
   index: number;
   oneTimeToken: string;
+  jwtOneTimeToken: string;
   signal: any;
   endpoint: string;
   file: File | any;
@@ -136,6 +143,7 @@ export interface IDownloadChunk {
 export interface ICountChunks {
   endpoint: string;
   oneTimeToken: string;
+  jwtOneTimeToken: string;
   slug: string;
   signal: any;
 }
@@ -146,6 +154,7 @@ export interface IGetThumbnail {
   file?: File | any;
   quality: number;
   oneTimeToken: string;
+  jwtOneTimeToken: string;
   endpoint: string;
   slug: string;
   sharp?: any;

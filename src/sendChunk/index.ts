@@ -20,6 +20,7 @@ export const sendChunk = async ({
   file,
   startTime,
   oneTimeToken,
+  jwtOneTimeToken,
   gateway,
   iv,
   clientsideKeySha3Hash,
@@ -42,6 +43,7 @@ export const sendChunk = async ({
   const headers = {
     'content-type': 'application/octet-stream',
     'one-time-token': oneTimeToken,
+    'X-Upload-OTT-JWT': jwtOneTimeToken,
     'x-file-name': fileName,
     'x-last': `${index}/${chunksLength}`,
     'X-folder': file.folderId || '',
@@ -81,6 +83,7 @@ export const sendChunk = async ({
             headers: {
               'content-type': 'application/octet-stream',
               'one-time-token': oneTimeToken,
+              'X-Upload-OTT-JWT': jwtOneTimeToken,
             },
           })
           .then((response) => {
