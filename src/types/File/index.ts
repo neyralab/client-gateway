@@ -41,6 +41,7 @@ class LocalFile {
 
 export class LocalFileBuffer extends LocalFile {
   public arrayBuffer?: () => Promise<ArrayBuffer>;
+  public stream: () => ReadableStream<Uint8Array>;
 
   constructor(
     size: number,
@@ -48,10 +49,12 @@ export class LocalFileBuffer extends LocalFile {
     mimeType: string,
     fileFolderId: string,
     uploadId: string,
-    arrayBuffer: () => Promise<ArrayBuffer>
+    arrayBuffer: () => Promise<ArrayBuffer>,
+    streamFunc: () => ReadableStream<Uint8Array>
   ) {
     super(size, filename, mimeType, fileFolderId, uploadId);
     this.arrayBuffer = arrayBuffer;
+    this.stream = streamFunc;
   }
 }
 
