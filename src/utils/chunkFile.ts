@@ -1,6 +1,9 @@
 import { LocalFileBuffer, LocalFileReactNativeStream, LocalFileStream } from '../types/File/index.js';
 import { chunkBase64 } from './chunkBase64.js';
 import { chunkBuffer } from './chunkBuffer.js';
+import { readFileInChunks } from './readFileInChunks.js';
+
+const MAX_SAFE_CHUNK_SIZE = 2 * 1024 * 1024 * 1024;
 
 export async function* chunkFile({
   file,
@@ -51,7 +54,16 @@ export async function* chunkFile({
   } else if (file instanceof LocalFileReactNativeStream) {
     yield* chunkBase64(file.chunks);
   } else {
-    const arrayBuffer = await file.arrayBuffer();
-    yield* chunkBuffer({ arrayBuffer, uploadChunkSize });
+    if (
+      file.size > MAX_SAFE_CHUNK_SIZE &&
+      'stream' in file &&
+      typeof file.stream === 'function'
+    ) {
+      const chunks = readFileInChunks(file as LocalFileBuffer, uploadChunkSize);
+      yield* chunks;
+    } else {
+      const arrayBuffer = await file.arrayBuffer();
+      yield* chunkBuffer({ arrayBuffer, uploadChunkSize });
+    }
   }
 }
