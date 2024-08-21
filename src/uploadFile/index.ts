@@ -72,6 +72,19 @@ export const uploadFile = async ({
         iv,
         key,
       });
+
+      const encryptionProgress = Math.round(
+        (currentIndex / lastChunkIndex) * 100
+      );
+      handlers.includes('onEncryptProgress') &&
+        callback({
+          type: 'onEncryptProgress',
+          params: {
+            fileId: file.uploadId,
+            chunk: currentIndex,
+            progress: encryptionProgress,
+          },
+        });
     }
 
     const promise = sendChunk({

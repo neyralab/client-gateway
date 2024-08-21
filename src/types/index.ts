@@ -17,6 +17,7 @@ export type CallbackTypeNames =
   | 'onStart'
   | 'onSuccess'
   | 'onError'
+  | 'onEncryptProgress'
   | 'onProgress';
 
 export type CidLevelType = 'root' | 'upload' | 'interim';
