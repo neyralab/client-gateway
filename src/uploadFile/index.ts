@@ -28,6 +28,7 @@ export const uploadFile = async ({
   progress,
   totalSize,
   startedAt,
+  is_telegram,
 }: IUploadFile) => {
   const startTime = startedAt || Date.now();
   const controller = new AbortController();
@@ -66,7 +67,8 @@ export const uploadFile = async ({
     let finalChunk = chunk;
 
     if (key) {
-      const chunkArrayBuffer = typeof chunk === 'string' ? Buffer.from(chunk).buffer : chunk;
+      const chunkArrayBuffer =
+        typeof chunk === 'string' ? Buffer.from(chunk).buffer : chunk;
       finalChunk = await encryptChunk({
         chunk: chunkArrayBuffer,
         iv,
@@ -102,6 +104,7 @@ export const uploadFile = async ({
       handlers,
       controller,
       totalSize,
+      is_telegram,
     });
 
     promises.push(promise);

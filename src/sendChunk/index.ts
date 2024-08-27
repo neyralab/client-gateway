@@ -29,11 +29,15 @@ export const sendChunk = async ({
   handlers,
   controller,
   totalSize,
+  is_telegram,
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const xHash = isMobile() ? 'null' : createSHA256Hash(chunk as ArrayBuffer);
   const fileName = convertTextToBase64(file.name);
-  const fileSize = file instanceof LocalFileReactNativeStream ? file.convertedSize || file.size : file.size;
+  const fileSize =
+    file instanceof LocalFileReactNativeStream
+      ? file.convertedSize || file.size
+      : file.size;
   const chunksLength = Math.ceil(fileSize / gateway.upload_chunk_size);
   let currentTry = 1;
   let cookieJar = [];
@@ -97,7 +101,7 @@ export const sendChunk = async ({
           })
           .then(() => {
             return postWithCookies(
-              `${gateway.url}/chunked/uploadChunk/${index}`,
+              `${gateway.url}/chunked/uploadChunk/${index}${is_telegram ? '?is_telegram=true' : ''}`,
               headers,
               cookieJar,
               controller ? controller.signal : undefined,
@@ -109,7 +113,7 @@ export const sendChunk = async ({
           });
       } else {
         response = await axios.post(
-          `${gateway.url}/chunked/uploadChunk/${index}`,
+          `${gateway.url}/chunked/uploadChunk/${index}${is_telegram ? '?is_telegram=true' : ''}`,
           chunk,
           {
             headers,
@@ -121,7 +125,8 @@ export const sendChunk = async ({
         currentTry = 1;
       }
       const prevProgress = totalProgress.number || 0;
-      const chunkLength = typeof chunk === 'string' ? (chunk.length * 3) / 4 : chunk.byteLength;
+      const chunkLength =
+        typeof chunk === 'string' ? (chunk.length * 3) / 4 : chunk.byteLength;
       const progress = +prevProgress + chunkLength;
       totalProgress.number = progress;
       const elapsedTime = Date.now() - startTime;
