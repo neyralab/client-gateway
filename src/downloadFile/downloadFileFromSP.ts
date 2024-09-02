@@ -115,7 +115,7 @@ async function saveFileFromGenerator({
       chunks.push(decryptedChunk);
     }
 
-    return joinChunks(chunks);
+    return joinChunks(chunks, true);
   }
 
   if (isEncrypted && level === 'upload') {
@@ -124,7 +124,6 @@ async function saveFileFromGenerator({
       iv,
       key: bufferKey,
     });
-
-    return joinChunks([decryptedChunk]);
+    return joinChunks([decryptedChunk], true);
   }
 }
