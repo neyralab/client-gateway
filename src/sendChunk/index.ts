@@ -41,8 +41,11 @@ export const sendChunk = async ({
   const chunksLength = Math.ceil(fileSize / gateway.upload_chunk_size);
   let currentTry = 1;
   let cookieJar = [];
+  const isDataprep = gateway.url.includes('filecoin-dataprep');
+  let formData = null;
 
   const headers = {
+    ...(isDataprep && { 'content-type': 'application/octet-stream' }),
     'one-time-token': oneTimeToken,
     'X-Upload-OTT-JWT': jwtOneTimeToken,
     'x-file-name': fileName,
@@ -58,11 +61,17 @@ export const sendChunk = async ({
     'x-iv': iv ? base64iv : 'null',
   };
 
-  const blob = new Blob([chunk], {
-    type: file?.type,
-  });
-  const formData = new FormData();
-  formData.append('file', blob, fileName);
+  if (!isDataprep) {
+    const blob = new Blob([chunk], {
+      type: file?.type,
+    });
+    formData = new FormData();
+    formData.append('file', blob, fileName);
+  }
+
+  const url = isDataprep
+    ? `${gateway.url}/chunked/uploadChunk/${index}${is_telegram ? '?is_telegram=true' : ''}`
+    : `${gateway.url}/upload/`;
 
   if (file instanceof LocalFileReactNativeStream) {
     headers['x-converted-size'] = file.convertedSize;
@@ -106,25 +115,21 @@ export const sendChunk = async ({
           })
           .then(() => {
             return postWithCookies(
-              'https://gd-gateway-eu-01.ghostdrive.com/upload/',
+              url,
               headers,
               cookieJar,
               controller ? controller.signal : undefined,
-              formData
+              isDataprep ? chunk : formData
             );
           })
           .catch((error) => {
             console.log('Error:', error);
           });
       } else {
-        response = await axios.post(
-          'https://gd-gateway-eu-01.ghostdrive.com/upload/',
-          formData,
-          {
-            headers,
-            signal: controller.signal,
-          }
-        );
+        response = await axios.post(url, isDataprep ? chunk : formData, {
+          headers,
+          signal: controller.signal,
+        });
       }
       if (currentTry > 1) {
         currentTry = 1;
