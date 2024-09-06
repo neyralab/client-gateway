@@ -43,7 +43,6 @@ export const sendChunk = async ({
   let cookieJar = [];
 
   const headers = {
-    'content-type': 'application/octet-stream',
     'one-time-token': oneTimeToken,
     'X-Upload-OTT-JWT': jwtOneTimeToken,
     'x-file-name': fileName,
@@ -58,6 +57,12 @@ export const sendChunk = async ({
     'x-size': file.size,
     'x-iv': iv ? base64iv : 'null',
   };
+
+  const blob = new Blob([chunk], {
+    type: file?.type,
+  });
+  const formData = new FormData();
+  formData.append('file', blob, fileName);
 
   if (file instanceof LocalFileReactNativeStream) {
     headers['x-converted-size'] = file.convertedSize;
@@ -101,11 +106,11 @@ export const sendChunk = async ({
           })
           .then(() => {
             return postWithCookies(
-              `${gateway.url}/chunked/uploadChunk/${index}${is_telegram ? '?is_telegram=true' : ''}`,
+              'https://gd-gateway-eu-01.ghostdrive.com/upload/',
               headers,
               cookieJar,
               controller ? controller.signal : undefined,
-              chunk
+              formData
             );
           })
           .catch((error) => {
@@ -113,8 +118,8 @@ export const sendChunk = async ({
           });
       } else {
         response = await axios.post(
-          `${gateway.url}/chunked/uploadChunk/${index}${is_telegram ? '?is_telegram=true' : ''}`,
-          chunk,
+          'https://gd-gateway-eu-01.ghostdrive.com/upload/',
+          formData,
           {
             headers,
             signal: controller.signal,
