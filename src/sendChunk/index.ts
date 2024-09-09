@@ -8,6 +8,7 @@ import { postWithCookies } from '../utils/makeRequestWithCookies.js';
 import { isMobile } from '../utils/isMobile.js';
 import { isBrowser } from '../utils/isBrowser.js';
 import { createSHA256Hash } from '../utils/createSHA256Hash.js';
+import { createFormData } from '../utils/createFormData.js';
 
 import { LocalFileReactNativeStream } from '../types/File/index.js';
 import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config.js';
@@ -42,7 +43,7 @@ export const sendChunk = async ({
   let currentTry = 1;
   let cookieJar = [];
   const isDataprep = gateway.url.includes('filecoin-dataprep');
-  let formData = null;
+  let formData: FormData | null = null;
 
   const headers = {
     ...(isDataprep && { 'content-type': 'application/octet-stream' }),
@@ -62,11 +63,7 @@ export const sendChunk = async ({
   };
 
   if (!isDataprep) {
-    const blob = new Blob([chunk], {
-      type: file?.type,
-    });
-    formData = new FormData();
-    formData.append('file', blob, fileName);
+    formData = createFormData(chunk, file?.type, fileName);
   }
 
   const url = isDataprep
