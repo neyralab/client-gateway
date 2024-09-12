@@ -86,7 +86,8 @@ export const downloadFile = async ({
       }
     }
   } else {
-    const { count } = getCountChunk(file.size, uploadChunkSize);
+    const fileSize = file.converted_size ?? file.size;
+    const { count } = getCountChunk(fileSize, uploadChunkSize);
 
     if (!isBrowser() && !isMobile()) {
       // const { Readable } = require('stream');
