@@ -6,6 +6,8 @@ import { encryptChunk } from '../encryptChunk/index.js';
 
 import { chunkFile } from '../utils/chunkFile.js';
 import { getCrypto } from '../utils/getCrypto.js';
+import isDataprepUrl from '../utils/isDataprepUrl.js';
+import { createFileInfoFromToken } from '../utils/createFileInfoFromToken.js';
 
 import { IUploadFile } from '../types/index.js';
 import { LocalFileReactNativeStream } from '../types/File/index.js';
@@ -128,6 +130,13 @@ export const uploadFile = async ({
     }
 
     currentIndex++;
+  }
+  if (!isDataprepUrl(gateway.url)) {
+    return {
+      failed: false,
+      gdGateway: true,
+      fileInfo: createFileInfoFromToken(jwtOneTimeToken, file),
+    };
   }
 };
 

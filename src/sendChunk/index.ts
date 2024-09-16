@@ -9,6 +9,7 @@ import { isMobile } from '../utils/isMobile.js';
 import { isBrowser } from '../utils/isBrowser.js';
 import { createSHA256Hash } from '../utils/createSHA256Hash.js';
 import { createFormData } from '../utils/createFormData.js';
+import isDataprepUrl from '../utils/isDataprepUrl.js';
 
 import { LocalFileReactNativeStream } from '../types/File/index.js';
 import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config.js';
@@ -42,7 +43,7 @@ export const sendChunk = async ({
   const chunksLength = Math.ceil(fileSize / gateway.upload_chunk_size);
   let currentTry = 1;
   let cookieJar = [];
-  const isDataprep = gateway.url.includes('filecoin-dataprep');
+  const isDataprep = isDataprepUrl(gateway.url);
   let formData: FormData | null = null;
 
   const headers = {

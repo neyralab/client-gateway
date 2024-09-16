@@ -6,6 +6,8 @@ import { isMobile } from '../utils/isMobile.js';
 import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
 import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config.js';
 import { getFibonacciNumber } from '../utils/getFibonacciNumber.js';
+import isDataprepUrl from '../utils/isDataprepUrl.js';
+import { createFormData } from '../utils/createFormData.js';
 
 import { IGetThumbnail, IGetThumbnailDocument } from '../types/index.js';
 
@@ -297,10 +299,18 @@ const getThumbnailMobile = async ({
 
 const sendThumbnail = async ({ base64Image, oneTimeToken, endpoint, file, slug, jwtOneTimeToken }) => {
   const fileName = convertTextToBase64(file.name);
+  const isDataprep = isDataprepUrl(endpoint);
+  let formData: FormData | null = null;
+
+  if (!isDataprep) {
+    const base64Data = base64Image.split(',')[1];
+    formData = createFormData(base64Data, 'image/webp', 'thumbnail.webp');
+  }
+
   const instance = axios.create({
     headers: {
       'x-file-name': fileName,
-      'Content-Type': 'application/octet-stream',
+      ...(isDataprep && { 'Content-Type': 'application/octet-stream' }),
       'one-time-token': oneTimeToken,
       'X-Upload-OTT-JWT': jwtOneTimeToken,
     },
@@ -318,7 +328,10 @@ const sendThumbnail = async ({ base64Image, oneTimeToken, endpoint, file, slug, 
     });
 
     try {
-      await instance.post(`${endpoint}/chunked/thumb/${slug}`, base64Image);
+      await instance.post(
+        `${endpoint}/chunked/thumb/${slug}`,
+        isDataprep ? base64Image : formData
+      );
     } catch (error: any) {
       const isNetworkError = error?.message?.includes('Network Error');
       const isOtherError = ERRORS.includes(error?.response?.status);
