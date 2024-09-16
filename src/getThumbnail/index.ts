@@ -1,6 +1,7 @@
 import axios from 'axios';
 import * as fs from 'fs';
 
+import { isIOS } from '../utils/isIOS.js';
 import { isMobile } from '../utils/isMobile.js';
 import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
 import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config.js';
@@ -188,6 +189,10 @@ export const getThumbnailVideo = async ({
       const video = document.createElement('video');
       video.src = URL.createObjectURL(file);
 
+      if (isIOS()) {
+        video.load();
+      }
+
       video.onloadedmetadata = () => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -206,7 +211,9 @@ export const getThumbnailVideo = async ({
         canvas.width = newWidth;
         canvas.height = newHeight;
 
-        video.currentTime = 0.1;
+        setTimeout(() => {
+          video.currentTime = 0.1;
+        }, 200);
 
         video.onseeked = () => {
           ctx?.drawImage(video, 0, 0, newWidth, newHeight);
