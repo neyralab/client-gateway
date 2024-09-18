@@ -54,7 +54,7 @@ export const downloadFile = async ({
       if (!isMobile()) {
         return fileBlob;
       } else {
-        fileBlob && (await writeStreamMobile?.(fileBlob));
+        fileBlob && (await writeStreamMobile?.(fileBlob as Uint8Array));
       }
     }
 
@@ -76,9 +76,16 @@ export const downloadFile = async ({
         });
 
         if (isMobile()) {
-          fileBlob && (await writeStreamMobile?.(fileBlob));
+          fileBlob && (await writeStreamMobile?.(fileBlob as Uint8Array));
         } else {
-          fileBlob && chunks.push(fileBlob?.buffer);
+          if (fileBlob) {
+            if (fileBlob instanceof Buffer) {
+              chunks.push(fileBlob.buffer);
+            }
+            if (fileBlob instanceof Readable) {
+              chunks.push(fileBlob);
+            }
+          }
         }
       }
       if (!isMobile()) {

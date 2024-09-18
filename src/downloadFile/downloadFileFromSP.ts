@@ -6,6 +6,7 @@ import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer.
 import { joinChunks } from '../utils/joinChunks.js';
 import { chunkFile } from '../utils/chunkFile.js';
 import { IDownloadFileFromSP, ISaveFileFromGenerator } from '../types/index.js';
+import { Readable } from 'stream';
 
 export async function downloadFileFromSP({
   carReader,
@@ -36,7 +37,7 @@ export async function downloadFileFromSP({
         },
       });
       let typesEntries = { count: {}, length: {} };
-      let fileBlob: Uint8Array | null = null;
+      let fileBlob: Uint8Array | Readable | Blob | null = null;
       for await (const entry of entries) {
         if (entry.type === 'file' || entry.type === 'raw') {
           const cont = entry.content();
@@ -74,7 +75,7 @@ async function saveFileFromGenerator({
   key,
   iv,
   level,
-}: ISaveFileFromGenerator): Promise<Uint8Array | null> {
+}: ISaveFileFromGenerator): Promise<Uint8Array | Readable | Blob | null> {
   let concatenatedBuffer = new Uint8Array(0);
 
   for await (const buffer of generator) {
