@@ -30,7 +30,7 @@ export const joinChunks = async (chunks: ArrayBuffer[], returnBuffer = false) =>
     return new Readable({
       read() {
         for (const chunk of chunks) {
-          this.push(chunk);
+          this.push(Buffer.from(chunk));
         }
         this.push(null);
       },
