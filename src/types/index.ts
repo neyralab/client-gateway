@@ -134,7 +134,7 @@ export interface IDecryptChunk {
 }
 
 export interface IDownloadChunk {
-  index: number;
+  index: number | string;
   oneTimeToken: string;
   jwtOneTimeToken: string;
   signal: any;

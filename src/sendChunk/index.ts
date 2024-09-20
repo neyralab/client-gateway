@@ -52,7 +52,7 @@ export const sendChunk = async ({
     'X-Upload-OTT-JWT': jwtOneTimeToken,
     'x-file-name': fileName,
     'x-last': `${index}/${chunksLength}`,
-    'X-folder': file.folderId || '',
+    'X-folder': file.folderId || (isDataprep ? '' : 'null'),
     'x-mime': file?.type,
     'X-Ai-Generated': false,
     'x-clientsideKeySha3Hash': clientsideKeySha3Hash
