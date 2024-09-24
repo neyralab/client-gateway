@@ -98,7 +98,14 @@ export const getThumbnailImage = async ({
 
         const base64Image = canvas.toDataURL('image/webp', +qualityReduction);
         URL.revokeObjectURL(imageURL);
-        sendThumbnail({ base64Image, oneTimeToken, endpoint, file, slug, jwtOneTimeToken })
+        sendThumbnail({
+          base64Image,
+          oneTimeToken,
+          endpoint,
+          file,
+          slug,
+          jwtOneTimeToken,
+        })
           .then(() => {
             resolve(base64Image);
           })
@@ -222,7 +229,10 @@ export const getThumbnailVideo = async ({
 
           const qualityReduction = quality / 10;
 
-          const base64Image = canvas.toDataURL('image/webp', +qualityReduction.toFixed(1));
+          const base64Image = canvas.toDataURL(
+            'image/webp',
+            +qualityReduction.toFixed(1)
+          );
           sendThumbnail({
             base64Image,
             oneTimeToken,
@@ -297,14 +307,33 @@ const getThumbnailMobile = async ({
   }
 };
 
-const sendThumbnail = async ({ base64Image, oneTimeToken, endpoint, file, slug, jwtOneTimeToken }) => {
+const sendThumbnail = async ({
+  base64Image,
+  oneTimeToken,
+  endpoint,
+  file,
+  slug,
+  jwtOneTimeToken,
+}) => {
   const fileName = convertTextToBase64(file.name);
   const isDataprep = isDataprepUrl(endpoint);
   let formData: FormData | null = null;
 
   if (!isDataprep) {
-    const base64Data = base64Image.split(',')[1];
-    formData = createFormData(base64Data, 'image/webp', 'thumbnail.webp');
+    if (isMobile()) {
+      const fileNameFromUrl = base64Image.split('/').pop();
+      const fileExtensionFromUrl = fileNameFromUrl.split('.').pop();
+      formData = new FormData();
+      //@ts-ignore
+      formData.append('file', {
+        uri: base64Image,
+        type: 'image/' + fileExtensionFromUrl,
+        name: fileNameFromUrl,
+      });
+    } else {
+      const base64Data = base64Image.split(',')[1];
+      formData = createFormData(base64Data, 'image/webp', 'thumbnail.webp');
+    }
   }
 
   const instance = axios.create({
@@ -336,7 +365,10 @@ const sendThumbnail = async ({ base64Image, oneTimeToken, endpoint, file, slug, 
       const isNetworkError = error?.message?.includes('Network Error');
       const isOtherError = ERRORS.includes(error?.response?.status);
 
-      if (currentTry >= (isOtherError ? MAX_TRIES_502 : MAX_TRIES) || (!isNetworkError && !isOtherError)) {
+      if (
+        currentTry >= (isOtherError ? MAX_TRIES_502 : MAX_TRIES) ||
+        (!isNetworkError && !isOtherError)
+      ) {
         currentTry = 1;
         throw error;
       } else {
