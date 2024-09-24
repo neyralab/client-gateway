@@ -7,7 +7,7 @@ import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
 import { ERRORS, MAX_TRIES, MAX_TRIES_502 } from '../config.js';
 import { getFibonacciNumber } from '../utils/getFibonacciNumber.js';
 import isDataprepUrl from '../utils/isDataprepUrl.js';
-import { createFormData } from '../utils/createFormData.js';
+// import { createFormData } from '../utils/createFormData.js';
 
 import { IGetThumbnail, IGetThumbnailDocument } from '../types/index.js';
 
@@ -303,8 +303,14 @@ const sendThumbnail = async ({ base64Image, oneTimeToken, endpoint, file, slug, 
   let formData: FormData | null = null;
 
   if (!isDataprep) {
-    const base64Data = base64Image.split(',')[1];
-    formData = createFormData(base64Data, 'image/webp', 'thumbnail.webp');
+    // const base64Data = base64Image.split(',')[1];
+    //@ts-ignore
+    formData.append('image', {
+      uri: base64Image,
+      type: 'image/webp',
+      name: 'thumbnail.webp',
+    });
+    // formData = createFormData(base64Data, 'image/webp', 'thumbnail.webp');
   }
 
   const instance = axios.create({
