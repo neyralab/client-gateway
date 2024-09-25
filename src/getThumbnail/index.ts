@@ -324,12 +324,11 @@ const sendThumbnail = async ({
       const fileNameFromUrl = base64Image.split('/').pop();
       const fileExtensionFromUrl = fileNameFromUrl.split('.').pop();
       formData = new FormData();
-      //@ts-ignore
       formData.append('file', {
         uri: base64Image,
         type: 'image/' + fileExtensionFromUrl,
         name: fileNameFromUrl,
-      });
+      } as any);
     } else {
       const base64Data = base64Image.split(',')[1];
       formData = createFormData(base64Data, 'image/webp', 'thumbnail.webp');
