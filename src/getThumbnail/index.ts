@@ -288,7 +288,9 @@ const getThumbnailMobile = async ({
 
         const data = await blobUtil.fs.readFile(cachedUrl, 'base64');
         await sendThumbnail({
-          base64Image: `data:image/webp;base64,${data}`,
+          base64Image: isDataprepUrl(endpoint)
+            ? `data:image/webp;base64,${data}`
+            : cachedUrl,
           oneTimeToken,
           endpoint,
           file,
