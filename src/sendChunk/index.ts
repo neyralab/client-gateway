@@ -47,7 +47,9 @@ export const sendChunk = async ({
   let formData: FormData | null = null;
 
   const headers = {
-    ...(isDataprep && { 'content-type': 'application/octet-stream' }),
+    'content-type': isDataprep
+      ? 'application/octet-stream'
+      : 'multipart/form-data',
     'one-time-token': oneTimeToken,
     'X-Upload-OTT-JWT': jwtOneTimeToken,
     'x-file-name': fileName,
