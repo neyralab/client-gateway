@@ -340,7 +340,9 @@ const sendThumbnail = async ({
   const instance = axios.create({
     headers: {
       'x-file-name': fileName,
-      ...(isDataprep && { 'Content-Type': 'application/octet-stream' }),
+      'content-type': isDataprep
+        ? 'application/octet-stream'
+        : 'multipart/form-data',
       'one-time-token': oneTimeToken,
       'X-Upload-OTT-JWT': jwtOneTimeToken,
     },
