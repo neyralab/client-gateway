@@ -25,6 +25,7 @@ export const getThumbnailImage = async ({
   sharp,
   ffmpegCommand,
   blobUtil,
+  platform,
 }: IGetThumbnail) => {
   return new Promise((resolve, reject) => {
     if (isMobile()) {
@@ -40,6 +41,7 @@ export const getThumbnailImage = async ({
         blobUtil,
         type: 'image',
         jwtOneTimeToken,
+        platform,
       })
         .then(resolve)
         .catch(reject);
@@ -131,6 +133,7 @@ export const getThumbnailVideo = async ({
   ffmpegCommand,
   sharp,
   blobUtil,
+  platform,
 }: IGetThumbnail) => {
   return new Promise((resolve, reject) => {
     if (isMobile()) {
@@ -146,6 +149,7 @@ export const getThumbnailVideo = async ({
         blobUtil,
         type: 'video',
         jwtOneTimeToken,
+        platform,
       })
         .then(resolve)
         .catch(reject);
@@ -272,9 +276,14 @@ const getThumbnailMobile = async ({
   ffmpegCommand,
   blobUtil,
   type,
+  platform,
 }: IGetThumbnail & { type: 'image' | 'video' }) => {
   if (ffmpegCommand && blobUtil) {
-    const cachedUrl = `${blobUtil.fs.dirs.CacheDir}/thumb_${slug}.jpg`;
+    const cachedUrl =
+      platform === 'ios'
+        ? `${blobUtil.fs.dirs.CacheDir}/thumb_${slug}.jpg`
+        : `file://${blobUtil.fs.dirs.CacheDir}/thumb_${slug}.jpg`;
+
     if (cachedUrl) {
       try {
         const command =

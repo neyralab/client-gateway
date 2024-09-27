@@ -166,7 +166,10 @@ export interface IGetThumbnail {
   slug: string;
   sharp?: any;
   blobUtil?: any;
+  platform?: Platform;
 }
+
+export type Platform = 'ios' | 'android';
 
 export interface IGetThumbnailDocument {
   file: File | any;
