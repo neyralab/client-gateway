@@ -71,6 +71,7 @@ export interface IEncodeExistingFile {
   callback: Callback;
   handlers: any[];
   key: CryptoKey;
+  carReader: any;
 }
 export interface ISendChunk {
   chunk: ArrayBuffer | string;

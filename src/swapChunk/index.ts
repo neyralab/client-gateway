@@ -1,6 +1,8 @@
 import axios from 'axios';
 
 import { ISwapChunk } from '../types/index.js';
+import isDataprepUrl from '../utils/isDataprepUrl.js';
+import { createFormData } from '../utils/createFormData.js';
 
 export const swapChunk = async ({
   file,
@@ -19,6 +21,12 @@ export const swapChunk = async ({
 }: ISwapChunk) => {
   const chunksLength = Math.ceil(file.size / gateway.upload_chunk_size);
   const url = `${gateway.url}/chunked/swap/${file.slug}`;
+  const isDataprep = isDataprepUrl(gateway.url);
+  let formData: FormData | null = null;
+  if (!isDataprep) {
+    formData = createFormData(encryptedChunk, file.mime, file.name);
+  }
+
   const inst = axios.create({
     headers: {
       'x-iv': base64iv,
@@ -47,5 +55,5 @@ export const swapChunk = async ({
     },
     cancelToken: file.source?.token,
   });
-  return await inst.post(url, encryptedChunk);
+  return await inst.post(url, isDataprep ? encryptedChunk : formData);
 };

@@ -27,6 +27,7 @@ export const encodeExistingFile = async ({
   callback,
   handlers,
   key,
+  carReader,
 }: IEncodeExistingFile) => {
   const clientsideKeySha3Hash: string = md.digest().toHex();
   const iv: Uint8Array = crypto.getRandomValues(new Uint8Array(12));
@@ -47,6 +48,7 @@ export const encodeExistingFile = async ({
     endpoint: downloadEndpoint,
     isEncrypted: false,
     uploadChunkSize: gateway.upload_chunk_size,
+    carReader,
   });
 
   let arrayBuffer: ArrayBuffer;
