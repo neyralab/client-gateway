@@ -128,14 +128,19 @@ export const sendChunk = async ({
             console.log('Error:', error);
           });
       } else if (isMobile() && !isDataprep && blobUtil) {
-        response = await blobUtil.fetch('POST', url, headers, [
-          {
-            name: 'file',
-            data: chunk,
-            filename: file.name,
-            type,
-          },
-        ]);
+        response = await blobUtil.fetch(
+          'POST',
+          url,
+          { ...headers, 'Transfer-Encoding': 'Chunked' },
+          [
+            {
+              name: 'file',
+              data: chunk,
+              filename: file.name,
+              type,
+            },
+          ]
+        );
         if (response && response.info().status !== 200) {
           const error = new Error(`Upload failed: ${response.info().status}`);
           (error as any).response = { status: response.info().status };
