@@ -31,6 +31,7 @@ export const uploadFile = async ({
   totalSize,
   startedAt,
   is_telegram,
+  blobUtil,
 }: IUploadFile) => {
   const startTime = startedAt || Date.now();
   const controller = new AbortController();
@@ -107,6 +108,7 @@ export const uploadFile = async ({
       controller,
       totalSize,
       is_telegram,
+      blobUtil,
     });
 
     promises.push(promise);

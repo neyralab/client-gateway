@@ -90,6 +90,7 @@ export interface ISendChunk {
   controller?: AbortController;
   totalSize?: number;
   is_telegram?: boolean;
+  blobUtil?: any;
 }
 
 export interface IUploadFile {
@@ -104,6 +105,7 @@ export interface IUploadFile {
   totalSize?: number;
   startedAt?: any;
   is_telegram?: boolean;
+  blobUtil?: any;
 }
 
 export interface ISwapChunk {

@@ -32,6 +32,7 @@ export const sendChunk = async ({
   controller,
   totalSize,
   is_telegram,
+  blobUtil,
 }: ISendChunk) => {
   const base64iv = iv ? Base64.fromByteArray(iv) : null;
   const xHash = isMobile() ? 'null' : createSHA256Hash(chunk as ArrayBuffer);
@@ -45,6 +46,7 @@ export const sendChunk = async ({
   let cookieJar = [];
   const isDataprep = isDataprepUrl(gateway.url);
   let formData: FormData | null = null;
+  const type = file?.type || 'application/octet-stream';
 
   const headers = {
     'content-type': isDataprep
@@ -55,18 +57,18 @@ export const sendChunk = async ({
     'x-file-name': fileName,
     'x-last': `${index}/${chunksLength}`,
     'X-folder': file.folderId || (isDataprep ? '' : 'null'),
-    'x-mime': file?.type,
+    'x-mime': type,
     'X-Ai-Generated': false,
     'x-clientsideKeySha3Hash': clientsideKeySha3Hash
       ? clientsideKeySha3Hash
       : 'null',
     'x-hash': xHash,
-    'x-size': file.size,
+    'x-size': file.size.toString(),
     'x-iv': iv ? base64iv : 'null',
   };
 
-  if (!isDataprep) {
-    formData = createFormData(chunk, file?.type, fileName);
+  if (!isDataprep && !blobUtil) {
+    formData = createFormData(chunk, type, fileName);
   }
 
   const url = isDataprep
@@ -74,7 +76,7 @@ export const sendChunk = async ({
     : `${gateway.url}/upload/`;
 
   if (file instanceof LocalFileReactNativeStream) {
-    headers['x-converted-size'] = file.convertedSize;
+    headers['x-converted-size'] = file.convertedSize.toString();
     headers['x-converted-extension'] = file.convertedExtension;
     headers['x-converted-mime'] = file.convertedMime;
   }
@@ -125,6 +127,20 @@ export const sendChunk = async ({
           .catch((error) => {
             console.log('Error:', error);
           });
+      } else if (isMobile() && !isDataprep && blobUtil) {
+        response = await blobUtil.fetch('POST', url, headers, [
+          {
+            name: 'file',
+            data: chunk,
+            filename: file.name,
+            type,
+          },
+        ]);
+        if (response && response.info().status !== 200) {
+          const error = new Error(`Upload failed: ${response.info().status}`);
+          (error as any).response = { status: response.info().status };
+          throw error;
+        }
       } else {
         response = await axios.post(url, isDataprep ? chunk : formData, {
           headers,
