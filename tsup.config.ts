@@ -4,7 +4,7 @@ export default defineConfig([
   {
     entry: ['src/**/*.ts', '!src/**/*.test.ts'],
     format: ['esm'],
-    dts: true,
+    dts: false,
     sourcemap: false,
     clean: true,
     minify: false,
