@@ -70,7 +70,6 @@
       "require": "./lib/es5/index.js"
     },
     "./utils/*": {
-      "import": "./lib/es6/utils/*.mjs",
       "require": "./lib/es5/utils/*.js"
     }
   },

@@ -15,6 +15,7 @@ import { getThumbnailImage, getThumbnailVideo, getThumbnailDocument } from  "./g
 import { getMusicInfo } from "./getMusicInfo/index.js";
 import { fileDownloadProcess } from './process/index.js'
 import { downloadFileFromSP } from "./downloadFile/downloadFileFromSP.js";
+import { UUIDBase64Converter } from "./utils/UUIDBase64Converter.js";
 
 export {
   encryptChunk,
@@ -33,6 +34,7 @@ export {
   getThumbnailImage, getThumbnailVideo, getThumbnailDocument,
   getMusicInfo,
   fileDownloadProcess,
-  downloadFileFromSP
+  downloadFileFromSP,
+  UUIDBase64Converter
 }
 // let a = import('./lib/es6/index.js')
