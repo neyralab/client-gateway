@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "release": "node release.js",
-    "build": "npm run es6 && npm run es5",
+    "build": "rimraf lib && npm run tsup && npm run es5",
     "postinstall": "npm run build",
-    "es5": "rimraf lib && tsc && tsc --build tsconfig.es5.json",
+    "tsup": "tsup",
+    "es5": "tsc --build tsconfig.es5.json",
     "es6": "rimraf lib && tsc && tsc --build tsconfig.json",
     "test": "jest"
   },
@@ -31,7 +32,8 @@
     "jest-environment-jsdom": "^29.6.2",
     "jwt-decode": "^4.0.0",
     "node-forge": "^1.3.1",
-    "set-cookie-parser": "^2.6.0"
+    "set-cookie-parser": "^2.6.0",
+    "tsup": "^8.3.0"
   },
   "devDependencies": {
     "@babel/core": "^7.22.9",
@@ -60,16 +62,12 @@
     "crypto": "react-native-crypto"
   },
   "main": "./lib/es5/index.js",
-  "module": "./lib/es6/index.js",
-  "types": "./lib/es6/types/index.d.ts",
+  "module": "./lib/es6/index.mjs",
+  "types": "./lib/es6/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/es6/index.js",
+      "import": "./lib/es6/index.mjs",
       "require": "./lib/es5/index.js"
-    },
-    "./utils/*": {
-      "import": "./lib/es6/utils/*.js",
-      "require": "./lib/es5/utils/*.js"
     }
   },
   "prettier": {
