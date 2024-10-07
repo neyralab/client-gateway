@@ -62,15 +62,15 @@
     "crypto": "react-native-crypto"
   },
   "main": "./lib/es5/index.js",
-  "module": "./lib/esm/index.mjs",
-  "types": "./lib/esm/index.d.ts",
+  "module": "./lib/es6/index.mjs",
+  "types": "./lib/es6/index.d.ts",
   "exports": {
     ".": {
-      "import": "./lib/esm/index.mjs",
+      "import": "./lib/es6/index.mjs",
       "require": "./lib/es5/index.js"
     },
     "./utils/*": {
-      "import": "./lib/esm/utils/*.mjs",
+      "import": "./lib/es6/utils/*.mjs",
       "require": "./lib/es5/utils/*.js"
     }
   },
