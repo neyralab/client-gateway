@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "release": "node release.js",
-    "build": "rimraf lib && npm run es6 && npm run es5 && npm run rollup",
+    "build": "rimraf lib && npm run es6 && npm run es5",
     "postinstall": "npm run build",
+    "prepare": "npm run rollup",
     "rollup": "rimraf dist && rollup -c",
     "es5": "tsc --build tsconfig.es5.json",
     "es6": "tsc --build tsconfig.json",
