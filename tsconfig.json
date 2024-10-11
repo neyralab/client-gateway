@@ -1,17 +1,17 @@
 {
   "compilerOptions": {
-    "module": "NodeNext",
+    "module": "ESNext",
     "target": "esnext",
     "lib": ["ES2020", "DOM"],
     "declaration": true,
     "outDir": "./lib/es6",
-    "moduleResolution": "nodenext",
+    "moduleResolution": "node",
     "importHelpers": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true
   },
   "include": ["src/**/*"],
-  "exclude": ["**/*.test.ts"],
+  "exclude": ["**/*.test.ts", "src/setupTests.tsx"],
   "ts-node": {
     "esm": true
   }
