@@ -3,3 +3,4 @@ node_modules
 .lib
 lib/es5
 lib/es6
+dist
