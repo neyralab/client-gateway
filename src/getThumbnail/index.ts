@@ -288,10 +288,10 @@ const getThumbnailMobile = async ({
       try {
         const command =
           type === 'image'
-            ? `-i "${path}" -vf scale=${MAX_WIDTH}:${MAX_HEIGHT}:force_original_aspect_ratio=decrease -q:v ${
+            ? `-y -i "${path}" -vf scale=${MAX_WIDTH}:${MAX_HEIGHT}:force_original_aspect_ratio=decrease -q:v ${
                 100 - quality * 10
               } ${cachedUrl}`
-            : `-i "${path}" -ss 00:00:01 -vframes 1 -qscale:v ${100 - quality * 10} ${cachedUrl}`;
+            : `-y -i "${path}" -ss 00:00:01 -vframes 1 -qscale:v ${100 - quality * 10} ${cachedUrl}`;
 
         await ffmpegCommand.execute(command);
 
