@@ -13,8 +13,8 @@ function replaceWindowAndGlobal() {
     transform(code) {
       // Replace 'window' with 'self' and 'global' with 'self'
       const transformedCode = code
-        .replace(/\bwindow\b/g, 'self') // Exact replacement for 'window'
-        .replace(/\bglobal\b/g, 'self'); // Exact replacement for 'global'
+          .replace(/\bwindow\b/g, 'self') // Exact replacement for 'window'
+          .replace(/\bglobal\b/g, 'self'); // Exact replacement for 'global'
       return {
         code: transformedCode,
         map: null,
@@ -28,7 +28,13 @@ export default [
     input: 'src/index.ts',
     output: [
       {
-        file: 'dist/bundle.mjs',
+        file: 'dist/bundle.umd.js',
+        format: 'umd',
+        name: 'client-gateway', // Replace with your library name
+        sourcemap: false,
+      },
+      {
+        file: 'dist/bundle.esm.js',
         format: 'esm',
         sourcemap: false,
       },
