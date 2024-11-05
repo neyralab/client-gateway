@@ -58,6 +58,7 @@ export interface IDownloadFile {
     upload_chunk_size: number;
   };
   writeStreamMobile?: (chunk: Uint8Array) => Promise<void>;
+  onChunk?: (chunk: Uint8Array) => Promise<void>;
   headers?: { [key: string]: string };
 }
 export interface IEncodeExistingFile {

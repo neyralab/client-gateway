@@ -32,6 +32,7 @@ export const downloadFile = async ({
   writeStreamMobile,
   headers,
   jwtOneTimeToken,
+  onChunk,
 }: IDownloadFile) => {
   const startTime = Date.now();
   const chunks = [];
@@ -55,6 +56,7 @@ export const downloadFile = async ({
         level: 'root',
         headers,
       });
+      onChunk?.(fileBlob as Uint8Array);
       if (!isMobile()) {
         return fileBlob;
       } else {
@@ -78,13 +80,14 @@ export const downloadFile = async ({
           level: cidData.level,
           headers,
         });
+        onChunk?.(fileBlob as Uint8Array);
 
         if (isMobile()) {
           fileBlob && (await writeStreamMobile?.(fileBlob as Uint8Array));
         } else {
           if (fileBlob) {
-            if (fileBlob instanceof Buffer) {
-              chunks.push(fileBlob.buffer);
+            if (fileBlob instanceof Uint8Array || fileBlob instanceof ArrayBuffer) {
+              chunks.push(fileBlob);
             }
             if (fileBlob instanceof Readable) {
               chunks.push(fileBlob);
@@ -147,6 +150,8 @@ export const downloadFile = async ({
             });
         }
       }
+      onChunk?.(chunk as Uint8Array);
+
       if (fileStream) {
         fileStream.push(new Uint8Array(chunk));
       } else if (isMobile()) {
