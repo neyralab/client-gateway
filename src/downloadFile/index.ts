@@ -6,16 +6,13 @@ import { joinChunks } from '../utils/joinChunks.js';
 import { getCountChunk } from '../utils/getCountChunks.js';
 import { convertBase64ToArrayBuffer } from '../utils/convertBase64ToArrayBuffer.js';
 import isDataprepUrl from '../utils/isDataprepUrl.js';
+import { correctIndex } from '../utils/correctIndex.js';
 
 import { IDownloadFile } from '../types/index.js';
 import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 
 import { downloadFileFromSP } from './downloadFileFromSP.js';
 import { Readable } from 'stream';
-
-const correctIndex = (index: number, total: string) => {
-  return `${String(index).padStart(Number(total.length), '0')}`;
-};
 
 export const downloadFile = async ({
   file,
