@@ -29,10 +29,24 @@ export const joinChunks = async (chunks: ArrayBuffer[], returnBuffer = false) =>
     const { Readable } = await import('stream');
     return new Readable({
       read() {
+        let pendingChunks = chunks.length;
         for (const chunk of chunks) {
-          this.push(Buffer.from(chunk));
+            if (chunk instanceof Readable) {
+                chunk.on('data', (data) => this.push(data));
+                chunk.on('end', () => {
+                    pendingChunks--;
+                    if (pendingChunks === 0) {
+                        this.push(null);
+                    }
+                });
+            } else {
+                this.push(Buffer.from(chunk));
+                pendingChunks--;
+            }
         }
-        this.push(null);
+        if (pendingChunks === 0) {
+            this.push(null);
+        }
       },
     });
   } else {
