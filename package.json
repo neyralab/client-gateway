@@ -76,7 +76,7 @@
   },
   "main": "./lib/es5/index.js",
   "module": "./lib/es6/index.js",
-  "types": "./lib/es6/types/index.d.ts",
+  "types": "./lib/es6/index.d.ts",
   "exports": {
     ".": {
       "import": "./lib/es6/index.js",
