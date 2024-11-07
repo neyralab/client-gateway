@@ -8,19 +8,17 @@ import { getUserRSAKeys } from '../getUserRSAKeys/index.js';
 
 export class Api {
   private instance: AxiosInstance;
-  constructor(url: string, xToken: string) {
-    this.instance = axios.create({
-      baseURL: url,
-      headers: {
-        'x-token': xToken,
-      },
-    });
+  private url: string;
+
+  constructor(axiosInstance: AxiosInstance, url: string) {
+    this.instance = axiosInstance;
+    this.url = url;
   }
 
   async getFileCids({ slug }: { slug: string }) {
     try {
       const response: any = await this.instance.get(
-        `/files/file/cid/${slug}/interim`
+        `${this.url}/files/file/cid/${slug}/interim`
       );
       return response.data;
     } catch (e) {
@@ -29,13 +27,13 @@ export class Api {
   }
 
   getDownloadOTT = (body: { slug: string }[]): Promise<DownloadOTT> => {
-    return this.instance.post(`/download/generate/token`, body);
+    return this.instance.post(`${this.url}/download/generate/token`, body);
   };
 
   getEncryptedFileDetailsEffect = (
     slug: string
   ): Promise<AxiosResponse<GetEncryptedFileDetailsEffect>> => {
-    return this.instance.get(`/keys/get-encrypted-file-details?slug=${slug}`);
+    return this.instance.get(`${this.url}/keys/get-encrypted-file-details?slug=${slug}`);
   };
 
   async getEncryptedFileKey(slug: string, userPublicAddress: string) {
@@ -57,7 +55,7 @@ export class Api {
 
   async getUnEncryptedFileKey(slug: string) {
     const { data } = await this.instance.get<{ encryption_key?: string }>(
-      `/keys/get_unencrypted_key?slug=${slug}`
+      `${this.url}/keys/get_unencrypted_key?slug=${slug}`
     );
     return data?.encryption_key;
   }

@@ -4,11 +4,12 @@ import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types.js';
 import { Api, getDecryptedKey } from './api.js';
 import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 import { IDownloadFile } from '../types/index.js';
+import { AxiosInstance } from 'axios';
 
 export async function fileDownloadProcess(
   data: {
     fileEntry: IFile;
-    xToken: string;
+    axiosInstance: AxiosInstance;
     serverUrl: string;
     localProvider: LocalProvider;
     provider: any;
@@ -19,7 +20,7 @@ export async function fileDownloadProcess(
 ): Promise<ProcessDownload> {
   const {
     fileEntry,
-    xToken,
+    axiosInstance,
     callbacks,
     provider,
     localProvider,
@@ -29,7 +30,7 @@ export async function fileDownloadProcess(
     serverUrl,
     headers,
   } = data;
-  const api = new Api(serverUrl, xToken);
+  const api = new Api(axiosInstance, serverUrl);
   const isClientsideEncrypted: boolean = !!fileEntry?.is_clientside_encrypted;
   const controller = new AbortController();
   const signal = controller.signal;
