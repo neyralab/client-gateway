@@ -53,7 +53,7 @@ export interface IDownloadFile {
   uploadChunkSize?: number;
   cidData?: {
     slug: string;
-    cids: [];
+    cids: string[];
     level: CidLevelType;
     upload_chunk_size: number;
   };
