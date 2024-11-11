@@ -96,37 +96,15 @@ export const sendChunk = async ({
     try {
       let response;
       if (!isBrowser() && !isMobile()) {
-        response = axios
-          .get(`${gateway.url}`, {
-            headers: {
-              'content-type': 'application/octet-stream',
-              'one-time-token': oneTimeToken,
-              'X-Upload-OTT-JWT': jwtOneTimeToken,
-            },
-          })
-          .then((response) => {
-            if (response.headers['set-cookie']) {
-              const parsed = setCookieParser.parse(
-                response.headers['set-cookie']
-              );
-              for (const cookieObject of parsed) {
-                const cookieString = `${cookieObject.name}=${cookieObject.value}`;
-                cookieJar.push(cookieString);
-              }
-            }
-          })
-          .then(() => {
-            return postWithCookies(
-              url,
-              headers,
-              cookieJar,
-              controller ? controller.signal : undefined,
-              isDataprep ? chunk : formData
-            );
-          })
-          .catch((error) => {
-            console.log('Error:', error);
-          });
+        response = await postWithCookies(
+          url,
+          headers,
+          cookieJar,
+          controller ? controller.signal : undefined,
+          isDataprep ? chunk : formData
+        ).catch((error) => {
+          console.log('Error:', error);
+        });
       } else if (isMobile() && !isDataprep && blobUtil) {
         response = await blobUtil.fetch(
           'POST',
