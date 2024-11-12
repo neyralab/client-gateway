@@ -45,7 +45,7 @@ export default [
         entries: [
           { find: 'crypto', replacement: 'crypto-browserify' }, // Polyfill for crypto
           { find: 'stream', replacement: 'stream-browserify' }, // Polyfill for stream
-          { find: 'buffer', replacement: 'buffer-es6' },
+          { find: 'buffer', replacement: 'buffer/' },
         ],
       }),
       resolve({
@@ -57,6 +57,7 @@ export default [
       builtins(), // Support for built-in Node.js modules
       inject({
         process: 'process/browser', // Polyfill for process
+        Buffer: ['buffer/', 'Buffer'],
       }),
       replace({
         preventAssignment: true,
