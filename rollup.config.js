@@ -13,8 +13,8 @@ function replaceWindowAndGlobal() {
     transform(code) {
       // Replace 'window' with 'self' and 'global' with 'self'
       const transformedCode = code
-          .replace(/\bwindow\b/g, 'self') // Exact replacement for 'window'
-          .replace(/\bglobal\b/g, 'self'); // Exact replacement for 'global'
+        .replace(/\bwindow\b/g, 'self') // Exact replacement for 'window'
+        .replace(/\bglobal\b/g, 'self'); // Exact replacement for 'global'
       return {
         code: transformedCode,
         map: null,
