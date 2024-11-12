@@ -19,6 +19,7 @@ import { UUIDBase64Converter } from "./utils/UUIDBase64Converter.js";
 import { correctIndex } from "./utils/correctIndex.js";
 import { getCountChunk } from "./utils/getCountChunks.js";
 import { convertBase64ToArrayBuffer } from "./utils/convertBase64ToArrayBuffer.js";
+import { getCrypto } from "./utils/getCrypto.js";
 
 export {
   encryptChunk,
@@ -41,6 +42,7 @@ export {
   UUIDBase64Converter,
   correctIndex,
   getCountChunk,
-  convertBase64ToArrayBuffer
+  convertBase64ToArrayBuffer,
+  getCrypto
 }
 // let a = import('./lib/es6/index.js')
