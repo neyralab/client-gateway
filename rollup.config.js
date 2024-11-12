@@ -56,7 +56,6 @@ export default [
       builtins(), // Support for built-in Node.js modules
       inject({
         process: 'process/browser', // Polyfill for process
-        Buffer: ['buffer', 'Buffer'],
       }),
       replace({
         preventAssignment: true,
