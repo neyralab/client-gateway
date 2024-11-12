@@ -13,8 +13,8 @@ function replaceWindowAndGlobal() {
     transform(code) {
       // Replace 'window' with 'self' and 'global' with 'self'
       const transformedCode = code
-          .replace(/\bwindow\b/g, 'self') // Exact replacement for 'window'
-          .replace(/\bglobal\b/g, 'self'); // Exact replacement for 'global'
+        .replace(/\bwindow\b/g, 'self') // Exact replacement for 'window'
+        .replace(/\bglobal\b/g, 'self'); // Exact replacement for 'global'
       return {
         code: transformedCode,
         map: null,
@@ -44,6 +44,7 @@ export default [
         entries: [
           { find: 'crypto', replacement: 'crypto-browserify' }, // Polyfill for crypto
           { find: 'stream', replacement: 'stream-browserify' }, // Polyfill for stream
+          { find: 'buffer', replacement: 'buffer' }, // Polyfill for Buffer
         ],
       }),
       resolve({
@@ -55,6 +56,7 @@ export default [
       builtins(), // Support for built-in Node.js modules
       inject({
         process: 'process/browser', // Polyfill for process
+        Buffer: ['buffer', 'Buffer'],
       }),
       replace({
         preventAssignment: true,
