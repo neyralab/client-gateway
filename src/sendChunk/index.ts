@@ -1,10 +1,8 @@
 import axios from 'axios';
 import * as Base64 from 'base64-js';
-import * as setCookieParser from 'set-cookie-parser';
 
 import { getFibonacciNumber } from '../utils/getFibonacciNumber.js';
 import { convertTextToBase64 } from '../utils/convertTextToBase64.js';
-import { postWithCookies } from '../utils/makeRequestWithCookies.js';
 import { isMobile } from '../utils/isMobile.js';
 import { isBrowser } from '../utils/isBrowser.js';
 import { createSHA256Hash } from '../utils/createSHA256Hash.js';
@@ -95,17 +93,7 @@ export const sendChunk = async ({
 
     try {
       let response;
-      if (!isBrowser() && !isMobile()) {
-        response = await postWithCookies(
-          url,
-          headers,
-          cookieJar,
-          controller ? controller.signal : undefined,
-          isDataprep ? chunk : formData
-        ).catch((error) => {
-          console.log('Error:', error);
-        });
-      } else if (isMobile() && !isDataprep && blobUtil) {
+      if (isMobile() && !isDataprep && blobUtil) {
         response = await blobUtil.fetch(
           'POST',
           url,
