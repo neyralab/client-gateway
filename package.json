@@ -35,7 +35,6 @@
     "axios": "^1.4.0",
     "axios-mock-adapter": "^1.21.5",
     "base64-js": "^1.5.1",
-    "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
     "ipfs-unixfs-exporter": "13.0.6",
     "jest-environment-jsdom": "^29.6.2",
@@ -45,6 +44,7 @@
     "rollup": "^4.24.0",
     "rollup-plugin-node-builtins": "^2.1.2",
     "rollup-plugin-node-globals": "^1.4.0",
+    "rollup-plugin-polyfill-node": "^0.13.0",
     "rollup-plugin-typescript2": "^0.36.0",
     "set-cookie-parser": "^2.6.0",
     "stream-browserify": "^3.0.0"
