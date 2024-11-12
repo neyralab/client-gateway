@@ -6,7 +6,7 @@ import replace from '@rollup/plugin-replace';
 import builtins from 'rollup-plugin-node-builtins';
 import alias from '@rollup/plugin-alias';
 import inject from '@rollup/plugin-inject';
-import nodePolyfills from 'rollup-plugin-polyfill-node';
+// import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 function replaceWindowAndGlobal() {
   return {
@@ -45,6 +45,7 @@ export default [
         entries: [
           { find: 'crypto', replacement: 'crypto-browserify' }, // Polyfill for crypto
           { find: 'stream', replacement: 'stream-browserify' }, // Polyfill for stream
+          { find: 'buffer', replacement: 'buffer-es6' },
         ],
       }),
       resolve({
@@ -63,9 +64,6 @@ export default [
           global: 'self',
           window: 'self',
         },
-      }),
-      nodePolyfills({
-        include: ['buffer'],
       }),
       replaceWindowAndGlobal(),
       typescript(),
