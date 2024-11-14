@@ -20,7 +20,13 @@ export type CallbackTypeNames =
   | 'onEncryptProgress'
   | 'onProgress';
 
-export type CidLevelType = 'root' | 'upload' | 'interim';
+export enum CidLevel {
+  Root = 'root',
+  Upload = 'upload',
+  Interim = 'interim',
+}
+
+export type CidLevelType = CidLevel.Root | CidLevel.Upload | CidLevel.Interim;
 
 export type Callback = ({
   type,
@@ -39,6 +45,13 @@ export type GatewayType = {
   same_ip_upload: boolean;
 };
 
+export interface ICidData {
+  slug: string;
+  cids: string[];
+  level: CidLevelType;
+  upload_chunk_size: number;
+}
+
 export interface IDownloadFile {
   file: File | any;
   oneTimeToken: string;
@@ -51,12 +64,7 @@ export interface IDownloadFile {
   handlers?: any[];
   carReader?: any;
   uploadChunkSize?: number;
-  cidData?: {
-    slug: string;
-    cids: string[];
-    level: CidLevelType;
-    upload_chunk_size: number;
-  };
+  cidData?: ICidData;
   writeStreamMobile?: (chunk: Uint8Array) => Promise<void>;
   headers?: { [key: string]: string };
 }

@@ -125,6 +125,9 @@ export interface IFile {
   slug: string;
   preview_small: string | null;
   preview_large: string | null;
+  converted_size: number | null;
+  converted_mime: string | null;
+  converted_extension: string | null;
   convert_video: null;
   key: string;
   service: string;

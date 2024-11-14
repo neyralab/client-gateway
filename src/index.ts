@@ -20,6 +20,10 @@ import { correctIndex } from "./utils/correctIndex.js";
 import { getCountChunk } from "./utils/getCountChunks.js";
 import { convertBase64ToArrayBuffer } from "./utils/convertBase64ToArrayBuffer.js";
 import { getCrypto } from "./utils/getCrypto.js";
+import { getCidLevelByFileSize } from "./utils/getCidLevelByFileSize.js";
+
+// Export types
+export { CidLevel, CidLevelType } from './types';
 
 export {
   encryptChunk,
@@ -43,6 +47,7 @@ export {
   correctIndex,
   getCountChunk,
   convertBase64ToArrayBuffer,
-  getCrypto
+  getCrypto,
+  getCidLevelByFileSize
 }
 // let a = import('./lib/es6/index.js')

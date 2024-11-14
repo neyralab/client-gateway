@@ -9,7 +9,6 @@ import isDataprepUrl from '../utils/isDataprepUrl.js';
 import { correctIndex } from '../utils/correctIndex.js';
 
 import { IDownloadFile } from '../types/index.js';
-import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
 
 import { downloadFileFromSP } from './downloadFileFromSP.js';
 import { Readable } from 'stream';
@@ -38,60 +37,36 @@ export const downloadFile = async ({
   let fileStream = null;
 
   if (file.is_on_storage_provider) {
-    const size = Number((file.size / ONE_MB).toFixed(1));
+    const cids = cidData.cids;
 
-    if (size < ALL_FILE_DOWNLOAD_MAX_SIZE) {
+    for (let i = 0; i < cids.length; i++) {
       const fileBlob = await downloadFileFromSP({
         carReader,
-        url: `${file.storage_provider.url}/${file.root_cid}`,
+        url: `${file.storage_provider.url}/${cids[i]}`,
         isEncrypted,
         uploadChunkSize,
         key,
         iv: entry_clientside_key?.iv,
         file,
-        level: 'root',
+        level: cidData.level,
         headers,
       });
-      if (!isMobile()) {
-        return fileBlob;
-      } else {
+
+      if (isMobile()) {
         fileBlob && (await writeStreamMobile?.(fileBlob as Uint8Array));
-      }
-    }
-
-    if (size >= ALL_FILE_DOWNLOAD_MAX_SIZE) {
-      const cids = cidData.cids;
-      const chunks = [];
-
-      for (let i = 0; i < cids.length; i++) {
-        const fileBlob = await downloadFileFromSP({
-          carReader,
-          url: `${file.storage_provider.url}/${cids[i]}`,
-          isEncrypted,
-          uploadChunkSize,
-          key,
-          iv: entry_clientside_key?.iv,
-          file,
-          level: cidData.level,
-          headers,
-        });
-
-        if (isMobile()) {
-          fileBlob && (await writeStreamMobile?.(fileBlob as Uint8Array));
-        } else {
-          if (fileBlob) {
-            if (fileBlob instanceof Buffer) {
-              chunks.push(fileBlob.buffer);
-            }
-            if (fileBlob instanceof Readable) {
-              chunks.push(fileBlob);
-            }
+      } else {
+        if (fileBlob) {
+          if (fileBlob instanceof Buffer || fileBlob instanceof Uint8Array) {
+            chunks.push(fileBlob.buffer);
+          }
+          if (fileBlob instanceof Readable) {
+            chunks.push(fileBlob);
           }
         }
       }
-      if (!isMobile()) {
-        return joinChunks(chunks);
-      }
+    }
+    if (!isMobile()) {
+      return joinChunks(chunks);
     }
   } else {
     const fileSize = file.converted_size ?? file.size;

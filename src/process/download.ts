@@ -2,7 +2,7 @@ import { CarReader } from '@ipld/car';
 import { downloadFile } from '../downloadFile/index.js';
 import { IFile, LocalProvider, ProcessDownload, Callbacks } from './types.js';
 import { Api, getDecryptedKey } from './api.js';
-import { ALL_FILE_DOWNLOAD_MAX_SIZE, ONE_MB } from '../config.js';
+import { getCidLevelByFileSize } from '../utils/getCidLevelByFileSize.js';
 import { IDownloadFile } from '../types/index.js';
 import { AxiosInstance } from 'axios';
 
@@ -34,7 +34,6 @@ export async function fileDownloadProcess(
   const isClientsideEncrypted: boolean = !!fileEntry?.is_clientside_encrypted;
   const controller = new AbortController();
   const signal = controller.signal;
-  const size = Number((fileEntry.size / ONE_MB).toFixed(1));
   let cidData;
 
   const {
@@ -46,8 +45,9 @@ export async function fileDownloadProcess(
     },
   } = await api.getDownloadOTT([{ slug: fileEntry.slug }]);
 
-  if (fileEntry?.is_on_storage_provider && size >= ALL_FILE_DOWNLOAD_MAX_SIZE) {
-    cidData = await api.getFileCids({ slug: fileEntry.slug });
+  if (fileEntry?.is_on_storage_provider) {
+    const level = getCidLevelByFileSize(fileEntry);
+    cidData = await api.getFileCids({ slug: fileEntry.slug, level });
   }
   let blob: Blob;
 

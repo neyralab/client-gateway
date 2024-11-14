@@ -5,6 +5,7 @@ const nodeForge = forge.default !== undefined ? forge.default : forge;
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { DownloadOTT, GetEncryptedFileDetailsEffect } from './types.js';
 import { getUserRSAKeys } from '../getUserRSAKeys/index.js';
+import { CidLevelType } from '../types/index.js';
 
 export class Api {
   private instance: AxiosInstance;
@@ -15,10 +16,10 @@ export class Api {
     this.url = url;
   }
 
-  async getFileCids({ slug }: { slug: string }) {
+  async getFileCids({ slug, level }: { slug: string, level: CidLevelType }) {
     try {
       const response: any = await this.instance.get(
-        `${this.url}/files/file/cid/${slug}/interim`
+        `${this.url}/files/file/cid/${slug}/${level}`
       );
       return response.data;
     } catch (e) {
