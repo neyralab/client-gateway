@@ -1,5 +1,6 @@
 import { isBrowser } from './isBrowser.js';
 import { isMobile } from './isMobile.js';
+import { Readable } from 'stream';
 
 const createUint8ArrayFromChunks = (chunks: ArrayBuffer[]) => {
   return new Uint8Array(
@@ -13,7 +14,7 @@ const createUint8ArrayFromChunks = (chunks: ArrayBuffer[]) => {
   );
 };
 
-export const joinChunks = async (chunks: ArrayBuffer[], returnBuffer = false) => {
+export const joinChunks = (chunks: ArrayBuffer[], returnBuffer = false) => {
   if (isMobile()) {
     return createUint8ArrayFromChunks(chunks);
   } else if (isBrowser() && typeof window.Blob !== 'undefined') {
@@ -26,26 +27,25 @@ export const joinChunks = async (chunks: ArrayBuffer[], returnBuffer = false) =>
     typeof process !== 'undefined' &&
     process.release.name === 'node'
   ) {
-    const { Readable } = await import('stream');
     return new Readable({
       read() {
         let pendingChunks = chunks.length;
         for (const chunk of chunks) {
-            if (chunk instanceof Readable) {
-                chunk.on('data', (data) => this.push(data));
-                chunk.on('end', () => {
-                    pendingChunks--;
-                    if (pendingChunks === 0) {
-                        this.push(null);
-                    }
-                });
-            } else {
-                this.push(Buffer.from(chunk));
-                pendingChunks--;
-            }
+          if (chunk instanceof Readable) {
+            chunk.on('data', (data) => this.push(data));
+            chunk.on('end', () => {
+              pendingChunks--;
+              if (pendingChunks === 0) {
+                this.push(null);
+              }
+            });
+          } else {
+            this.push(Buffer.from(chunk));
+            pendingChunks--;
+          }
         }
         if (pendingChunks === 0) {
-            this.push(null);
+          this.push(null);
         }
       },
     });
